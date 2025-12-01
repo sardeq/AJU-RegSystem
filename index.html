@@ -22,7 +22,7 @@
     </header>
 
     <div class="main-container">
-        <nav class="sidebar">
+        <nav class="sidebar" id="sidebar">
             <div class="user-profile">
                 <div class="user-avatar">S</div>
                 <div class="user-info">
@@ -31,13 +31,13 @@
                 </div>
             </div>
             <ul class="nav-links">
-                <li class="nav-item active">
-                    <a href="#" class="nav-link">
+            <li class="nav-item active" id="nav-home">
+                    <a href="#" class="nav-link" onclick="showSection('home')">
                         <span class="nav-icon">🏠</span> Home
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="registeration.html" class="nav-link">
+                <li class="nav-item" id="nav-reg">
+                    <a href="#" class="nav-link" onclick="showSection('registration')">
                         <span class="nav-icon">📝</span> Registration
                     </a>
                 </li>
@@ -60,22 +60,43 @@
         </nav>
 
         <div class="content-area">
-            <div class="container">
-                <div id="auth-container">
-                    <h2 id="form-title">Login</h2>
-                    <div id="error-msg"></div>
-                    <input type="email" id="email" placeholder="Email" required>
-                    <input type="password" id="password" placeholder="Password" required>
-                    
-                    <button id="login-btn">Log In</button>
-                    <button id="signup-btn" style="background-color: #444; margin-top: 5px;">Sign Up</button>
+            
+            <div class="container" id="auth-container">
+                <h2 id="form-title">Login</h2>
+                <div id="error-msg"></div>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                
+                <button id="login-btn">Log In</button>
+                <button id="signup-btn" style="background-color: #444; margin-top: 5px;">Sign Up</button>
+            </div>
+
+            <div id="home-container" class="dashboard-view hidden">
+                <h2>Welcome Back!</h2>
+                <p>You are logged in as: <span id="user-email" style="font-weight: bold;"></span></p>
+                
+                <div class="dashboard-cards">
+                    <div class="card">
+                        <h3>Next Class</h3>
+                        <p>Software Engineering - 10:30 AM</p>
+                    </div>
+                    <div class="card">
+                        <h3>GPA</h3>
+                        <p>3.8</p>
+                    </div>
                 </div>
 
-                <div id="welcome-container" class="hidden">
-                    <h2>Welcome!</h2>
-                    <p>You are logged in as:</p>
-                    <p id="user-email" style="font-weight: bold;"></p>
-                    <button id="logout-btn" style="background-color: #d93025;">Log Out</button>
+                <button id="logout-btn" style="background-color: #d93025; width: auto; margin-top: 20px;">Log Out</button>
+            </div>
+
+            <div id="registration-container" class="dashboard-view hidden">
+                <h2>Course Registration</h2>
+                <p>Select your courses for the upcoming semester.</p>
+                
+                <div class="registration-form">
+                    <label>Search Course ID:</label>
+                    <input type="text" placeholder="e.g. CS101">
+                    <button>Search</button>
                 </div>
             </div>
         </div>
