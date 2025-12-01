@@ -92,6 +92,34 @@ async function logout() {
     if (error) console.error('Error logging out:', error)
 }
 
+// --- ACCORDION LOGIC ---
+document.addEventListener('click', (e) => {
+    // Check if clicked element is an accordion header or inside one
+    const header = e.target.closest('.accordion-header');
+    
+    if (header) {
+        const accordion = header.parentElement;
+        const content = accordion.querySelector('.accordion-content');
+        const chevron = accordion.querySelector('.chevron');
+        
+        // Toggle the expanded class
+        if (accordion.classList.contains('expanded')) {
+            // Collapse
+            accordion.classList.remove('expanded');
+            accordion.classList.add('collapsed');
+            chevron.textContent = '›';
+            if (content) content.style.display = 'none'; 
+        } else {
+            // Expand
+            accordion.classList.add('expanded');
+            accordion.classList.remove('collapsed');
+            chevron.textContent = '∨';
+            // This line was missing before:
+            if (content) content.style.display = 'block'; 
+        }
+    }
+});
+
 // --- EVENT LISTENERS ---
 loginBtn.addEventListener('click', login)
 signupBtn.addEventListener('click', signUp)
