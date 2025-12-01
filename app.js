@@ -12,6 +12,7 @@ const authContainer = document.getElementById('auth-container')
 const homeContainer = document.getElementById('home-container') // Renamed from welcomeContainer
 const regContainer = document.getElementById('registration-container');
 const sidebar = document.getElementById('sidebar') // Reference to sidebar
+const menuBtn = document.querySelector('.menu-btn');
 
 const emailInput = document.getElementById('email')
 const passwordInput = document.getElementById('password')
@@ -22,6 +23,10 @@ const userEmailDisplay = document.getElementById('user-email')
 const errorMsg = document.getElementById('error-msg')
 
 // --- FUNCTIONS ---
+
+menuBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+});
 
 window.showSection = function(sectionName) {
     // 1. Hide all content sections first

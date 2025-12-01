@@ -45,14 +45,47 @@ body {
     overflow: hidden; /* Prevents double scrollbars */
 }
 
-/* Sidebar Styles */
+/* --- Sidebar Retract/Expand Animations --- */
+
 .sidebar {
     width: 250px;
-    background-color: #2E7D32;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.3s ease; /* Optional animation */
+    transition: width 0.3s ease;
+    overflow: hidden; /* Hides text as it shrinks */
+    white-space: nowrap; /* Prevents text from wrapping awkwardly */
+    background-color: #1f9d6e;
+}
+
+/* The 'Mini' State */
+.sidebar.collapsed {
+    width: 70px; /* Width of the retracted sidebar */
+}
+
+/* Center the Avatar when collapsed */
+.sidebar.collapsed .user-profile {
+    padding: 20px 0;
+    justify-content: center;
+}
+
+.sidebar.collapsed .user-avatar {
+    margin-right: 0; /* Remove margin so it centers perfectly */
+}
+
+/* Hide the user name/ID details */
+.sidebar.collapsed .user-info {
+    display: none;
+    opacity: 0; /* Optional smooth fade if you add transition */
+}
+
+/* Center Nav Items and Hide Text */
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 15px 0;
+    font-size: 0; /* Trick to hide the text node "Home", "Registration" etc */
+}
+
+.sidebar.collapsed .nav-icon {
+    margin-right: 0;
+    font-size: 24px; /* Ensure icon stays visible and sized correctly */
 }
 
 /* Helper to hide elements */
