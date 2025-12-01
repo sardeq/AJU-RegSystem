@@ -3,35 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Auth Vanilla</title>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
-        .container { width: 300px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; cursor: pointer; background-color: #24b47e; color: white; border: none; }
-        button:hover { background-color: #1f9d6e; }
-        .hidden { display: none; }
-        #error-msg { color: red; font-size: 0.9em; margin-bottom: 10px; }
-    </style>
+    <title>Student Portal</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="container">
-        <div id="auth-container">
-            <h2 id="form-title">Login</h2>
-            <div id="error-msg"></div>
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            
-            <button id="login-btn">Log In</button>
-            <button id="signup-btn" style="background-color: #444; margin-top: 5px;">Sign Up</button>
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-btn">☰</button>
         </div>
+        <div class="header-center">
+            <img src="https://www.just.edu.jo/PublishingImages/Pages/default/JUST-LOGO.png" alt="JUST Logo" class="logo">
+        </div>
+        <div class="header-right">
+            <button class="icon-btn settings-btn">⚙️</button>
+            <button class="icon-btn lang-btn">🌐</button>
+        </div>
+    </header>
 
-        <div id="welcome-container" class="hidden">
-            <h2>Welcome!</h2>
-            <p>You are logged in as:</p>
-            <p id="user-email" style="font-weight: bold;"></p>
-            <button id="logout-btn" style="background-color: #d93025;">Log Out</button>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="user-profile">
+                <div class="user-avatar">S</div>
+                <div class="user-info">
+                    <div class="user-name">Sadeq Odeh</div>
+                    <div class="user-id"><span class="status-dot"></span>22120047</div>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">🏠</span> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="registeration.html" class="nav-link">
+                        <span class="nav-icon">📝</span> Registration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📄</span> Courses Sheet
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📅</span> Student Plan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">⚠️</span> Exceptions
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="content-area">
+            <div class="container">
+                <div id="auth-container">
+                    <h2 id="form-title">Login</h2>
+                    <div id="error-msg"></div>
+                    <input type="email" id="email" placeholder="Email" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                    
+                    <button id="login-btn">Log In</button>
+                    <button id="signup-btn" style="background-color: #444; margin-top: 5px;">Sign Up</button>
+                </div>
+
+                <div id="welcome-container" class="hidden">
+                    <h2>Welcome!</h2>
+                    <p>You are logged in as:</p>
+                    <p id="user-email" style="font-weight: bold;"></p>
+                    <button id="logout-btn" style="background-color: #d93025;">Log Out</button>
+                </div>
+            </div>
         </div>
     </div>
 

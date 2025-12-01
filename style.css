@@ -1,0 +1,170 @@
+/* style.css */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header Styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+}
+
+.menu-btn, .icon-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+}
+
+.header-center .logo {
+    height: 50px;
+}
+
+.header-right .icon-btn {
+    margin-left: 15px;
+}
+
+/* Main Layout Styles */
+.main-container {
+    display: flex;
+    flex: 1;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: #2E7D32; /* Dark Green */
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #fff;
+    color: #2E7D32;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.user-info .user-name {
+    font-weight: bold;
+}
+
+.user-info .user-id {
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #24b47e; /* Online Green */
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.nav-link:hover, .nav-item.active .nav-link {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.nav-icon {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+/* Content Area Styles */
+.content-area {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top */
+    background-color: #f4f4f4;
+}
+
+/* Original Container Styles (adapted) */
+.container {
+    width: 300px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: white; /* Ensure white background */
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #24b47e;
+    color: white;
+    border: none;
+}
+
+button:hover {
+    background-color: #1f9d6e;
+}
+
+.hidden {
+    display: none;
+}
+
+#error-msg {
+    color: red;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
