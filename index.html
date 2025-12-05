@@ -278,6 +278,89 @@
         </div>
     </div>
 
+    <div id="ai-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🤖 AI Academic Advisor</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <div id="ai-loading" class="hidden">
+                <div class="spinner"></div>
+                <p>Analyzing your transcript and generating schedules...</p>
+            </div>
+
+            <div id="ai-results" class="results-grid">
+                </div>
+        </div>
+    </div>
+
+    <div id="ai-pref-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>🎛️ Customize Your Schedule</h2>
+                <button class="close-modal" id="close-pref-btn">&times;</button>
+            </div>
+            
+            <div class="pref-form">
+                <div class="form-group">
+                    <label class="form-label">Academic Intensity</label>
+                    <div class="intensity-selector">
+                        <label class="radio-card">
+                            <input type="radio" name="intensity" value="Relaxed">
+                            <span class="emoji">☕</span>
+                            <span>Relaxed</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="intensity" value="Balanced" checked>
+                            <span class="emoji">⚖️</span>
+                            <span>Balanced</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="intensity" value="Intense">
+                            <span class="emoji">🔥</span>
+                            <span>Intense</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Preferred Days</label>
+                    <div class="checkbox-group" style="flex-direction: column; gap: 10px;">
+                        <label>
+                            <input type="checkbox" name="days" value="Sat/Tue" checked> 
+                            Sat
+                        </label>
+                        <label>
+                            <input type="checkbox" name="days" value="Mon/Thu" checked> 
+                            Mon, Wed
+                        </label>
+                        <label>
+                            <input type="checkbox" name="days" value="Sun/Wed"> 
+                            Sun, Tue
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time of Day</label>
+                    <select id="time-pref" class="custom-select">
+                        <option value="Any">Any Time</option>
+                        <option value="Morning Only">Morning (8:00 - 12:00)</option>
+                        <option value="No Early Classes">No Early Classes (After 10:00)</option>
+                        <option value="Afternoon">Afternoon (After 12:00)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Specific Goal (Optional)</label>
+                    <input type="text" id="focus-pref" class="custom-input" placeholder="e.g. Focus on Web Dev, Easy Electives...">
+                </div>
+
+                <button id="generate-schedule-btn" class="enhance-ai-btn">Generate Recommendations ✨</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="app.js"></script>
 </body>
 </html>

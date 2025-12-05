@@ -647,3 +647,217 @@ button:hover {
     font-size: 1.2em;
     font-weight: bold;
 }
+
+
+
+/* --- AI MODAL STYLES --- */
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #f9f9f9;
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    border-radius: 15px;
+    padding: 25px;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #2E7D32;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 { margin: 0; color: #2E7D32; }
+.close-modal {
+    background: none; border: none;
+    font-size: 2rem; cursor: pointer; color: #666;
+}
+
+/* AI Loading Spinner */
+#ai-loading {
+    text-align: center;
+    padding: 40px;
+}
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2E7D32;
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Schedule Cards */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.schedule-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-color: #2E7D32;
+}
+
+.card-tag {
+    background-color: #e8f5e9;
+    color: #2E7D32;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.card-reasoning {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 15px;
+    font-style: italic;
+    min-height: 40px;
+}
+
+.card-courses {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+    flex-grow: 1;
+}
+
+.card-courses li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+}
+.card-courses li span { font-weight: bold; color: #333; }
+.card-courses li small { color: #888; }
+
+.accept-btn {
+    background-color: #2E7D32;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: auto;
+}
+.accept-btn:hover { background-color: #1b5e20; }
+
+
+
+/* --- AI PREFERENCES FORM STYLES --- */
+.pref-form {
+    padding: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+    color: #2E7D32;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+/* Intensity Radio Cards */
+.intensity-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.radio-card {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.radio-card input {
+    display: none; /* Hide default radio */
+}
+
+.radio-card:hover {
+    background-color: #f1f8e9;
+    border-color: #2E7D32;
+}
+
+.radio-card:has(input:checked) {
+    background-color: #e8f5e9;
+    border: 2px solid #2E7D32;
+    color: #2E7D32;
+    font-weight: bold;
+}
+
+.radio-card .emoji {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+/* Inputs & Selects */
+.custom-select, .custom-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: white;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 15px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #2E7D32;
+}
