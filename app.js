@@ -7,11 +7,7 @@ const supabaseUrl = config.SUPABASE_URL
 const supabaseKey = config.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// REPLACE THIS WITH YOUR OPENROUTER KEY
-const OPENROUTER_API_KEY = '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'; 
 
-
-// test
 // --- DOM ELEMENTS ---
 const authContainer = document.getElementById('auth-container')
 const homeContainer = document.getElementById('home-container')
@@ -165,80 +161,21 @@ async function fetchStudentContext(userId) {
     return { history: passedCourses, options: eligibleSections };
 }
 
-// 2. Call OpenRouter (With Preferences)
+
+// 2. Call Supabase Edge Function (Secure)
 async function getOpenRouterRecommendations(context, preferences) {
-    const coursesList = context.options.map(o => ({
-        id: o.section_id,
-        code: o.course_code,
-        name: o.courses.course_name_en,
-        time: o.schedule_text,
-        prof: o.instructor_name
-    }));
-
-    const TRACKS_CONTEXT = `
-    CURRICULUM TRACKS:
-    1. "Data & AI": Data Structures -> Algorithms -> Intelligent Systems.
-    2. "Web": OOP -> Web Apps -> Adv Web.
-    3. "Security": Networks -> Software Security -> Secure SE.
-    `;
-
-    // Inject User Preferences into the Prompt
-    const USER_CONSTRAINTS = `
-    USER CUSTOM PREFERENCES (STRICTLY FOLLOW THESE):
-    - Intensity Level: ${preferences.intensity} (If 'Relaxed', avoid too many hard labs. If 'Intense', maximize credits).
-    - Preferred Days: ${preferences.days.join(" OR ")} (Try to fit classes here).
-    - Time Preference: ${preferences.time}
-    - Specific Focus Goal: ${preferences.focus || "None"}
-    `;
-
-    const prompt = `
-    SYSTEM INSTRUCTION: You are a JSON generator. You output only raw JSON arrays. Do not output markdown.
-    
-    INPUT DATA:
-    - Student History: ${JSON.stringify(context.history)}
-    - Available Courses: ${JSON.stringify(coursesList)}
-    ${TRACKS_CONTEXT}
-    ${USER_CONSTRAINTS}
-
-    TASK:
-    Generate 3 distinct schedule options based on the user's constraints.
-    
-    EXPECTED JSON OUTPUT:
-    [
-      {
-        "title": "Strategy Name",
-        "reasoning": "Explain why this fits the user's specific preferences (e.g., 'Matches your request for Mon/Wed classes...')",
-        "courses": [
-          {"code": "311314", "name": "Algorithms", "time": "Sun 10:00", "section_id": 101}
-        ]
-      }
-    ]
-    `;
-
     try {
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-                "Content-Type": "application/json",
-                "HTTP-Referer": window.location.href, 
-                "X-Title": "Student Reg System"
-            },
-            body: JSON.stringify({
-                "model": "google/gemma-3-4b-it:free",
-                "messages": [{ "role": "user", "content": prompt }]
-            })
+        console.log("Asking AI for help...");
+
+        // Invoke the function we created in Step 3
+        const { data, error } = await supabase.functions.invoke('generate-schedule', {
+            body: { context, preferences }
         });
 
-        const data = await response.json();
+        if (error) throw new Error(error.message);
         
-        if (!response.ok || data.error) throw new Error(data.error?.message || "AI Error");
-        if (!data.choices) throw new Error("Empty AI Response");
-
-        let rawText = data.choices[0].message.content;
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        
-        return JSON.parse(rawText);
+        // The function now returns the parsed JSON directly
+        return data; 
 
     } catch (error) {
         console.error("AI Error:", error);
