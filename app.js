@@ -10,6 +10,8 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 // REPLACE THIS WITH YOUR OPENROUTER KEY
 const OPENROUTER_API_KEY = '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'; 
 
+
+// test
 // --- DOM ELEMENTS ---
 const authContainer = document.getElementById('auth-container')
 const homeContainer = document.getElementById('home-container')
