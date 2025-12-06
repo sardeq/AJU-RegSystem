@@ -22,6 +22,10 @@ const signupBtn = document.getElementById('signup-btn')
 const logoutBtn = document.getElementById('logout-btn')
 const userEmailDisplay = document.getElementById('user-email')
 const errorMsg = document.getElementById('error-msg')
+const fullNameInput = document.getElementById('full-name'); // New
+const confirmPassInput = document.getElementById('confirm-password'); // New
+const authActionBtn = document.getElementById('auth-action-btn'); // Renamed button
+const toggleAuthLink = document.getElementById('toggle-auth-mode'); // New Toggle
 
 // AI Elements
 const aiBtn = document.querySelector('.enhance-ai-btn');
@@ -36,6 +40,7 @@ const generateBtn = document.getElementById('generate-schedule-btn')
 
 // --- STATE MANAGEMENT ---
 let currentUser = null;
+let isLoginMode = true;
 
 // --- AUTH FUNCTIONS ---
 menuBtn.addEventListener('click', () => {
@@ -56,12 +61,43 @@ window.showSection = function(sectionName) {
     }
 }
 
+toggleAuthLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    isLoginMode = !isLoginMode;
+    errorMsg.textContent = ''; // Clear errors
+
+    const extraFields = document.querySelectorAll('.auth-extra');
+    
+    if (isLoginMode) {
+        // Switch to Login UI
+        formTitle.textContent = 'Login';
+        authActionBtn.textContent = 'Log In';
+        document.getElementById('toggle-text').textContent = "Don't have an account? ";
+        toggleAuthLink.textContent = 'Sign Up';
+        extraFields.forEach(el => el.classList.add('hidden'));
+    } else {
+        // Switch to Signup UI
+        formTitle.textContent = 'Create Account';
+        authActionBtn.textContent = 'Sign Up';
+        document.getElementById('toggle-text').textContent = "Already have an account? ";
+        toggleAuthLink.textContent = 'Log In';
+        extraFields.forEach(el => el.classList.remove('hidden'));
+    }
+});
+
 function updateUI(session) {
     if (session) {
         currentUser = session.user;
         authContainer.classList.add('hidden');
         sidebar.classList.remove('hidden');
         showSection('home');
+        
+        // Update user name in Sidebar if metadata exists
+        const userNameDisplay = document.querySelector('.user-name');
+        if(userNameDisplay && session.user.user_metadata.full_name) {
+            userNameDisplay.textContent = session.user.user_metadata.full_name;
+        }
+
         if(userEmailDisplay) userEmailDisplay.textContent = session.user.email;
     } else {
         currentUser = null;
@@ -69,6 +105,10 @@ function updateUI(session) {
         sidebar.classList.add('hidden');
         homeContainer.classList.add('hidden');
         regContainer.classList.add('hidden');
+        
+        // Reset inputs on logout
+        emailInput.value = '';
+        passwordInput.value = '';
     }
 }
 
@@ -83,6 +123,69 @@ async function login() {
 
 async function logout() {
     await supabase.auth.signOut()
+}
+
+authActionBtn.addEventListener('click', handleAuth); // Changed from loginBtn
+logoutBtn.addEventListener('click', logout);
+
+supabase.auth.onAuthStateChange((event, session) => {
+    updateUI(session);
+});
+
+async function handleAuth() {
+    errorMsg.textContent = '';
+    const email = emailInput.value;
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        errorMsg.textContent = 'Please fill in all required fields.';
+        return;
+    }
+
+    authActionBtn.disabled = true;
+    authActionBtn.textContent = 'Processing...';
+
+    try {
+        if (isLoginMode) {
+            // --- LOGIN LOGIC ---
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+            if (error) throw error;
+        
+        } else {
+            // --- SIGNUP LOGIC ---
+            const fullName = fullNameInput.value;
+            const confirmPass = confirmPassInput.value;
+
+            // Validation
+            if (!fullName) throw new Error("Full Name is required.");
+            if (password !== confirmPass) throw new Error("Passwords do not match.");
+            if (password.length < 6) throw new Error("Password must be at least 6 characters.");
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    // This saves full_name to raw_user_meta_data
+                    data: {
+                        full_name: fullName 
+                    }
+                }
+            });
+
+            if (error) throw error;
+
+            alert("Registration successful! You are now logged in.");
+        }
+    } catch (error) {
+        errorMsg.textContent = error.message;
+    } finally {
+        // Reset button text
+        authActionBtn.disabled = false;
+        authActionBtn.textContent = isLoginMode ? 'Log In' : 'Sign Up';
+    }
 }
 
 // --- AI RECOMMENDATION LOGIC ---
