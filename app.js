@@ -7,25 +7,24 @@ const supabaseUrl = config.SUPABASE_URL
 const supabaseKey = config.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-
 // --- DOM ELEMENTS ---
-const authContainer = document.getElementById('auth-container')
-const homeContainer = document.getElementById('home-container')
+const authContainer = document.getElementById('auth-container');
+const homeContainer = document.getElementById('home-container');
 const regContainer = document.getElementById('registration-container');
-const sidebar = document.getElementById('sidebar')
+const sidebar = document.getElementById('sidebar');
 const menuBtn = document.querySelector('.menu-btn');
 
-const emailInput = document.getElementById('email')
-const passwordInput = document.getElementById('password')
-const loginBtn = document.getElementById('login-btn')
-const signupBtn = document.getElementById('signup-btn')
-const logoutBtn = document.getElementById('logout-btn')
-const userEmailDisplay = document.getElementById('user-email')
-const errorMsg = document.getElementById('error-msg')
-const fullNameInput = document.getElementById('full-name'); // New
-const confirmPassInput = document.getElementById('confirm-password'); // New
-const authActionBtn = document.getElementById('auth-action-btn'); // Renamed button
-const toggleAuthLink = document.getElementById('toggle-auth-mode'); // New Toggle
+// Auth Form Elements
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const fullNameInput = document.getElementById('full-name'); 
+const confirmPassInput = document.getElementById('confirm-password'); 
+const authActionBtn = document.getElementById('auth-action-btn'); 
+const toggleAuthLink = document.getElementById('toggle-auth-mode'); 
+const formTitle = document.getElementById('form-title');
+const errorMsg = document.getElementById('error-msg');
+const userEmailDisplay = document.getElementById('user-email');
+const logoutBtn = document.getElementById('logout-btn');
 
 // AI Elements
 const aiBtn = document.querySelector('.enhance-ai-btn');
@@ -33,105 +32,45 @@ const aiModal = document.getElementById('ai-modal');
 const closeModal = document.querySelector('.close-modal');
 const aiLoading = document.getElementById('ai-loading');
 const aiResults = document.getElementById('ai-results');
-
 const aiPrefModal = document.getElementById('ai-pref-modal');
 const closePrefBtn = document.getElementById('close-pref-btn');
-const generateBtn = document.getElementById('generate-schedule-btn')
+const generateBtn = document.getElementById('generate-schedule-btn');
 
 // --- STATE MANAGEMENT ---
 let currentUser = null;
-let isLoginMode = true;
+let isLoginMode = true; // Default to Login mode
 
 // --- AUTH FUNCTIONS ---
-menuBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('collapsed');
-});
 
-window.showSection = function(sectionName) {
-    homeContainer.classList.add('hidden');
-    regContainer.classList.add('hidden');
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+// 1. Toggle between Login and Signup UI
+if (toggleAuthLink) {
+    toggleAuthLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        isLoginMode = !isLoginMode;
+        errorMsg.textContent = ''; // Clear errors
 
-    if (sectionName === 'home') {
-        homeContainer.classList.remove('hidden');
-        document.getElementById('nav-home').classList.add('active');
-    } else if (sectionName === 'registration') {
-        regContainer.classList.remove('hidden');
-        document.getElementById('nav-reg').classList.add('active');
-    }
-}
-
-toggleAuthLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    isLoginMode = !isLoginMode;
-    errorMsg.textContent = ''; // Clear errors
-
-    const extraFields = document.querySelectorAll('.auth-extra');
-    
-    if (isLoginMode) {
-        // Switch to Login UI
-        formTitle.textContent = 'Login';
-        authActionBtn.textContent = 'Log In';
-        document.getElementById('toggle-text').textContent = "Don't have an account? ";
-        toggleAuthLink.textContent = 'Sign Up';
-        extraFields.forEach(el => el.classList.add('hidden'));
-    } else {
-        // Switch to Signup UI
-        formTitle.textContent = 'Create Account';
-        authActionBtn.textContent = 'Sign Up';
-        document.getElementById('toggle-text').textContent = "Already have an account? ";
-        toggleAuthLink.textContent = 'Log In';
-        extraFields.forEach(el => el.classList.remove('hidden'));
-    }
-});
-
-function updateUI(session) {
-    if (session) {
-        currentUser = session.user;
-        authContainer.classList.add('hidden');
-        sidebar.classList.remove('hidden');
-        showSection('home');
+        // Find the extra fields (Name, Confirm Password)
+        const extraFields = document.querySelectorAll('.auth-extra');
         
-        // Update user name in Sidebar if metadata exists
-        const userNameDisplay = document.querySelector('.user-name');
-        if(userNameDisplay && session.user.user_metadata.full_name) {
-            userNameDisplay.textContent = session.user.user_metadata.full_name;
+        if (isLoginMode) {
+            // Switch to Login View
+            formTitle.textContent = 'Login';
+            authActionBtn.textContent = 'Log In';
+            document.getElementById('toggle-text').textContent = "Don't have an account? ";
+            toggleAuthLink.textContent = 'Sign Up';
+            extraFields.forEach(el => el.classList.add('hidden'));
+        } else {
+            // Switch to Signup View
+            formTitle.textContent = 'Create Account';
+            authActionBtn.textContent = 'Sign Up';
+            document.getElementById('toggle-text').textContent = "Already have an account? ";
+            toggleAuthLink.textContent = 'Log In';
+            extraFields.forEach(el => el.classList.remove('hidden'));
         }
-
-        if(userEmailDisplay) userEmailDisplay.textContent = session.user.email;
-    } else {
-        currentUser = null;
-        authContainer.classList.remove('hidden');
-        sidebar.classList.add('hidden');
-        homeContainer.classList.add('hidden');
-        regContainer.classList.add('hidden');
-        
-        // Reset inputs on logout
-        emailInput.value = '';
-        passwordInput.value = '';
-    }
+    });
 }
 
-async function login() {
-    errorMsg.textContent = ''
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: emailInput.value,
-        password: passwordInput.value
-    })
-    if (error) errorMsg.textContent = error.message
-}
-
-async function logout() {
-    await supabase.auth.signOut()
-}
-
-authActionBtn.addEventListener('click', handleAuth); // Changed from loginBtn
-logoutBtn.addEventListener('click', logout);
-
-supabase.auth.onAuthStateChange((event, session) => {
-    updateUI(session);
-});
-
+// 2. Handle Auth Action (Login OR Signup)
 async function handleAuth() {
     errorMsg.textContent = '';
     const email = emailInput.value;
@@ -168,33 +107,80 @@ async function handleAuth() {
                 email,
                 password,
                 options: {
-                    // This saves full_name to raw_user_meta_data
-                    data: {
-                        full_name: fullName 
-                    }
+                    data: { full_name: fullName } // Metadata
                 }
             });
 
             if (error) throw error;
-
             alert("Registration successful! You are now logged in.");
         }
     } catch (error) {
+        console.error(error);
         errorMsg.textContent = error.message;
     } finally {
-        // Reset button text
         authActionBtn.disabled = false;
         authActionBtn.textContent = isLoginMode ? 'Log In' : 'Sign Up';
     }
 }
 
-// --- AI RECOMMENDATION LOGIC ---
+// 3. UI Helpers
+if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
+}
 
-// 1. Fetch Data for AI (With fixed relationships)
+window.showSection = function(sectionName) {
+    homeContainer.classList.add('hidden');
+    regContainer.classList.add('hidden');
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+    if (sectionName === 'home') {
+        homeContainer.classList.remove('hidden');
+        if(document.getElementById('nav-home')) document.getElementById('nav-home').classList.add('active');
+    } else if (sectionName === 'registration') {
+        regContainer.classList.remove('hidden');
+        if(document.getElementById('nav-reg')) document.getElementById('nav-reg').classList.add('active');
+    }
+}
+
+function updateUI(session) {
+    if (session) {
+        currentUser = session.user;
+        authContainer.classList.add('hidden');
+        sidebar.classList.remove('hidden');
+        showSection('home');
+        
+        // Update user name in Sidebar
+        const userNameDisplay = document.querySelector('.user-name');
+        if(userNameDisplay && session.user.user_metadata.full_name) {
+            userNameDisplay.textContent = session.user.user_metadata.full_name;
+        }
+
+        if(userEmailDisplay) userEmailDisplay.textContent = session.user.email;
+    } else {
+        currentUser = null;
+        authContainer.classList.remove('hidden');
+        sidebar.classList.add('hidden');
+        homeContainer.classList.add('hidden');
+        regContainer.classList.add('hidden');
+        
+        // Reset inputs
+        emailInput.value = '';
+        passwordInput.value = '';
+    }
+}
+
+async function logout() {
+    await supabase.auth.signOut();
+}
+
+// --- AI LOGIC START ---
+
+// 1. Fetch Data for AI
 async function fetchStudentContext(userId) {
     console.log("Fetching context for user:", userId);
 
-    // A. Get History
     const { data: history, error: historyError } = await supabase
         .from('enrollments')
         .select(`
@@ -207,53 +193,33 @@ async function fetchStudentContext(userId) {
         .eq('user_id', userId)
         .eq('status', 'COMPLETED');
 
-    if (historyError) {
-        console.error("Error fetching history:", historyError);
-        throw new Error("Could not fetch student history.");
-    }
-
+    if (historyError) throw new Error("Could not fetch student history.");
     const passedCourses = history ? history.map(h => h.sections?.course_code).filter(Boolean) : [];
 
-    // B. Get Active
-    const { data: current, error: currentError } = await supabase
+    const { data: current } = await supabase
         .from('enrollments')
-        .select(`
-            sections (course_code)
-        `)
+        .select(`sections (course_code)`)
         .eq('user_id', userId)
         .eq('status', 'ENROLLED');
     
     const inProgressCourses = current ? current.map(c => c.sections?.course_code).filter(Boolean) : [];
     const allKnowledge = [...passedCourses, ...inProgressCourses];
 
-    // C. Get Future Options
-    // Using the corrected query from our previous step
     const { data: availableSections, error: sectionsError } = await supabase
         .from('sections')
         .select(`
             section_id, course_code, schedule_text, instructor_name,
             courses (
-                course_name_en, 
-                credit_hours, 
-                category,
-                prerequisites!prerequisites_course_code_fkey (
-                    prereq_code
-                )
+                course_name_en, credit_hours, category,
+                prerequisites!prerequisites_course_code_fkey (prereq_code)
             )
         `)
         .eq('semester_id', 20252)
         .eq('status', 'OPEN');
 
-    if (sectionsError) {
-        console.error("Error fetching sections:", sectionsError);
-        throw new Error("Database Error: " + sectionsError.message); 
-    }
+    if (sectionsError) throw new Error("Database Error: " + sectionsError.message); 
+    if (!availableSections) return { history: passedCourses, options: [] };
 
-    if (!availableSections) {
-        return { history: passedCourses, options: [] };
-    }
-
-    // D. Filter Logic
     const eligibleSections = availableSections.filter(section => {
         const coursePrereqs = section.courses?.prerequisites || [];
         if (coursePrereqs.length === 0) return true;
@@ -264,22 +230,15 @@ async function fetchStudentContext(userId) {
     return { history: passedCourses, options: eligibleSections };
 }
 
-
-// 2. Call Supabase Edge Function (Secure)
+// 2. Call Supabase Edge Function
 async function getOpenRouterRecommendations(context, preferences) {
     try {
         console.log("Asking AI for help...");
-
-        // Invoke the function we created in Step 3
         const { data, error } = await supabase.functions.invoke('generate-schedule', {
             body: { context, preferences }
         });
-
         if (error) throw new Error(error.message);
-        
-        // The function now returns the parsed JSON directly
         return data; 
-
     } catch (error) {
         console.error("AI Error:", error);
         alert(`AI Failed: ${error.message}`);
@@ -287,67 +246,7 @@ async function getOpenRouterRecommendations(context, preferences) {
     }
 }
 
-aiBtn.addEventListener('click', () => {
-    if (!currentUser) { alert("Please log in."); return; }
-    aiPrefModal.classList.remove('hidden'); // Show Form
-});
-
-generateBtn.addEventListener('click', async () => {
-    // A. Gather Form Data
-    const intensity = document.querySelector('input[name="intensity"]:checked').value;
-    const time = document.getElementById('time-pref').value;
-    const focus = document.getElementById('focus-pref').value;
-    
-    // Get Checked Days
-    const days = [];
-    document.querySelectorAll('input[name="days"]:checked').forEach(cb => days.push(cb.value));
-
-    if (days.length === 0) {
-        alert("Please select at least one day preference.");
-        return;
-    }
-
-    const preferences = { intensity, time, focus, days };
-
-    // B. Switch Modals (Hide Form -> Show Loading)
-    aiPrefModal.classList.add('hidden');
-    aiModal.classList.remove('hidden');
-    aiLoading.classList.remove('hidden');
-    aiResults.innerHTML = ''; 
-
-    try {
-        const userId = currentUser.id;
-        
-        // C. Fetch Data
-        const context = await fetchStudentContext(userId);
-        
-        if (context.options.length === 0) {
-            throw new Error("No eligible courses found for next semester.");
-        }
-
-        // D. Call AI with Preferences
-        const plans = await getOpenRouterRecommendations(context, preferences);
-
-        // E. Render
-        aiLoading.classList.add('hidden');
-        renderPlans(plans);
-
-    } catch (err) {
-        console.error(err);
-        aiLoading.innerHTML = `<p style="color:red; text-align:center;">${err.message}</p>`;
-    }
-});
-
-// Close Handlers
-closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
-
-// Update window click to close BOTH modals
-window.onclick = function(event) {
-    if (event.target == aiModal) aiModal.classList.add('hidden');
-    if (event.target == aiPrefModal) aiPrefModal.classList.add('hidden');
-}
-
-// 3. UI Handlers
+// 3. Render Results
 function renderPlans(plans) {
     if (!plans || plans.length === 0) {
         aiResults.innerHTML = '<p>No valid plans generated.</p>';
@@ -359,27 +258,20 @@ function renderPlans(plans) {
         card.className = 'schedule-card';
         
         let coursesHtml = plan.courses.map(c => 
-            `<li>
-                <span>${c.code} - ${c.name}</span>
-                <small>${c.time}</small>
-             </li>`
+            `<li><span>${c.code} - ${c.name}</span><small>${c.time}</small></li>`
         ).join('');
 
-        // We use encodeURIComponent to safely pass the object to the button
         const safeData = encodeURIComponent(JSON.stringify(plan.courses));
 
         card.innerHTML = `
             <span class="card-tag">${plan.title}</span>
             <p class="card-reasoning">${plan.reasoning}</p>
             <ul class="card-courses">${coursesHtml}</ul>
-            <button class="accept-btn" data-courses="${safeData}">
-                Accept Schedule
-            </button>
+            <button class="accept-btn" data-courses="${safeData}">Accept Schedule</button>
         `;
         aiResults.appendChild(card);
     });
 
-    // Add event listeners to the new buttons
     document.querySelectorAll('.accept-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const coursesData = JSON.parse(decodeURIComponent(e.target.dataset.courses));
@@ -389,15 +281,12 @@ function renderPlans(plans) {
 }
 
 async function applySchedule(courses) {
-    // 1. Dynamic User Check
     if (!currentUser || !currentUser.id) {
         alert("Session expired. Please log in again.");
         return;
     }
 
     if(!confirm(`Register for these ${courses.length} courses?`)) return;
-
-    // 2. Use the real ID
     const userId = currentUser.id;
     
     const enrollments = courses.map(c => ({
@@ -407,16 +296,11 @@ async function applySchedule(courses) {
         grade_value: null
     }));
 
-    // 3. Upsert to handle duplicates safely
     const { error } = await supabase
         .from('enrollments')
-        .upsert(enrollments, { 
-            onConflict: 'user_id, section_id', 
-            ignoreDuplicates: true 
-        });
+        .upsert(enrollments, { onConflict: 'user_id, section_id', ignoreDuplicates: true });
 
     if (error) {
-        console.error("Registration Error:", error);
         alert('Error registering: ' + error.message);
     } else {
         alert('Successfully Registered!');
@@ -424,19 +308,65 @@ async function applySchedule(courses) {
     }
 };
 
-// Modal Close Logic
-closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
-window.onclick = function(event) {
-    if (event.target == aiModal) {
-        aiModal.classList.add('hidden');
+// --- EVENT LISTENERS (Consolidated) ---
+
+if (authActionBtn) authActionBtn.addEventListener('click', handleAuth);
+if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
+// AI Listeners
+if (aiBtn) aiBtn.addEventListener('click', () => {
+    if (!currentUser) { alert("Please log in."); return; }
+    aiPrefModal.classList.remove('hidden');
+});
+
+if (generateBtn) generateBtn.addEventListener('click', async () => {
+    // A. Gather Form Data
+    const intensityEl = document.querySelector('input[name="intensity"]:checked');
+    const intensity = intensityEl ? intensityEl.value : 'Balanced';
+    const time = document.getElementById('time-pref').value;
+    const focus = document.getElementById('focus-pref').value;
+    
+    const days = [];
+    document.querySelectorAll('input[name="days"]:checked').forEach(cb => days.push(cb.value));
+
+    if (days.length === 0) {
+        alert("Please select at least one day preference.");
+        return;
     }
+    const preferences = { intensity, time, focus, days };
+
+    // B. Switch Modals
+    aiPrefModal.classList.add('hidden');
+    aiModal.classList.remove('hidden');
+    aiLoading.classList.remove('hidden');
+    aiResults.innerHTML = ''; 
+
+    try {
+        const userId = currentUser.id;
+        const context = await fetchStudentContext(userId);
+        
+        if (context.options.length === 0) throw new Error("No eligible courses found.");
+
+        const plans = await getOpenRouterRecommendations(context, preferences);
+        
+        aiLoading.classList.add('hidden');
+        renderPlans(plans);
+
+    } catch (err) {
+        console.error(err);
+        aiLoading.innerHTML = `<p style="color:red; text-align:center;">${err.message}</p>`;
+    }
+});
+
+if(closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
+if(closeModal) closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
+
+window.onclick = function(event) {
+    if (event.target == aiModal) aiModal.classList.add('hidden');
+    if (event.target == aiPrefModal) aiPrefModal.classList.add('hidden');
 }
 
-// --- EVENT LISTENERS ---
-loginBtn.addEventListener('click', login)
-signupBtn.addEventListener('click', () => alert("Sign up disabled for demo"))
-logoutBtn.addEventListener('click', logout)
-
+// Init Supabase Listener
 supabase.auth.onAuthStateChange((event, session) => {
-    updateUI(session)
-})
+    updateUI(session);
+});
