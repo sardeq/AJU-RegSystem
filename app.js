@@ -40,6 +40,97 @@ const generateBtn = document.getElementById('generate-schedule-btn');
 let currentUser = null;
 let isLoginMode = true; // Default to Login mode
 
+
+
+const translations = {
+    en: {
+        nav_home: "Home",
+        nav_reg: "Registration",
+        nav_sheet: "Courses Sheet",
+        nav_plan: "Student Plan",
+        nav_exceptions: "Exceptions",
+        auth_login_title: "Login",
+        auth_signup_title: "Create Account",
+        ph_fullname: "Full Name",
+        ph_email: "Email",
+        ph_password: "Password",
+        ph_confirm_pass: "Confirm Password",
+        btn_login: "Log In",
+        btn_signup: "Sign Up",
+        auth_no_account: "Don't have an account? ",
+        auth_have_account: "Already have an account? ",
+        btn_schedule: "Schedule",
+        btn_logout: "Log Out",
+        btn_ai_enhance: "Enhance with AI",
+        ai_pref_title: "🎛️ Customize Your Schedule",
+        btn_generate: "Generate Recommendations ✨",
+        welcome_title: "Welcome, "
+    },
+    ar: {
+        nav_home: "الرئيسية",
+        nav_reg: "التسجيل",
+        nav_sheet: "صحيفة المواد",
+        nav_plan: "الخطة الدراسية",
+        nav_exceptions: "الاستثناءات",
+        auth_login_title: "تسجيل الدخول",
+        auth_signup_title: "إنشاء حساب",
+        ph_fullname: "الاسم الكامل",
+        ph_email: "البريد الإلكتروني",
+        ph_password: "كلمة المرور",
+        ph_confirm_pass: "تأكيد كلمة المرور",
+        btn_login: "دخول",
+        btn_signup: "تسجيل",
+        auth_no_account: "ليس لديك حساب؟ ",
+        auth_have_account: "لديك حساب بالفعل؟ ",
+        btn_schedule: "الجدول الدراسي",
+        btn_logout: "تسجيل خروج",
+        btn_ai_enhance: "تحسين بالذكاء الاصطناعي",
+        ai_pref_title: "🎛️ تخصيص جدولك",
+        btn_generate: "إنشاء التوصيات ✨",
+        welcome_title: "أهلاً بك، "
+    }
+};
+
+
+const langBtn = document.querySelector('.lang-btn');
+let currentLang = localStorage.getItem('app_lang') || 'en';
+
+function applyLanguage(lang) {
+    // 1. Update Direction and Lang attribute
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    
+    // 2. Update Text Content
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            el.textContent = translations[lang][key];
+        }
+    });
+
+    // 3. Update Placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[lang][key]) {
+            el.placeholder = translations[lang][key];
+        }
+    });
+
+    // 4. Save Preference
+    localStorage.setItem('app_lang', lang);
+    currentLang = lang;
+}
+
+if (langBtn) {
+    langBtn.addEventListener('click', () => {
+        const newLang = currentLang === 'en' ? 'ar' : 'en';
+        applyLanguage(newLang);
+    });
+}
+
+// Apply language on load
+applyLanguage(currentLang);
+
 // --- AUTH FUNCTIONS ---
 
 // 1. Toggle between Login and Signup UI

@@ -23,37 +23,30 @@
 
     <div class="main-container">
         <nav class="sidebar" id="sidebar">
-            <div class="user-profile">
-                <div class="user-avatar">S</div>
-                <div class="user-info">
-                    <div class="user-name">Sadeq Odeh</div>
-                    <div class="user-id"><span class="status-dot"></span>22120047</div>
-                </div>
-            </div>
             <ul class="nav-links">
-            <li class="nav-item active" id="nav-home">
+                <li class="nav-item active" id="nav-home">
                     <a href="#" class="nav-link" onclick="showSection('home')">
-                        <span class="nav-icon">🏠</span> Home
+                        <span class="nav-icon">🏠</span> <span data-i18n="nav_home">Home</span>
                     </a>
                 </li>
                 <li class="nav-item" id="nav-reg">
                     <a href="#" class="nav-link" onclick="showSection('registration')">
-                        <span class="nav-icon">📝</span> Registration
+                        <span class="nav-icon">📝</span> <span data-i18n="nav_reg">Registration</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <span class="nav-icon">📄</span> Courses Sheet
+                        <span class="nav-icon">📄</span> <span data-i18n="nav_sheet">Courses Sheet</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <span class="nav-icon">📅</span> Student Plan
+                        <span class="nav-icon">📅</span> <span data-i18n="nav_plan">Student Plan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <span class="nav-icon">⚠️</span> Exceptions
+                        <span class="nav-icon">⚠️</span> <span data-i18n="nav_exceptions">Exceptions</span>
                     </a>
                 </li>
             </ul>
@@ -62,21 +55,19 @@
         <div class="content-area">
             
             <div class="container" id="auth-container">
-                <h2 id="form-title">Login</h2>
+                <h2 id="form-title" data-i18n="auth_login_title">Login</h2>
                 <div id="error-msg" style="color: red; margin-bottom: 10px; font-size: 0.9em;"></div>
                 
-                <input type="text" id="full-name" placeholder="Full Name" class="auth-extra hidden">
+                <input type="text" id="full-name" data-i18n-placeholder="ph_fullname" placeholder="Full Name" class="auth-extra hidden">
+                <input type="email" id="email" data-i18n-placeholder="ph_email" placeholder="Email" required>
+                <input type="password" id="password" data-i18n-placeholder="ph_password" placeholder="Password" required>
+                <input type="password" id="confirm-password" data-i18n-placeholder="ph_confirm_pass" placeholder="Confirm Password" class="auth-extra hidden">
                 
-                <input type="email" id="email" placeholder="Email" required>
-                <input type="password" id="password" placeholder="Password" required>
-                
-                <input type="password" id="confirm-password" placeholder="Confirm Password" class="auth-extra hidden">
-                
-                <button id="auth-action-btn">Log In</button>
+                <button id="auth-action-btn" data-i18n="btn_login">Log In</button>
                 
                 <p style="margin-top: 15px; text-align: center; font-size: 0.9rem; color: #666;">
-                    <span id="toggle-text">Don't have an account? </span>
-                    <a href="#" id="toggle-auth-mode" style="color: #4CAF50; text-decoration: none; font-weight: bold;">Sign Up</a>
+                    <span id="toggle-text" data-i18n="auth_no_account">Don't have an account? </span>
+                    <a href="#" id="toggle-auth-mode" style="color: #4CAF50; text-decoration: none; font-weight: bold;" data-i18n="btn_signup">Sign Up</a>
                 </p>
             </div>
 
@@ -137,10 +128,11 @@
                         </div>
 
                         <div class="action-buttons-row">
-                            <button class="action-card-btn">Registration</button>
-                            <button class="action-card-btn">Schedule</button>
+                            <button class="action-card-btn" data-i18n="nav_reg">Registration</button>
+                            <button class="action-card-btn" data-i18n="btn_schedule">Schedule</button>
                         </div>
-                        
+                        <button id="logout-btn" class="logout-link" data-i18n="btn_logout">Log Out</button>
+                                                
                         <button id="logout-btn" class="logout-link">Log Out</button>
                     </div>
 
@@ -195,7 +187,7 @@
             <div id="registration-container" class="dashboard-view hidden">
                 <div class="registration-layout">
                     <div class="reg-left-panel">
-                        <button class="enhance-ai-btn">
+                        <button class="enhance-ai-btn" data-i18n="btn_ai_enhance">
                             Enhance with AI
                         </button>
                         
@@ -307,7 +299,7 @@
     <div id="ai-pref-modal" class="modal hidden">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <h2>🎛️ Customize Your Schedule</h2>
+                <h2 data-i18n="ai_pref_title">🎛️ Customize Your Schedule</h2>
                 <button class="close-modal" id="close-pref-btn">&times;</button>
             </div>
             
@@ -365,8 +357,7 @@
                     <input type="text" id="focus-pref" class="custom-input" placeholder="e.g. Focus on Web Dev, Easy Electives...">
                 </div>
 
-                <button id="generate-schedule-btn" class="enhance-ai-btn">Generate Recommendations ✨</button>
-            </div>
+                <button id="generate-schedule-btn" class="enhance-ai-btn" data-i18n="btn_generate">Generate Recommendations ✨</button>            </div>
         </div>
     </div>
 
