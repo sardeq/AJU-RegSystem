@@ -815,35 +815,38 @@ async function logout() {
 // --- AI LOGIC ---
 
 async function fetchStudentContext(userId) {
-    // 1. Fetch COMPLETED courses (These satisfy prerequisites)
+    // 1. Fetch COMPLETED courses (for prerequisites)
     const { data: history, error: historyError } = await supabase
         .from('enrollments')
-        .select(`
-            status, 
-            sections (
-                course_code
-            )
-        `)
+        .select(`status, sections (course_code)`)
         .eq('user_id', userId)
         .eq('status', 'COMPLETED');
 
     if (historyError) throw new Error("Could not fetch student history.");
     const passedCourses = history ? history.map(h => h.sections?.course_code).filter(Boolean) : [];
 
-    // 2. Fetch REGISTERED courses (These must be excluded from suggestions)
+    // 2. Fetch REGISTERED courses (To get BUSY TIMES and Exclusions)
     const { data: current } = await supabase
         .from('enrollments')
-        .select(`sections (course_code)`)
+        .select(`
+            sections (
+                course_code, 
+                schedule_text
+            )
+        `)
         .eq('user_id', userId)
-        .eq('status', 'REGISTERED'); // Check for REGISTERED specifically
+        .eq('status', 'REGISTERED');
     
+    // Extract Codes to prevent repeating the same course
     const registeredCourses = current ? current.map(c => c.sections?.course_code).filter(Boolean) : [];
+    
+    // Extract Times to prevent overlapping (e.g. "Mon Wed 12:30-14:00")
+    const busyTimes = current ? current.map(c => c.sections?.schedule_text).filter(Boolean) : [];
 
-    // 3. Combine for the AI Exclusion List
-    // We send this to the AI so it knows NOT to suggest these codes again
+    // Combined exclusion list
     const allTakenOrRegistered = [...passedCourses, ...registeredCourses];
 
-    // 4. Fetch Available Sections
+    // 3. Fetch Available Sections
     const { data: availableSections, error: sectionsError } = await supabase
         .from('sections')
         .select(`
@@ -857,26 +860,27 @@ async function fetchStudentContext(userId) {
         .eq('status', 'OPEN');
 
     if (sectionsError) throw new Error("Database Error: " + sectionsError.message); 
-    if (!availableSections) return { history: allTakenOrRegistered, options: [] };
+    if (!availableSections) return { history: allTakenOrRegistered, busyTimes: busyTimes, options: [] };
 
-    // 5. Filter for Eligibility (Prerequisites)
-    // Only 'passedCourses' satisfy prerequisites. 'registeredCourses' do not satisfy prereqs for new courses yet.
+    // 4. Filter Eligible Sections
     const eligibleSections = availableSections.filter(section => {
-        // Prevent suggesting the exact same course if already registered
-        if (registeredCourses.includes(section.course_code)) return false;
-        if (passedCourses.includes(section.course_code)) return false;
+        // Exclude if already taken or registered
+        if (allTakenOrRegistered.includes(section.course_code)) return false;
 
         // Check Prerequisites
         const coursePrereqs = section.courses?.prerequisites || [];
         if (coursePrereqs.length === 0) return true;
         
-        // Unmet = Prereqs that are NOT in the passedCourses list
         const unmet = coursePrereqs.filter(p => !passedCourses.includes(p.prereq_code));
         return unmet.length === 0;
     });
 
-    // 6. Return 'allTakenOrRegistered' as 'history' for the backend exclusion logic
-    return { history: allTakenOrRegistered, options: eligibleSections };
+    // RETURN both history (codes) AND busyTimes (schedule strings)
+    return { 
+        history: allTakenOrRegistered, 
+        busyTimes: busyTimes, 
+        options: eligibleSections 
+    };
 }
 
 async function getOpenRouterRecommendations(context, preferences) {
