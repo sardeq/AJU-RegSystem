@@ -995,20 +995,37 @@ async function applySchedule(courses) {
     }
 };
 
+// --- UPDATED LOAD REGISTRATION DATA (DYNAMIC SEMESTER) ---
 async function loadRegistrationData(userId) {
     const container = document.getElementById('registration-courses-container');
     container.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // 1. Fetch User Profile (To calculate limits correctly)
+        // 1. Fetch the Active Semester ID dynamically
+        const { data: activeSem, error: semError } = await supabase
+            .from('semesters')
+            .select('semester_id')
+            .eq('is_active', true)
+            .single();
+
+        if (semError || !activeSem) {
+            console.error("No active semester found. Please set is_active=true in 'semesters' table.");
+            container.innerHTML = '<p style="text-align:center; color:red;">System Error: No Active Semester.</p>';
+            return;
+        }
+
+        const currentSemesterId = activeSem.semester_id;
+        console.log("Loading sections for Semester:", currentSemesterId);
+
+        // 2. Fetch User Profile
         const { data: profile } = await supabase
             .from('users')
             .select('*')
             .eq('id', userId)
             .single();
-        if (profile) window.userProfile = profile; // Store globally for helpers
+        if (profile) window.userProfile = profile;
 
-        // 2. Fetch Enrollments
+        // 3. Fetch Enrollments
         const { data: enrolls } = await supabase
             .from('enrollments')
             .select(`
@@ -1027,12 +1044,12 @@ async function loadRegistrationData(userId) {
         window.enrolledCourseCodes = enrolls ? enrolls.map(e => e.sections?.course_code) : [];
         window.busyTimes = enrolls ? enrolls.map(e => (e.sections?.schedule_text || "").toLowerCase().trim()) : [];
 
-        // --- NEW: CALCULATE TOTAL CREDITS ---
+        // Calculate Total Credits
         const totalCredits = enrolls ? enrolls.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0) : 0;
-        window.currentTotalCredits = totalCredits; // Store for validation
+        window.currentTotalCredits = totalCredits;
         updateCreditUI(totalCredits);
 
-        // 3. Fetch Waitlist
+        // 4. Fetch Waitlist
         const { data: waits } = await supabase
             .from('waiting_list')
             .select('section_id')
@@ -1040,7 +1057,7 @@ async function loadRegistrationData(userId) {
             .eq('status', 'WAITING');
         currentWaitlist = waits ? waits.map(w => w.section_id) : [];
 
-        // 4. Fetch Sections
+        // 5. Fetch Sections for the ACTIVE SEMESTER
         const { data: sections, error } = await supabase
             .from('sections')
             .select(`
@@ -1053,10 +1070,16 @@ async function loadRegistrationData(userId) {
                     category
                 )
             `)
-            .eq('semester_id', 20252)
+            .eq('semester_id', currentSemesterId) // <--- Now uses the dynamic ID
             .order('course_code', { ascending: true });
 
         if (error) throw error;
+
+        // Verify we actually got data
+        if (!sections || sections.length === 0) {
+            container.innerHTML = `<p style="text-align:center; padding:20px; color:#666;">No sections found for Semester ${currentSemesterId}.</p>`;
+            return;
+        }
 
         availableSectionsData = sections;
         renderRegistrationList(sections);
