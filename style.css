@@ -861,3 +861,129 @@ button:hover {
     height: 18px;
     accent-color: #2E7D32;
 }
+
+/* --- COURSES SHEET STYLES --- */
+
+.section-title {
+    color: #2E7D32;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* Filter Panel */
+.filter-panel {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+}
+
+.search-row {
+    margin-bottom: 15px;
+}
+
+.filters-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 150px;
+    color: #333;
+}
+
+.toggles-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: #444;
+}
+
+.toggle-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: #2E7D32;
+    margin: 0;
+}
+
+/* Data Table */
+.table-container {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden; /* For rounded corners */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    overflow-x: auto; /* Responsive horizontal scroll */
+}
+
+.courses-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px; /* Ensure it doesn't squish too much */
+}
+
+.courses-table th {
+    background-color: #2E7D32;
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.courses-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 0.95em;
+}
+
+.courses-table tr:last-child td {
+    border-bottom: none;
+}
+
+.courses-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Status Badges */
+.badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.badge-gray {
+    background-color: #eee;
+    color: #777;
+}
+
+.badge-green {
+    background-color: #e8f5e9;
+    color: #2E7D32;
+}
+
+.badge-red {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.badge-blue {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}

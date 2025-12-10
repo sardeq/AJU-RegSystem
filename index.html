@@ -34,8 +34,8 @@
                         <span class="nav-icon">📝</span> <span data-i18n="nav_reg">Registration</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
+                <li class="nav-item" id="nav-sheet">
+                    <a href="#" class="nav-link" onclick="showSection('sheet')">
                         <span class="nav-icon">📄</span> <span data-i18n="nav_sheet">Courses Sheet</span>
                     </a>
                 </li>
@@ -239,6 +239,70 @@
                     </div>
                 </div>
             </div>
+
+            <div id="courses-sheet-container" class="dashboard-view hidden">
+    <h2 class="section-title" data-i18n="nav_sheet">Courses Sheet</h2>
+    
+    <div class="filter-panel">
+        <div class="search-row">
+            <input type="text" id="sheet-search" class="custom-search" placeholder="Search by Code or Name..." data-i18n-placeholder="ph_search_courses">
+        </div>
+        
+        <div class="filters-row">
+            <select id="filter-year" class="filter-select">
+                <option value="all" data-i18n="filter_year_all">All Years</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
+                <option value="5">Year 5</option>
+            </select>
+
+            <select id="filter-category" class="filter-select">
+                <option value="all" data-i18n="filter_cat_all">All Categories</option>
+                <option value="University Requirement">University Requirement</option>
+                <option value="College Compulsory">College Compulsory</option>
+                <option value="Major Compulsory">Major Compulsory</option>
+                <option value="Major Elective">Major Elective</option>
+            </select>
+
+            <select id="filter-credits" class="filter-select">
+                <option value="all" data-i18n="filter_credits_all">All Credits</option>
+                <option value="1">1 Hour</option>
+                <option value="3">3 Hours</option>
+            </select>
+        </div>
+
+        <div class="toggles-row">
+            <label class="toggle-label">
+                <input type="checkbox" id="check-completed" checked> 
+                <span data-i18n="filter_show_completed">Show Completed</span>
+            </label>
+            <label class="toggle-label">
+                <input type="checkbox" id="check-failed" checked> 
+                <span data-i18n="filter_show_failed">Show Failed/Not Taken</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="courses-table">
+            <thead>
+                <tr>
+                    <th data-i18n="tbl_code">Code</th>
+                    <th data-i18n="tbl_name">Course Name</th>
+                    <th data-i18n="tbl_credits">Cr.</th>
+                    <th data-i18n="tbl_category">Category</th>
+                    <th data-i18n="tbl_prereq">Prerequisites</th>
+                    <th data-i18n="tbl_hours">Lec/Lab</th>
+                    <th data-i18n="tbl_status">Status</th>
+                </tr>
+            </thead>
+            <tbody id="courses-table-body">
+                </tbody>
+        </table>
+    </div>
+</div>
         </div>
     </div>
 

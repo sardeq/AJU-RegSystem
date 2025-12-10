@@ -79,7 +79,24 @@ const translations = {
         lbl_loading: "Loading schedule...",
         lbl_no_classes: "No classes today! 🎉",
         lbl_room: "Room",
-        lbl_instructor: "Instr."
+        lbl_instructor: "Instr.",
+
+        h_search_courses: "Search by Code or Name...",
+        filter_year_all: "All Years",
+        filter_cat_all: "All Categories",
+        filter_credits_all: "All Credits",
+        filter_show_completed: "Show Completed",
+        filter_show_failed: "Show Unfinished",
+        tbl_code: "Code",
+        tbl_name: "Course Name",
+        tbl_credits: "Cr.",
+        tbl_category: "Category",
+        tbl_prereq: "Prerequisites",
+        tbl_hours: "Lec/Lab",
+        tbl_status: "Status",
+        status_completed: "Completed",
+        status_failed: "Failed",
+        status_none: "Not Taken"
     },
     ar: {
         nav_home: "الرئيسية",
@@ -120,9 +137,29 @@ const translations = {
         lbl_loading: "جاري تحميل الجدول...",
         lbl_no_classes: "لا يوجد محاضرات اليوم! 🎉",
         lbl_room: "القاعة",
-        lbl_instructor: "د."
+        lbl_instructor: "د.",
+
+        ph_search_courses: "بحث برمز أو اسم المادة...",
+        filter_year_all: "كل السنوات",
+        filter_cat_all: "كل التصنيفات",
+        filter_credits_all: "كل الساعات",
+        filter_show_completed: "إظهار المكتملة",
+        filter_show_failed: "إظهار غير المكتملة",
+        tbl_code: "الرمز",
+        tbl_name: "اسم المادة",
+        tbl_credits: "س.م",
+        tbl_category: "التصنيف",
+        tbl_prereq: "المتطلب السابق",
+        tbl_hours: "محاضرة/مختبر",
+        tbl_status: "الحالة",
+        status_completed: "ناجح",
+        status_failed: "راسب",
+        status_none: "غير مسجل"
     }
 };
+
+let allCoursesData = [];
+let userHistoryMap = {}; // Maps course_code -> { status, grade }
 
 const langBtn = document.querySelector('.lang-btn');
 let currentLang = localStorage.getItem('app_lang') || 'en';
@@ -220,7 +257,7 @@ function renderHome(profile, schedule) {
             : "0.00";
 
         // Generate ID display
-        document.getElementById('info-id').textContent = profile.id ? "2023" + profile.id.slice(0,4).toUpperCase() : "--";
+        document.getElementById('info-id').textContent = profile.id ? "2025" + profile.id.slice(0,4).toUpperCase() : "--";
     }
 
     // B. Calculate Absences Logic
@@ -246,7 +283,7 @@ function renderTodaySchedule(enrollments) {
     const listContainer = document.getElementById('today-schedule-list');
     listContainer.innerHTML = ''; 
 
-    // Filter out items where sections might be null (e.g. if REGISTERED but no section assigned yet)
+    // Filter out items where sections might be null
     const validEnrollments = enrollments ? enrollments.filter(e => e.sections) : [];
 
     if (validEnrollments.length === 0) {
@@ -255,15 +292,24 @@ function renderTodaySchedule(enrollments) {
     }
 
     // 1. Determine "Today"
-    const dayIndex = new Date().getDay(); 
+    const dayIndex = new Date().getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
     const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const currentDayStr = daysMap[dayIndex];
+
+    console.log("System Date Day:", currentDayStr); // For debugging
 
     // 2. Filter Courses for Today based on Schedule Text
     const todayCourses = validEnrollments.filter(item => {
         const section = item.sections;
+        // Safety check: ensure schedule_text exists
         if (!section || !section.schedule_text) return false;
-        return section.schedule_text.includes(currentDayStr);
+
+        // Normalize both strings to lowercase for accurate matching
+        // This ensures 'Wed' matches 'Mon/Wed', 'WED', 'Wednesday', etc.
+        const schedule = section.schedule_text.toLowerCase();
+        const today = currentDayStr.toLowerCase();
+
+        return schedule.includes(today);
     });
 
     if (todayCourses.length === 0) {
@@ -295,7 +341,6 @@ function renderTodaySchedule(enrollments) {
         listContainer.appendChild(div);
     });
 }
-
 // Apply language on load
 applyLanguage(currentLang);
 
@@ -382,6 +427,9 @@ if (menuBtn) {
 window.showSection = function(sectionName) {
     homeContainer.classList.add('hidden');
     regContainer.classList.add('hidden');
+    const sheetContainer = document.getElementById('courses-sheet-container');
+    if(sheetContainer) sheetContainer.classList.add('hidden');
+
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
     if (sectionName === 'home') {
@@ -390,8 +438,165 @@ window.showSection = function(sectionName) {
     } else if (sectionName === 'registration') {
         regContainer.classList.remove('hidden');
         if(document.getElementById('nav-reg')) document.getElementById('nav-reg').classList.add('active');
+    } else if (sectionName === 'sheet') {
+        // Show Sheet
+        if(sheetContainer) sheetContainer.classList.remove('hidden');
+        if(document.getElementById('nav-sheet')) document.getElementById('nav-sheet').classList.add('active');
+        
+        // Load data only if not loaded yet
+        if(allCoursesData.length === 0 && currentUser) {
+            loadCoursesSheetData(currentUser.id);
+        }
     }
 }
+
+// --- COURSES SHEET LOGIC ---
+
+async function loadCoursesSheetData(userId) {
+    const tbody = document.getElementById('courses-table-body');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading data...</td></tr>';
+
+    try {
+        // 1. Fetch User History (To determine Status: Completed/Failed/None)
+        const { data: history, error: historyError } = await supabase
+            .from('enrollments')
+            .select(`status, grade_value, sections(course_code)`)
+            .eq('user_id', userId);
+            
+        if (!historyError && history) {
+            history.forEach(h => {
+                if(h.sections && h.sections.course_code) {
+                    userHistoryMap[h.sections.course_code] = { 
+                        status: h.status, 
+                        grade: h.grade_value 
+                    };
+                }
+            });
+        }
+
+        // 2. Fetch All Courses + Prerequisites
+        const { data: courses, error: coursesError } = await supabase
+            .from('courses')
+            .select(`
+                *,
+                prerequisites!prerequisites_course_code_fkey (
+                    prereq_code
+                )
+            `)
+            .order('course_code', { ascending: true });
+
+        if (coursesError) throw coursesError;
+
+        allCoursesData = courses;
+        renderCoursesTable(); // Initial Render
+
+    } catch (err) {
+        console.error("Sheet Error:", err);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Error loading data.</td></tr>';
+    }
+}
+
+function renderCoursesTable() {
+    const tbody = document.getElementById('courses-table-body');
+    tbody.innerHTML = '';
+
+    // Get Filter Values
+    const searchText = document.getElementById('sheet-search').value.toLowerCase();
+    const filterYear = document.getElementById('filter-year').value;
+    const filterCat = document.getElementById('filter-category').value;
+    const filterCred = document.getElementById('filter-credits').value;
+    const showCompleted = document.getElementById('check-completed').checked;
+    const showFailed = document.getElementById('check-failed').checked; // Includes "Not Taken"
+
+    const filtered = allCoursesData.filter(course => {
+        const code = course.course_code.toString();
+        const userState = userHistoryMap[code] || { status: 'NONE' };
+        const isCompleted = userState.status === 'COMPLETED';
+        
+        // 1. Toggle Filters
+        if (isCompleted && !showCompleted) return false;
+        if (!isCompleted && !showFailed) return false;
+
+        // 2. Text Search
+        const nameEn = course.course_name_en.toLowerCase();
+        const nameAr = course.course_name_ar ? course.course_name_ar.toLowerCase() : "";
+        if (!code.includes(searchText) && !nameEn.includes(searchText) && !nameAr.includes(searchText)) {
+            return false;
+        }
+
+        // 3. Year Filter (Assuming 1st digit is year, e.g., 201101 -> Year 2?? Or usually index 1? Adjust logic.)
+        // Logic: Usually index 1 in 6-digit codes (311101 -> Year 1). Let's assume index 1 for standard 6 digit.
+        // Or if your code is 101, 201. Let's try matching startsWith logic if needed. 
+        // Based on image: 201101, 311100. Let's assume 2nd digit is year? Or 1st digit is Faculty?
+        // Let's implement a simple "Starts with" logic for now or skip if unsure. 
+        // **Adjustment**: Usually the level is the 2nd digit in a 6 digit code (Faculty-Year-...). 
+        // Example: 311100 -> Year 1. 312... -> Year 2.
+        if (filterYear !== 'all') {
+            // Check if the 3rd character matches the year (common in some systems) or 2nd. 
+            // Let's look at image: 311100 (Prog 1). 312... (Data Struct). 
+            // It seems the 3rd digit represents the year (1, 2, 3).
+            if (code.length >= 3 && code[2] !== filterYear) return false;
+        }
+
+        // 4. Category
+        if (filterCat !== 'all' && course.category !== filterCat) return false;
+
+        // 5. Credits
+        if (filterCred !== 'all' && course.credit_hours != filterCred) return false;
+
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">No courses match filters.</td></tr>`;
+        return;
+    }
+
+    filtered.forEach(course => {
+        const tr = document.createElement('tr');
+        
+        // Name Translation
+        const name = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
+        
+        // Prerequisites Formating
+        const prereqs = course.prerequisites 
+            ? course.prerequisites.map(p => p.prereq_code).join(', ') 
+            : '-';
+
+        // Status Badge Logic
+        let statusBadge = `<span class="badge badge-gray">${translations[currentLang].status_none}</span>`;
+        const userState = userHistoryMap[course.course_code];
+        
+        if (userState) {
+            if (userState.status === 'COMPLETED') {
+                statusBadge = `<span class="badge badge-green">${translations[currentLang].status_completed} (${userState.grade})</span>`;
+            } else if (userState.status === 'FAILED') {
+                statusBadge = `<span class="badge badge-red">${translations[currentLang].status_failed}</span>`;
+            } else if (userState.status === 'REGISTERED') {
+                 statusBadge = `<span class="badge badge-blue">Registered</span>`;
+            }
+        }
+
+        tr.innerHTML = `
+            <td><strong>${course.course_code}</strong></td>
+            <td>${name}</td>
+            <td>${course.credit_hours}</td>
+            <td>${course.category || '-'}</td>
+            <td>${prereqs}</td>
+            <td>${course.lecture_hours} / ${course.lab_hours}</td>
+            <td>${statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// --- EVENT LISTENERS FOR FILTERS ---
+['sheet-search', 'filter-year', 'filter-category', 'filter-credits', 'check-completed', 'check-failed'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+        el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', renderCoursesTable);
+    }
+});
 
 function updateUI(session) {
     if (session) {
