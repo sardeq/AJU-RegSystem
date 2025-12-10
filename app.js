@@ -839,7 +839,25 @@ function updateUI(session) {
     }
 }
 async function logout() {
-    await supabase.auth.signOut();
+    try {
+        // Attempt to notify the server (it might fail if session is already gone)
+        await supabase.auth.signOut();
+    } catch (error) {
+        console.warn("Server logout failed (likely session expired), forcing local logout.");
+    } finally {
+        // CRITICAL: Force the UI to update regardless of server error
+        currentUser = null;
+        
+        // Clear any specific local storage items if Supabase client missed them
+        // (Optional but good practice if issues persist)
+        localStorage.clear(); 
+
+        // Update UI to show Login screen
+        updateUI(null);
+        
+        // Optional: Reload page to ensure a completely clean slate
+        // window.location.reload(); 
+    }
 }
 
 // --- AI LOGIC ---
