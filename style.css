@@ -512,46 +512,149 @@ button:hover {
     text-align: center; /* Centered text as per image */
 }
 
-/* Accordions */
-.course-accordion {
-    border: 1px solid #2E7D32;
-    border-radius: 15px;
-    margin-bottom: 15px;
-    overflow: hidden;
-    background-color: #e0e0e0; /* Gray background for collapsed items */
-}
+/* --- REGISTRATION ACCORDION STYLES --- */
 
-.course-accordion.expanded {
-    background-color: #ccc; /* Slightly darker background for container */
+/* Fix Accordion transitions */
+.course-accordion {
+    margin-bottom: 15px;
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 8px;     /* Rounded corners */
+    overflow: hidden;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .accordion-header {
-    padding: 15px 20px;
-    background-color: #e0e0e0; /* Light gray header */
+    background-color: #f8f9fa; /* Light grey background */
+    padding: 15px 20px;        /* Comfortable padding */
+    cursor: pointer;           /* Hand cursor on hover */
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-    color: #2E7D32;
-    font-weight: bold;
-    font-size: 1.1em;
+    border-left: 5px solid #2E7D32; /* Green accent on left */
+    transition: background-color 0.2s ease;
+}
+
+.accordion-header:hover {
+    background-color: #e8f5e9; /* Light green hover effect */
 }
 
 .accordion-header .chevron {
-    font-size: 1.5em;
-    margin-right: 15px;
-    font-weight: bold;
-    width: 20px;
+    transition: transform 0.3s ease;
     display: inline-block;
+    width: 20px;
+    text-align: center;
 }
 
-.course-accordion.expanded .accordion-header {
-    background-color: #dcedc8; /* Very light green when active */
-    border-bottom: 1px solid #2E7D32;
+.cat-title {
+    font-size: 1.05em;
+    color: #333;
 }
 
-.accordion-content {
-    background-color: #ccc;
-    padding: 10px;
+.accordion-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Chevron Rotation */
+.chevron {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #2E7D32;
+    transition: transform 0.3s ease;
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+}
+
+/* 2. Filter Button Styling */
+.filter-btn {
+    background: white;
+    border: 1px solid #2E7D32;
+    color: #2E7D32;
+    width: 46px; /* Match height of search input roughly */
+    height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: #2E7D32;
+    color: white;
+}
+
+/* 3. Filter Panel specific spacing */
+#reg-filter-panel {
+    border: 1px solid #eee;
+    padding: 15px;
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* Progress Bars Colors */
+.progress-fill {
+    transition: width 0.5s ease;
+    background-color: #4CAF50; /* Default Green */
+}
+
+.progress-fill.yellow {
+    background-color: #FFC107; /* Warning Yellow */
+}
+
+.progress-fill.red {
+    background-color: #F44336; /* Danger Red */
+}
+
+/* Button Styles */
+.circle-btn.time-btn {
+    background-color: #FF9800; /* Orange for Waitlist */
+}
+
+.circle-btn.time-btn:hover {
+    background-color: #F57C00;
+}
+
+/* Status Text (When already registered/waitlisted) */
+.status-text {
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 5px 8px;
+    border-radius: 12px;
+}
+
+.status-text.success {
+    color: #2E7D32;
+    background-color: #e8f5e9;
+    border: 1px solid #2E7D32;
+}
+
+.status-text.warning {
+    color: #F57C00;
+    background-color: #FFF3E0;
+    border: 1px solid #F57C00;
+}
+
+/* Spinner for loading */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2E7D32;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+/* Mini List in Sidebar */
+.mini-course-list {
+    text-align: left;
+    max-height: 320px;
+    overflow-y: auto;
 }
 
 /* Course Rows */

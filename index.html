@@ -155,92 +155,71 @@
             <div id="registration-container" class="dashboard-view hidden">
                 <div class="registration-layout">
                     <div class="reg-left-panel">
-                        <button class="enhance-ai-btn" data-i18n="btn_ai_enhance">
+                        <button class="enhance-ai-btn" id="ai-enhance-btn" data-i18n="btn_ai_enhance">
                             Enhance with AI
                         </button>
                         
                         <div class="registered-courses-box">
-                            <h4 class="box-title">Registered Courses</h4>
-                            <div class="empty-placeholder"></div>
+                            <h4 class="box-title" data-i18n="lbl_registered_courses">Registered Courses</h4>
+                            <div id="mini-registered-list" class="mini-course-list">
+                                <p style="color:#666; font-size:0.9em; margin-top:20px;">No courses registered yet.</p>
+                            </div>
                         </div>
                     </div>
 
                     <div class="reg-right-panel">
                         <div class="search-header">
-                            <button class="filter-btn">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                            <button class="filter-btn" onclick="toggleFilters()" title="Toggle Filters">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                                </svg>
                             </button>
                             <div class="search-input-wrapper">
-                                <input type="text" class="custom-search" placeholder="Search">
+                                <input type="text" id="reg-search-input" class="custom-search" placeholder="Search for courses..." data-i18n-placeholder="ph_search_courses">
                             </div>
                         </div>
 
-                        <div class="course-accordion expanded">
-                            <div class="accordion-header">
-                                <span class="chevron">∨</span>
-                                <span class="cat-title">Website Design & Development</span>
+                        <div id="reg-filter-panel" class="filter-panel hidden" style="margin-bottom: 20px;">
+                            <div class="filters-row">
+                                <select id="reg-filter-year" class="filter-select">
+                                    <option value="all" data-i18n="filter_year_all">All Years</option>
+                                    <option value="1">Year 1</option>
+                                    <option value="2">Year 2</option>
+                                    <option value="3">Year 3</option>
+                                    <option value="4">Year 4</option>
+                                    <option value="5">Year 5</option>
+                                </select>
+
+                                <select id="reg-filter-category" class="filter-select">
+                                    <option value="all" data-i18n="filter_cat_all">All Categories</option>
+                                    <option value="University Requirement">University Requirement</option>
+                                    <option value="College Compulsory">College Compulsory</option>
+                                    <option value="Major Compulsory">Major Compulsory</option>
+                                    <option value="Major Elective">Major Elective</option>
+                                </select>
+
+                                <select id="reg-filter-credits" class="filter-select">
+                                    <option value="all" data-i18n="filter_credits_all">All Credits</option>
+                                    <option value="1">1 Hour</option>
+                                    <option value="3">3 Hours</option>
+                                </select>
                             </div>
-                            <div class="accordion-content">
-                                <div class="course-row">
-                                    <div class="c-info">
-                                        <div class="c-section">Section 1</div>
-                                        <div class="c-time">S/W 1-2:30</div>
-                                    </div>
-                                    <div class="c-instructor">Dr. Omar</div>
-                                    
-                                    <div class="c-capacity">
-                                        <div class="progress-bar-container">
-                                            <div class="progress-fill yellow" style="width: 50%;"></div>
-                                            <span class="progress-text">15/30</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="c-actions">
-                                        <button class="circle-btn add-btn">+</button>
-                                        <button class="circle-btn time-btn">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="course-row">
-                                    <div class="c-info">
-                                        <div class="c-section">Section 1</div>
-                                        <div class="c-time">S/W 1-2:30</div>
-                                    </div>
-                                    <div class="c-instructor">Dr. Omar</div>
-                                    
-                                    <div class="c-capacity">
-                                        <div class="progress-bar-container full-red">
-                                            <div class="progress-fill red" style="width: 100%;"></div>
-                                            <span class="progress-text">30/30</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="c-actions">
-                                        <button class="circle-btn add-btn">+</button>
-                                        <button class="circle-btn time-btn">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                        </button>
-                                    </div>
-                                </div>
+                            
+                            <div class="toggles-row">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="reg-check-closed" checked> 
+                                    <span>Show Closed/Full Sections</span>
+                                </label>
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="reg-check-conflicts"> 
+                                    <span>Hide Time Conflicts</span>
+                                </label>
                             </div>
                         </div>
 
-                        <div class="course-accordion collapsed">
-                            <div class="accordion-header">
-                                <span class="chevron">›</span>
-                                <span class="cat-title">Operating Systems</span>
-                            </div>
+                        <div id="registration-courses-container">
+                            <p style="text-align:center; padding:20px; color:#666;">Loading courses...</p>
                         </div>
-
-                         <div class="course-accordion collapsed">
-                            <div class="accordion-header">
-                                <span class="chevron">›</span>
-                                <span class="cat-title">Operating Systems</span>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>

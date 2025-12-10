@@ -39,6 +39,10 @@ const generateBtn = document.getElementById('generate-schedule-btn');
 let currentUser = null;
 let isLoginMode = true; // Default to Login mode
 
+let availableSectionsData = [];
+let currentEnrollments = []; // List of section_ids
+let currentWaitlist = [];    // List of section_ids
+
 const translations = {
     en: {
         nav_home: "Home",
@@ -109,7 +113,15 @@ const translations = {
         tbl_action: "Action",
         btn_drop: "Drop Course",
         msg_confirm_drop: "Are you sure you want to drop this course? This action cannot be undone.",
-        msg_drop_success: "Course dropped successfully."
+        msg_drop_success: "Course dropped successfully.",
+
+        lbl_registered_courses: "Registered Courses",
+        msg_registered: "Registered",
+        msg_waitlisted: "On Waitlist",
+        msg_success_reg: "Successfully Registered!",
+        msg_success_wait: "Added to Waitlist! You will be notified if a seat opens.",
+        msg_err_full: "Section is full.",
+        msg_err_exists: "Already registered/waitlisted for this course."
     },
     ar: {
         nav_home: "الرئيسية",
@@ -180,7 +192,16 @@ const translations = {
         tbl_action: "إجراء",
         btn_drop: "سحب المادة",
         msg_confirm_drop: "هل أنت متأكد من سحب هذه المادة؟ لا يمكن التراجع عن هذا الإجراء.",
-        msg_drop_success: "تم سحب المادة بنجاح."
+        msg_drop_success: "تم سحب المادة بنجاح.",
+
+        lbl_registered_courses: "المساقات المسجّلة",
+        msg_registered: "تم التسجيل",
+        msg_waitlisted: "على قائمة الانتظار",
+        msg_success_reg: "تم التسجيل بنجاح!",
+        msg_success_wait: "تمت إضافتك إلى قائمة الانتظار! سيتم إشعارك إذا توفر مقعد.",
+        msg_err_full: "الشعبة ممتلئة.",
+        msg_err_exists: "أنت مسجّل/على قائمة الانتظار لهذا المساق مسبقًا."
+
     }
 };
 
@@ -965,6 +986,394 @@ async function applySchedule(courses) {
     }
 };
 
+async function loadRegistrationData(userId) {
+    const container = document.getElementById('registration-courses-container');
+    container.innerHTML = '<div class="spinner"></div>';
+
+    try {
+        // A. Fetch current Enrollments WITH Course Code and Schedule info
+        // We need this to check for: 1. Same Course Conflict, 2. Time Conflict
+        const { data: enrolls } = await supabase
+            .from('enrollments')
+            .select(`
+                section_id, 
+                status,
+                sections (
+                    course_code,
+                    schedule_text
+                )
+            `)
+            .eq('user_id', userId)
+            .in('status', ['REGISTERED', 'ENROLLED']);
+            
+        // 1. List of Section IDs user has (for "Registered" check)
+        currentEnrollments = enrolls ? enrolls.map(e => e.section_id) : [];
+        
+        // 2. List of Course Codes user has (to prevent taking same course twice)
+        // We attach this to the window object to pass it to the render function easily
+        window.enrolledCourseCodes = enrolls ? enrolls.map(e => e.sections?.course_code) : [];
+        
+        // 3. List of Busy Times (to prevent conflicts)
+        // Normalize strings to lowercase/trimmed for accurate comparison
+        window.busyTimes = enrolls ? enrolls.map(e => (e.sections?.schedule_text || "").toLowerCase().trim()) : [];
+
+        // B. Fetch Waitlist
+        const { data: waits } = await supabase
+            .from('waiting_list')
+            .select('section_id')
+            .eq('user_id', userId)
+            .eq('status', 'WAITING');
+        currentWaitlist = waits ? waits.map(w => w.section_id) : [];
+
+        // C. Fetch All Sections (Active Semester)
+        // We DO NOT filter by status here, so we get OPEN and CLOSED sections
+        const { data: sections, error } = await supabase
+            .from('sections')
+            .select(`
+                *,
+                courses (
+                    course_code,
+                    course_name_en,
+                    course_name_ar,
+                    credit_hours,
+                    category
+                )
+            `)
+            .eq('semester_id', 20252) // Ensure this matches your active semester
+            .order('course_code', { ascending: true });
+
+        if (error) throw error;
+
+        availableSectionsData = sections;
+        renderRegistrationList(sections);
+        renderMiniRegisteredList();
+
+    } catch (err) {
+        console.error("Reg Load Error:", err);
+        container.innerHTML = '<p style="text-align:center; color:red;">Failed to load courses.</p>';
+    }
+}
+
+function renderRegistrationList(sections) {
+    const container = document.getElementById('registration-courses-container');
+    container.innerHTML = '';
+    
+    // Get Filter Values
+    const searchText = document.getElementById('reg-search-input').value.toLowerCase();
+    const filterYear = document.getElementById('reg-filter-year').value;
+    const filterCat = document.getElementById('reg-filter-category').value;
+    const filterCred = document.getElementById('reg-filter-credits').value;
+    
+    // Checkboxes
+    const showClosed = document.getElementById('reg-check-closed').checked;
+    const hideConflicts = document.getElementById('reg-check-conflicts').checked;
+    
+    // Group sections by Course Code
+    const grouped = {};
+    
+    sections.forEach(sec => {
+        const course = sec.courses;
+        const code = (course.course_code || sec.course_code).toString();
+
+        // --- 1. FILTERING ---
+        // Search
+        const nameEn = course.course_name_en.toLowerCase();
+        const nameAr = course.course_name_ar ? course.course_name_ar.toLowerCase() : "";
+        if (!code.toLowerCase().includes(searchText) && !nameEn.includes(searchText) && !nameAr.includes(searchText)) return;
+
+        // Year (Assuming 3rd digit logic, e.g., 311... -> Year 1)
+        if (filterYear !== 'all' && code.length >= 3 && code[2] !== filterYear) return;
+
+        // Category & Credits
+        if (filterCat !== 'all' && course.category !== filterCat) return;
+        if (filterCred !== 'all' && course.credit_hours != filterCred) return;
+
+        // --- 2. CLOSED/FULL LOGIC ---
+        const capacity = sec.capacity || 30;
+        const enrolled = sec.enrolled_count || 0;
+        
+        // Robust check: Handle "CLOSED", "Closed", "closed"
+        const statusStr = (sec.status || "").toUpperCase(); 
+        const isClosed = statusStr === 'CLOSED';
+        
+        // A section is "Full" if enrolled >= capacity OR explicitly Closed
+        const isFull = (enrolled >= capacity) || isClosed;
+        
+        // If it's full/closed AND the user unchecked "Show Closed", hide it.
+        if (isFull && !showClosed) return;
+
+        // --- 3. GROUPING ---
+        if (!grouped[code]) {
+            grouped[code] = {
+                course: sec.courses,
+                sections: []
+            };
+        }
+        grouped[code].sections.push(sec);
+    });
+
+    if (Object.keys(grouped).length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">No courses match your filters.</p>';
+        return;
+    }
+
+    // --- 4. RENDERING ---
+    Object.values(grouped).forEach(group => {
+        const course = group.course;
+        const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
+        
+        // CHECK: Is the student already registered for this COURSE CODE?
+        const alreadyHasCourse = window.enrolledCourseCodes && window.enrolledCourseCodes.includes(course.course_code);
+
+        const accordion = document.createElement('div');
+        accordion.className = 'course-accordion collapsed';
+        
+        accordion.innerHTML = `
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="chevron">›</span>
+                    <span class="cat-title"><strong>${course.course_code}</strong> - ${courseName}</span>
+                    ${alreadyHasCourse ? '<span class="status-text success" style="margin-left:10px; font-size:0.7em;">Enrolled</span>' : ''}
+                </div>
+                <div class="accordion-meta">
+                    <span class="badge badge-gray">${course.credit_hours} Cr</span>
+                    <span style="font-size:0.8em; color:#666;">${group.sections.length} Sec</span>
+                </div>
+            </div>
+            <div class="accordion-content hidden"></div>
+        `;
+
+        const contentDiv = accordion.querySelector('.accordion-content');
+        let visibleSectionsCount = 0;
+
+        group.sections.forEach(sec => {
+            // Status Calculations
+            const capacity = sec.capacity || 30;
+            const enrolled = sec.enrolled_count || 0;
+            const statusStr = (sec.status || "").toUpperCase();
+            const isClosed = statusStr === 'CLOSED';
+            const isFull = (enrolled >= capacity) || isClosed;
+            const fillPercent = Math.min(100, (enrolled / capacity) * 100);
+            
+            // Time Conflict Calculation
+            const secTime = (sec.schedule_text || "").toLowerCase().trim();
+            const hasConflict = window.busyTimes && window.busyTimes.includes(secTime);
+            
+            // Filter: Hide Conflicts if checkbox checked
+            // (Unless we are already registered for this specific section)
+            if (hideConflicts && hasConflict && !currentEnrollments.includes(sec.section_id)) return;
+            
+            visibleSectionsCount++;
+
+            // Progress Bar Color
+            let barColor = 'green';
+            if (isFull) barColor = 'red';
+            else if (fillPercent > 80) barColor = 'yellow';
+
+            // User Status
+            const isRegisteredThisSection = currentEnrollments.includes(sec.section_id);
+            const isWaitlisted = currentWaitlist.includes(sec.section_id);
+
+            // --- BUTTON LOGIC ---
+            let actionButtons = '';
+            let rowOpacity = '1';
+
+            if (isRegisteredThisSection) {
+                // Case 1: Already has THIS exact section
+                actionButtons = `<span class="status-text success">Registered ✅</span>`;
+            
+            } else if (alreadyHasCourse) {
+                // Case 2: Has a DIFFERENT section of this course -> Disable add
+                actionButtons = `<span class="status-text" style="color:#666; background:#eee; font-size:0.75em;">Course Enrolled</span>`;
+                rowOpacity = '0.6';
+
+            } else if (isWaitlisted) {
+                // Case 3: On waitlist
+                actionButtons = `<span class="status-text warning">Waitlisted 🕒</span>`;
+            
+            } else if (hasConflict) {
+                // Case 4: Time Conflict
+                actionButtons = `<span class="status-text" style="color:#c62828; background:#ffebee; border:1px solid #c62828; font-size:0.75em;">Time Conflict ⚠️</span>`;
+                rowOpacity = '0.7'; 
+            
+            } else if (isFull) {
+                // Case 5: Full or Closed -> Waitlist Button
+                actionButtons = `
+                    <button class="circle-btn time-btn" onclick="handleWaitlist(${sec.section_id})" title="Join Waitlist">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </button>
+                `;
+            } else {
+                // Case 6: Open -> Add Button
+                actionButtons = `
+                    <button class="circle-btn add-btn" onclick="handleRegister(${sec.section_id})" title="Register">
+                        +
+                    </button>
+                `;
+            }
+
+            const row = document.createElement('div');
+            row.className = 'course-row';
+            // Visual cue for closed/full sections
+            if (isFull) row.style.backgroundColor = "#fafafa";
+            row.style.opacity = rowOpacity; 
+            
+            row.innerHTML = `
+                <div class="c-info">
+                    <div class="c-section">Sec ${sec.section_number}</div>
+                    <div class="c-time">${sec.schedule_text || 'TBA'}</div>
+                </div>
+                <div class="c-instructor">${sec.instructor_name || 'Staff'}</div>
+                
+                <div class="c-capacity">
+                    <div class="progress-bar-container ${isFull ? 'full-red' : ''}">
+                        <div class="progress-fill ${barColor}" style="width: ${fillPercent}%;"></div>
+                        <span class="progress-text">
+                            ${isClosed ? 'CLOSED' : `${enrolled}/${capacity}`}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="c-actions">
+                    ${actionButtons}
+                </div>
+            `;
+            contentDiv.appendChild(row);
+        });
+
+        // Only append course accordion if it has at least one visible section
+        if (visibleSectionsCount > 0) {
+            container.appendChild(accordion);
+        }
+    });
+}
+
+// 4. Accordion Toggle
+window.toggleAccordion = function(header) {
+    const acc = header.parentElement;
+    const content = header.nextElementSibling;
+    const chevron = header.querySelector('.chevron');
+
+    if (acc.classList.contains('collapsed')) {
+        acc.classList.remove('collapsed');
+        acc.classList.add('expanded');
+        content.classList.remove('hidden');
+        chevron.style.transform = "rotate(90deg)"; // Animate chevron
+    } else {
+        acc.classList.add('collapsed');
+        acc.classList.remove('expanded');
+        content.classList.add('hidden');
+        chevron.style.transform = "rotate(0deg)";
+    }
+};
+
+// 5. Action: Register
+window.handleRegister = async function(sectionId) {
+    if (!currentUser) return;
+    if (!confirm("Confirm registration for this section?")) return;
+
+    try {
+        const { error } = await supabase
+            .from('enrollments')
+            .insert([{
+                user_id: currentUser.id,
+                section_id: sectionId,
+                status: 'REGISTERED'
+            }]);
+
+        if (error) throw error;
+
+        // Optimistic UI Update: Increment count in DB via RPC or just reload
+        // For simplicity, we reload data
+        alert("Registered Successfully!");
+        loadRegistrationData(currentUser.id);
+
+    } catch (err) {
+        alert("Registration Failed: " + err.message);
+    }
+};
+
+// 6. Action: Waitlist
+window.handleWaitlist = async function(sectionId) {
+    if (!currentUser) return;
+    const reason = prompt("This section is full. Reason for waiting list request (optional):");
+
+    try {
+        const { error } = await supabase
+            .from('waiting_list')
+            .insert([{
+                user_id: currentUser.id,
+                section_id: sectionId,
+                status: 'WAITING',
+                requested_at: new Date().toISOString()
+            }]);
+
+        if (error) throw error;
+
+        alert("Added to Waitlist! You are in the queue.");
+        loadRegistrationData(currentUser.id);
+
+    } catch (err) {
+        alert("Waitlist Failed: " + err.message);
+    }
+};
+
+// 7. Mini Registered List (Side Panel)
+function renderMiniRegisteredList() {
+    const list = document.getElementById('mini-registered-list');
+    list.innerHTML = '';
+
+    // We can reuse 'currentEnrollments' IDs and find them in 'availableSectionsData'
+    // But data structure is flat in enrollments, so let's do a quick lookup
+    // Ideally, we fetch details separately or join efficiently. 
+    // Let's rely on 'availableSectionsData' if populated, otherwise fetch.
+    
+    // Quick fetch for display
+    supabase.from('enrollments')
+        .select('sections(course_code, section_number, courses(course_name_en))')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'REGISTERED')
+        .then(({ data }) => {
+            if (!data || data.length === 0) {
+                list.innerHTML = '<p style="color:#666; font-size:0.9em;">No courses registered.</p>';
+                return;
+            }
+            data.forEach(item => {
+                const sec = item.sections;
+                const div = document.createElement('div');
+                div.style.cssText = "padding: 8px; border-bottom: 1px solid #ddd; font-size:0.9em;";
+                div.innerHTML = `<b>${sec.course_code}</b> <br> <span style="font-size:0.85em; color:#555;">${sec.courses.course_name_en}</span>`;
+                list.appendChild(div);
+            });
+        });
+}
+
+// 8. Event Listener for Search
+document.getElementById('reg-search-input').addEventListener('input', () => {
+    if (availableSectionsData.length > 0) {
+        renderRegistrationList(availableSectionsData);
+    }
+});
+
+window.toggleFilters = function() {
+    const panel = document.getElementById('reg-filter-panel');
+    if (panel) {
+        panel.classList.toggle('hidden');
+    }
+};
+
+// --- HOOK INTO NAVIGATION ---
+// Update the showSection logic to load data when Registration is clicked
+const originalShowSection = window.showSection;
+window.showSection = function(sectionName) {
+    originalShowSection(sectionName); // Call existing logic
+    if (sectionName === 'registration' && currentUser) {
+        loadRegistrationData(currentUser.id);
+    }
+};
+
 if (authActionBtn) authActionBtn.addEventListener('click', handleAuth);
 if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
@@ -1010,6 +1419,17 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
     }
 });
 
+const filterIds = ['reg-search-input', 'reg-filter-year', 'reg-filter-category', 'reg-filter-credits', 'reg-check-closed'];
+filterIds.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+        el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', () => {
+             // Only re-render if we have data
+             if(availableSectionsData.length > 0) renderRegistrationList(availableSectionsData);
+        });
+    }
+});
+
 if(closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
 if(closeModal) closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
 
@@ -1021,3 +1441,4 @@ window.onclick = function(event) {
 supabase.auth.onAuthStateChange((event, session) => {
     updateUI(session);
 });
+
