@@ -1388,6 +1388,9 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
     const time = document.getElementById('time-pref').value;
     const focus = document.getElementById('focus-pref').value;
     
+    // NEW: Capture Credit Hours
+    const targetCredits = document.getElementById('credits-pref').value || "15";
+
     const days = [];
     document.querySelectorAll('input[name="days"]:checked').forEach(cb => days.push(cb.value));
 
@@ -1395,7 +1398,9 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
         alert("Please select at least one day preference.");
         return;
     }
-    const preferences = { intensity, time, focus, days };
+    
+    // Add targetCredits to preferences
+    const preferences = { intensity, time, focus, days, targetCredits };
 
     aiPrefModal.classList.add('hidden');
     aiModal.classList.remove('hidden');
