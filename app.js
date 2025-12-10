@@ -535,6 +535,15 @@ async function loadFullSchedule(userId) {
 
         if (error) throw error;
 
+        if(!window.userProfile) {
+         const { data: p } = await supabase.from('users').select('*').eq('id', userId).single();
+         if(p) window.userProfile = p;
+    }
+
+    // Calculate Total
+    const totalCredits = schedule.reduce((sum, item) => sum + (item.sections?.courses?.credit_hours || 0), 0);
+    updateCreditUI(totalCredits);
+
         renderScheduleTable(schedule);
 
     } catch (err) {
@@ -991,8 +1000,15 @@ async function loadRegistrationData(userId) {
     container.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // A. Fetch current Enrollments WITH Course Code and Schedule info
-        // We need this to check for: 1. Same Course Conflict, 2. Time Conflict
+        // 1. Fetch User Profile (To calculate limits correctly)
+        const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+        if (profile) window.userProfile = profile; // Store globally for helpers
+
+        // 2. Fetch Enrollments
         const { data: enrolls } = await supabase
             .from('enrollments')
             .select(`
@@ -1000,24 +1016,23 @@ async function loadRegistrationData(userId) {
                 status,
                 sections (
                     course_code,
-                    schedule_text
+                    schedule_text,
+                    courses (credit_hours)
                 )
             `)
             .eq('user_id', userId)
             .in('status', ['REGISTERED', 'ENROLLED']);
             
-        // 1. List of Section IDs user has (for "Registered" check)
         currentEnrollments = enrolls ? enrolls.map(e => e.section_id) : [];
-        
-        // 2. List of Course Codes user has (to prevent taking same course twice)
-        // We attach this to the window object to pass it to the render function easily
         window.enrolledCourseCodes = enrolls ? enrolls.map(e => e.sections?.course_code) : [];
-        
-        // 3. List of Busy Times (to prevent conflicts)
-        // Normalize strings to lowercase/trimmed for accurate comparison
         window.busyTimes = enrolls ? enrolls.map(e => (e.sections?.schedule_text || "").toLowerCase().trim()) : [];
 
-        // B. Fetch Waitlist
+        // --- NEW: CALCULATE TOTAL CREDITS ---
+        const totalCredits = enrolls ? enrolls.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0) : 0;
+        window.currentTotalCredits = totalCredits; // Store for validation
+        updateCreditUI(totalCredits);
+
+        // 3. Fetch Waitlist
         const { data: waits } = await supabase
             .from('waiting_list')
             .select('section_id')
@@ -1025,8 +1040,7 @@ async function loadRegistrationData(userId) {
             .eq('status', 'WAITING');
         currentWaitlist = waits ? waits.map(w => w.section_id) : [];
 
-        // C. Fetch All Sections (Active Semester)
-        // We DO NOT filter by status here, so we get OPEN and CLOSED sections
+        // 4. Fetch Sections
         const { data: sections, error } = await supabase
             .from('sections')
             .select(`
@@ -1039,7 +1053,7 @@ async function loadRegistrationData(userId) {
                     category
                 )
             `)
-            .eq('semester_id', 20252) // Ensure this matches your active semester
+            .eq('semester_id', 20252)
             .order('course_code', { ascending: true });
 
         if (error) throw error;
@@ -1272,7 +1286,23 @@ window.toggleAccordion = function(header) {
 // 5. Action: Register
 window.handleRegister = async function(sectionId) {
     if (!currentUser) return;
-    if (!confirm("Confirm registration for this section?")) return;
+
+    // 1. Find the section to get its credits
+    const section = availableSectionsData.find(s => s.section_id === sectionId);
+    if (!section) return;
+
+    const newCredits = section.courses.credit_hours || 3;
+    const currentTotal = window.currentTotalCredits || 0;
+    const { max, isGrad } = getCreditLimits();
+
+    // 2. CHECK LIMIT
+    if (currentTotal + newCredits > max) {
+        const title = isGrad ? "Graduate Limit Reached" : "Credit Limit Reached";
+        alert(`⛔ Cannot Register!\n\n${title}: You are limited to ${max} credit hours.\nCurrent: ${currentTotal}\nTrying to add: ${newCredits}\nTotal would be: ${currentTotal + newCredits}`);
+        return; // STOP execution
+    }
+
+    if (!confirm(`Register for ${section.courses.course_name_en} (${newCredits} Cr)?`)) return;
 
     try {
         const { error } = await supabase
@@ -1285,8 +1315,6 @@ window.handleRegister = async function(sectionId) {
 
         if (error) throw error;
 
-        // Optimistic UI Update: Increment count in DB via RPC or just reload
-        // For simplicity, we reload data
         alert("Registered Successfully!");
         loadRegistrationData(currentUser.id);
 
@@ -1398,9 +1426,18 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
         alert("Please select at least one day preference.");
         return;
     }
+
+    const { min, max } = getCreditLimits();
     
-    // Add targetCredits to preferences
-    const preferences = { intensity, time, focus, days, targetCredits };
+    const preferences = { 
+        intensity, 
+        time, 
+        focus, 
+        days, 
+        targetCredits: document.getElementById('credits-pref').value || "15",
+        minCredits: min,
+        maxCredits: max
+    };
 
     aiPrefModal.classList.add('hidden');
     aiModal.classList.remove('hidden');
@@ -1434,6 +1471,73 @@ filterIds.forEach(id => {
         });
     }
 });
+
+// --- HELPER: GET CREDIT LIMITS ---
+function getCreditLimits() {
+    // Default to standard if user not loaded
+    if (!currentUser) return { min: 12, max: 18, isGrad: false };
+
+    // Logic: If semester >= 7, consider them 4th year/Graduate
+    // You can also check 'plan_year' vs current year if preferred.
+    // user_metadata or the 'users' table profile data should be used.
+    // We used 'userProfile' in loadDashboardData, let's assume we store it globally or fetch it.
+    
+    // For this implementation, let's fetch strictly from the loaded profile logic
+    // We'll trust 'currentUser.user_metadata' if you sync it, or fetch freshly.
+    // Simple approach: Use the 'current_semester' from the profile we loaded in dashboard.
+    
+    // Let's assume we attach profile to currentUser for easy access, or just fetch:
+    const currentSemester = window.userProfile?.current_semester || 1; 
+    
+    const isGrad = currentSemester >= 7;
+    return {
+        min: 12,
+        max: isGrad ? 21 : 18,
+        isGrad: isGrad
+    };
+}
+
+// --- HELPER: UPDATE CREDIT UI ---
+function updateCreditUI(totalCredits) {
+    const { min, max, isGrad } = getCreditLimits();
+    const statusText = isGrad ? "(Graduate/4th Year)" : "(Standard)";
+    
+    // Logic for Color & Message
+    let color = "#2E7D32"; // Green
+    let msg = `Total Hours: ${totalCredits} / ${max}`;
+    
+    if (totalCredits < min) {
+        color = "#c62828"; // Red
+        msg = `⚠️ Warning: Registered ${totalCredits} hrs. Minimum required is ${min}.`;
+    } else if (totalCredits > max) {
+        color = "#c62828"; // Red
+        msg = `⛔ Error: Exceeds limit of ${max} hrs.`;
+    } else {
+        msg = `✅ Good: ${totalCredits} hrs registered. (Max: ${max})`;
+    }
+
+    // Update Registration Page UI
+    const regBox = document.getElementById('reg-credit-status');
+    if (regBox) {
+        regBox.style.color = color;
+        regBox.style.fontWeight = "bold";
+        regBox.style.padding = "0 15px";
+        regBox.style.display = "flex";
+        regBox.style.alignItems = "center";
+        regBox.textContent = msg;
+    }
+
+    // Update Schedule Page UI
+    const schBox = document.getElementById('sch-credit-status');
+    if (schBox) {
+        schBox.style.color = color;
+        schBox.style.fontSize = "0.9em";
+        schBox.style.marginTop = "5px";
+        schBox.textContent = msg;
+    }
+    
+    return totalCredits; // Return for use in logic
+}
 
 if(closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
 if(closeModal) closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
