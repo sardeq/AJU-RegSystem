@@ -23,7 +23,6 @@ const authActionBtn = document.getElementById('auth-action-btn');
 const toggleAuthLink = document.getElementById('toggle-auth-mode'); 
 const formTitle = document.getElementById('form-title');
 const errorMsg = document.getElementById('error-msg');
-const userEmailDisplay = document.getElementById('user-email');
 const logoutBtn = document.getElementById('logout-btn');
 
 // AI Elements
@@ -39,8 +38,6 @@ const generateBtn = document.getElementById('generate-schedule-btn');
 // --- STATE MANAGEMENT ---
 let currentUser = null;
 let isLoginMode = true; // Default to Login mode
-
-
 
 const translations = {
     en: {
@@ -64,7 +61,25 @@ const translations = {
         btn_ai_enhance: "Enhance with AI",
         ai_pref_title: "🎛️ Customize Your Schedule",
         btn_generate: "Generate Recommendations ✨",
-        welcome_title: "Welcome, "
+        welcome_title: "Welcome, ",
+
+        lbl_overview: "Overview",
+        lbl_rank: "Class Rank",
+        lbl_gpa: "GPA",
+        lbl_balance: "Balance",
+        lbl_absences: "Absences",
+        lbl_student_info: "Student Info",
+        lbl_name: "Name:",
+        lbl_dept: "Department:",
+        lbl_id: "Student ID:",
+        lbl_classes_attended: "Classes Attended:",
+        lbl_sem: "Current Semester:",
+        lbl_today_courses: "Courses for Today",
+        lbl_view_full: "View Full Schedule",
+        lbl_loading: "Loading schedule...",
+        lbl_no_classes: "No classes today! 🎉",
+        lbl_room: "Room",
+        lbl_instructor: "Instr."
     },
     ar: {
         nav_home: "الرئيسية",
@@ -87,20 +102,35 @@ const translations = {
         btn_ai_enhance: "تحسين بالذكاء الاصطناعي",
         ai_pref_title: "🎛️ تخصيص جدولك",
         btn_generate: "إنشاء التوصيات ✨",
-        welcome_title: "أهلاً بك، "
+        welcome_title: "أهلاً بك، ",
+
+        lbl_overview: "نظرة عامة",
+        lbl_rank: "الترتيب",
+        lbl_gpa: "المعدل التراكمي",
+        lbl_balance: "الرصيد",
+        lbl_absences: "الغيابات",
+        lbl_student_info: "معلومات الطالب",
+        lbl_name: "الاسم:",
+        lbl_dept: "القسم:",
+        lbl_id: "الرقم الجامعي:",
+        lbl_classes_attended: "حصص تم حضورها:",
+        lbl_sem: "الفصل الحالي:",
+        lbl_today_courses: "محاضرات اليوم",
+        lbl_view_full: "عرض الجدول الكامل",
+        lbl_loading: "جاري تحميل الجدول...",
+        lbl_no_classes: "لا يوجد محاضرات اليوم! 🎉",
+        lbl_room: "القاعة",
+        lbl_instructor: "د."
     }
 };
-
 
 const langBtn = document.querySelector('.lang-btn');
 let currentLang = localStorage.getItem('app_lang') || 'en';
 
 function applyLanguage(lang) {
-    // 1. Update Direction and Lang attribute
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     
-    // 2. Update Text Content
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[lang][key]) {
@@ -108,7 +138,6 @@ function applyLanguage(lang) {
         }
     });
 
-    // 3. Update Placeholders
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
         if (translations[lang][key]) {
@@ -116,7 +145,6 @@ function applyLanguage(lang) {
         }
     });
 
-    // 4. Save Preference
     localStorage.setItem('app_lang', lang);
     currentLang = lang;
 }
@@ -125,6 +153,146 @@ if (langBtn) {
     langBtn.addEventListener('click', () => {
         const newLang = currentLang === 'en' ? 'ar' : 'en';
         applyLanguage(newLang);
+        // Reload data to apply translation to dynamic content (Course Names)
+        if(currentUser) loadDashboardData(currentUser.id);
+    });
+}
+
+// --- DATA FETCHING ---
+
+async function loadDashboardData(userId) {
+    try {
+        // 1. Fetch User Profile (GPA, Major, Balance, Rank)
+        const { data: userProfile, error: userError } = await supabase
+            .from('users')
+            .select('*') 
+            .eq('id', userId)
+            .single();
+
+        if (userError && userError.code !== 'PGRST116') {
+            console.error("Error fetching user profile:", userError);
+        }
+
+        // 2. Fetch Active Enrollments (Status = REGISTERED)
+        // Also fetching 'absences' from the enrollment table
+        const { data: scheduleData, error: scheduleError } = await supabase
+            .from('enrollments')
+            .select(`
+                status,
+                absences, 
+                sections (
+                    schedule_text,
+                    room_number,
+                    instructor_name,
+                    courses (
+                        course_name_en,
+                        course_name_ar
+                    )
+                )
+            `)
+            .eq('user_id', userId)
+            .eq('status', 'REGISTERED'); // STRICT FILTER: Only REGISTERED courses
+
+        if (scheduleError) console.error("Error fetching schedule:", scheduleError);
+
+        renderHome(userProfile, scheduleData);
+
+    } catch (err) {
+        console.error("Dashboard Load Failed:", err);
+    }
+}
+
+function renderHome(profile, schedule) {
+    // A. Render Student Stats
+    if (profile) {
+        document.getElementById('display-name').textContent = profile.full_name || "Student";
+        document.getElementById('info-name').textContent = profile.full_name || "--";
+        document.getElementById('info-major').textContent = profile.major || "General";
+        document.getElementById('stat-gpa').textContent = profile.gpa ? profile.gpa.toFixed(2) : "N/A";
+        document.getElementById('info-semester').textContent = profile.current_semester || "1";
+        
+        // Render Rank (from User table)
+        document.getElementById('stat-rank').textContent = profile.rank ? `#${profile.rank}` : "--";
+
+        // Render Balance (from User table)
+        document.getElementById('stat-balance').textContent = profile.balance 
+            ? `${Number(profile.balance).toFixed(2)}` 
+            : "0.00";
+
+        // Generate ID display
+        document.getElementById('info-id').textContent = profile.id ? "2023" + profile.id.slice(0,4).toUpperCase() : "--";
+    }
+
+    // B. Calculate Absences Logic
+    let totalAbsences = 0;
+    let classesAttended = 0; // Mock calculation based on absences or just random if not in DB
+    
+    if (schedule && schedule.length > 0) {
+        // Sum absences from all REGISTERED courses
+        totalAbsences = schedule.reduce((sum, item) => sum + (item.absences || 0), 0);
+        
+        // Simple logic: If 0 absences, assume they attended some classes (Mocking 'Attended' as it's not in schema)
+        classesAttended = (schedule.length * 5) - totalAbsences; 
+    }
+
+    document.getElementById('stat-absences').textContent = totalAbsences;
+    document.getElementById('info-attended').textContent = classesAttended > 0 ? classesAttended : "--";
+
+    // C. Render Today's Schedule
+    renderTodaySchedule(schedule);
+}
+
+function renderTodaySchedule(enrollments) {
+    const listContainer = document.getElementById('today-schedule-list');
+    listContainer.innerHTML = ''; 
+
+    // Filter out items where sections might be null (e.g. if REGISTERED but no section assigned yet)
+    const validEnrollments = enrollments ? enrollments.filter(e => e.sections) : [];
+
+    if (validEnrollments.length === 0) {
+        listContainer.innerHTML = `<div class="empty-state" data-i18n="lbl_no_classes">${translations[currentLang].lbl_no_classes}</div>`;
+        return;
+    }
+
+    // 1. Determine "Today"
+    const dayIndex = new Date().getDay(); 
+    const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const currentDayStr = daysMap[dayIndex];
+
+    // 2. Filter Courses for Today based on Schedule Text
+    const todayCourses = validEnrollments.filter(item => {
+        const section = item.sections;
+        if (!section || !section.schedule_text) return false;
+        return section.schedule_text.includes(currentDayStr);
+    });
+
+    if (todayCourses.length === 0) {
+        listContainer.innerHTML = `<div class="empty-state" data-i18n="lbl_no_classes" style="padding: 20px; text-align: center; color: #888;">${translations[currentLang].lbl_no_classes}</div>`;
+        return;
+    }
+
+    // 3. Render Items
+    todayCourses.forEach(item => {
+        const sec = item.sections;
+        const course = sec.courses;
+        
+        // Translation check
+        const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
+        const timeStr = sec.schedule_text.split(' ').slice(-1)[0] || sec.schedule_text; 
+
+        const div = document.createElement('div');
+        div.className = 'course-item';
+        div.innerHTML = `
+            <div class="course-name">${courseName}</div>
+            <div class="course-meta">
+                <span>🕒 ${timeStr}</span>
+                <span class="room-code">${sec.room_number || 'TBA'}</span>
+            </div>
+            <div class="course-meta">
+                <span>👨‍🏫 ${sec.instructor_name || 'Staff'}</span>
+            </div>
+        `;
+        listContainer.appendChild(div);
     });
 }
 
@@ -133,25 +301,20 @@ applyLanguage(currentLang);
 
 // --- AUTH FUNCTIONS ---
 
-// 1. Toggle between Login and Signup UI
 if (toggleAuthLink) {
     toggleAuthLink.addEventListener('click', (e) => {
         e.preventDefault();
         isLoginMode = !isLoginMode;
-        errorMsg.textContent = ''; // Clear errors
-
-        // Find the extra fields (Name, Confirm Password)
+        errorMsg.textContent = ''; 
         const extraFields = document.querySelectorAll('.auth-extra');
         
         if (isLoginMode) {
-            // Switch to Login View
             formTitle.textContent = 'Login';
             authActionBtn.textContent = 'Log In';
             document.getElementById('toggle-text').textContent = "Don't have an account? ";
             toggleAuthLink.textContent = 'Sign Up';
             extraFields.forEach(el => el.classList.add('hidden'));
         } else {
-            // Switch to Signup View
             formTitle.textContent = 'Create Account';
             authActionBtn.textContent = 'Sign Up';
             document.getElementById('toggle-text').textContent = "Already have an account? ";
@@ -161,7 +324,6 @@ if (toggleAuthLink) {
     });
 }
 
-// 2. Handle Auth Action (Login OR Signup)
 async function handleAuth() {
     errorMsg.textContent = '';
     const email = emailInput.value;
@@ -177,7 +339,6 @@ async function handleAuth() {
 
     try {
         if (isLoginMode) {
-            // --- LOGIN LOGIC ---
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
@@ -185,11 +346,9 @@ async function handleAuth() {
             if (error) throw error;
         
         } else {
-            // --- SIGNUP LOGIC ---
             const fullName = fullNameInput.value;
             const confirmPass = confirmPassInput.value;
 
-            // Validation
             if (!fullName) throw new Error("Full Name is required.");
             if (password !== confirmPass) throw new Error("Passwords do not match.");
             if (password.length < 6) throw new Error("Password must be at least 6 characters.");
@@ -198,7 +357,7 @@ async function handleAuth() {
                 email,
                 password,
                 options: {
-                    data: { full_name: fullName } // Metadata
+                    data: { full_name: fullName } 
                 }
             });
 
@@ -214,7 +373,6 @@ async function handleAuth() {
     }
 }
 
-// 3. UI Helpers
 if (menuBtn) {
     menuBtn.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
@@ -242,13 +400,13 @@ function updateUI(session) {
         sidebar.classList.remove('hidden');
         showSection('home');
         
-        // Update user name in Sidebar
         const userNameDisplay = document.querySelector('.user-name');
         if(userNameDisplay && session.user.user_metadata.full_name) {
             userNameDisplay.textContent = session.user.user_metadata.full_name;
         }
 
-        if(userEmailDisplay) userEmailDisplay.textContent = session.user.email;
+        loadDashboardData(session.user.id);
+
     } else {
         currentUser = null;
         authContainer.classList.remove('hidden');
@@ -256,22 +414,17 @@ function updateUI(session) {
         homeContainer.classList.add('hidden');
         regContainer.classList.add('hidden');
         
-        // Reset inputs
         emailInput.value = '';
         passwordInput.value = '';
     }
 }
-
 async function logout() {
     await supabase.auth.signOut();
 }
 
-// --- AI LOGIC START ---
+// --- AI LOGIC ---
 
-// 1. Fetch Data for AI
 async function fetchStudentContext(userId) {
-    console.log("Fetching context for user:", userId);
-
     const { data: history, error: historyError } = await supabase
         .from('enrollments')
         .select(`
@@ -321,10 +474,8 @@ async function fetchStudentContext(userId) {
     return { history: passedCourses, options: eligibleSections };
 }
 
-// 2. Call Supabase Edge Function
 async function getOpenRouterRecommendations(context, preferences) {
     try {
-        console.log("Asking AI for help...");
         const { data, error } = await supabase.functions.invoke('generate-schedule', {
             body: { context, preferences }
         });
@@ -337,7 +488,6 @@ async function getOpenRouterRecommendations(context, preferences) {
     }
 }
 
-// 3. Render Results
 function renderPlans(plans) {
     if (!plans || plans.length === 0) {
         aiResults.innerHTML = '<p>No valid plans generated.</p>';
@@ -396,22 +546,19 @@ async function applySchedule(courses) {
     } else {
         alert('Successfully Registered!');
         aiModal.classList.add('hidden');
+        loadDashboardData(userId); // Refresh Dashboard
     }
 };
-
-// --- EVENT LISTENERS (Consolidated) ---
 
 if (authActionBtn) authActionBtn.addEventListener('click', handleAuth);
 if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-// AI Listeners
 if (aiBtn) aiBtn.addEventListener('click', () => {
     if (!currentUser) { alert("Please log in."); return; }
     aiPrefModal.classList.remove('hidden');
 });
 
 if (generateBtn) generateBtn.addEventListener('click', async () => {
-    // A. Gather Form Data
     const intensityEl = document.querySelector('input[name="intensity"]:checked');
     const intensity = intensityEl ? intensityEl.value : 'Balanced';
     const time = document.getElementById('time-pref').value;
@@ -426,7 +573,6 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
     }
     const preferences = { intensity, time, focus, days };
 
-    // B. Switch Modals
     aiPrefModal.classList.add('hidden');
     aiModal.classList.remove('hidden');
     aiLoading.classList.remove('hidden');
@@ -457,7 +603,6 @@ window.onclick = function(event) {
     if (event.target == aiPrefModal) aiPrefModal.classList.add('hidden');
 }
 
-// Init Supabase Listener
 supabase.auth.onAuthStateChange((event, session) => {
     updateUI(session);
 });
