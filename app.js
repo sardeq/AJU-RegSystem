@@ -96,7 +96,20 @@ const translations = {
         tbl_status: "Status",
         status_completed: "Completed",
         status_failed: "Failed",
-        status_none: "Not Taken"
+        status_none: "Not Taken",
+
+        bl_my_schedule: "My Weekly Schedule",
+        tbl_course: "Course",
+        tbl_day_time: "Day & Time",
+        tbl_room: "Room",
+        tbl_instructor: "Instructor",
+        tbl_credits: "Credits",
+        msg_no_schedule: "No registered courses found for this semester.",
+
+        tbl_action: "Action",
+        btn_drop: "Drop Course",
+        msg_confirm_drop: "Are you sure you want to drop this course? This action cannot be undone.",
+        msg_drop_success: "Course dropped successfully."
     },
     ar: {
         nav_home: "الرئيسية",
@@ -154,7 +167,20 @@ const translations = {
         tbl_status: "الحالة",
         status_completed: "ناجح",
         status_failed: "راسب",
-        status_none: "غير مسجل"
+        status_none: "غير مسجل",
+
+        lbl_my_schedule: "جدولي الدراسي",
+        tbl_course: "المادة",
+        tbl_day_time: "اليوم والوقت",
+        tbl_room: "القاعة",
+        tbl_instructor: "المدرس",
+        tbl_credits: "الساعات",
+        msg_no_schedule: "لا يوجد مواد مسجلة لهذا الفصل.",
+
+        tbl_action: "إجراء",
+        btn_drop: "سحب المادة",
+        msg_confirm_drop: "هل أنت متأكد من سحب هذه المادة؟ لا يمكن التراجع عن هذا الإجراء.",
+        msg_drop_success: "تم سحب المادة بنجاح."
     }
 };
 
@@ -425,13 +451,18 @@ if (menuBtn) {
 }
 
 window.showSection = function(sectionName) {
+    // Hide all containers first
     homeContainer.classList.add('hidden');
     regContainer.classList.add('hidden');
     const sheetContainer = document.getElementById('courses-sheet-container');
+    const scheduleContainer = document.getElementById('schedule-container');
+    
     if(sheetContainer) sheetContainer.classList.add('hidden');
+    if(scheduleContainer) scheduleContainer.classList.add('hidden');
 
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
+    // Show selected container
     if (sectionName === 'home') {
         homeContainer.classList.remove('hidden');
         if(document.getElementById('nav-home')) document.getElementById('nav-home').classList.add('active');
@@ -439,16 +470,65 @@ window.showSection = function(sectionName) {
         regContainer.classList.remove('hidden');
         if(document.getElementById('nav-reg')) document.getElementById('nav-reg').classList.add('active');
     } else if (sectionName === 'sheet') {
-        // Show Sheet
         if(sheetContainer) sheetContainer.classList.remove('hidden');
         if(document.getElementById('nav-sheet')) document.getElementById('nav-sheet').classList.add('active');
-        
-        // Load data only if not loaded yet
-        if(allCoursesData.length === 0 && currentUser) {
-            loadCoursesSheetData(currentUser.id);
-        }
+        if(allCoursesData.length === 0 && currentUser) loadCoursesSheetData(currentUser.id);
+    } else if (sectionName === 'schedule') {
+        if(scheduleContainer) scheduleContainer.classList.remove('hidden');
+        // You might want to add a nav-item for schedule or highlight Home if accessed from there
+        if(currentUser) loadFullSchedule(currentUser.id);
     }
 }
+
+// --- FULL SCHEDULE LOGIC ---
+
+async function loadFullSchedule(userId) {
+    const tbody = document.getElementById('full-schedule-body');
+    const cardGrid = document.getElementById('schedule-card-grid');
+    
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
+    cardGrid.innerHTML = '<p style="text-align:center;">Loading...</p>';
+
+    try {
+        // CHANGED: Added 'enrollment_id' to the select query
+        const { data: schedule, error } = await supabase
+            .from('enrollments')
+            .select(`
+                enrollment_id, 
+                status,
+                sections (
+                    section_number,
+                    schedule_text,
+                    room_number,
+                    instructor_name,
+                    courses (
+                        course_code,
+                        course_name_en,
+                        course_name_ar,
+                        credit_hours
+                    )
+                )
+            `)
+            .eq('user_id', userId)
+            .eq('status', 'REGISTERED'); 
+
+        if (error) throw error;
+
+        renderScheduleTable(schedule);
+
+    } catch (err) {
+        console.error("Schedule Error:", err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load schedule.</td></tr>';
+    }
+}
+
+
+// Find the "Schedule" button in Home and link it
+// Ensure this runs after DOM load or existing event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // We look for buttons with specific text or add an ID in HTML
+    // Best practice: Add onclick="showSection('schedule')" directly to the button in HTML
+});
 
 // --- COURSES SHEET LOGIC ---
 
@@ -498,80 +578,87 @@ async function loadCoursesSheetData(userId) {
 
 function renderCoursesTable() {
     const tbody = document.getElementById('courses-table-body');
+    if (!tbody) return; // Safety check
     tbody.innerHTML = '';
 
-    // Get Filter Values
-    const searchText = document.getElementById('sheet-search').value.toLowerCase();
-    const filterYear = document.getElementById('filter-year').value;
-    const filterCat = document.getElementById('filter-category').value;
-    const filterCred = document.getElementById('filter-credits').value;
-    const showCompleted = document.getElementById('check-completed').checked;
-    const showFailed = document.getElementById('check-failed').checked; // Includes "Not Taken"
+    // 1. Get Filter Values from the HTML inputs
+    const searchInput = document.getElementById('sheet-search');
+    const yearSelect = document.getElementById('filter-year');
+    const catSelect = document.getElementById('filter-category');
+    const credSelect = document.getElementById('filter-credits');
+    const checkCompleted = document.getElementById('check-completed');
+    const checkFailed = document.getElementById('check-failed');
 
+    // Safety check: if elements are missing, stop to prevent errors
+    if (!searchInput || !yearSelect || !catSelect || !credSelect) return;
+
+    const searchText = searchInput.value.toLowerCase();
+    const filterYear = yearSelect.value;
+    const filterCat = catSelect.value;
+    const filterCred = credSelect.value;
+    const showCompleted = checkCompleted.checked;
+    const showFailed = checkFailed.checked; // Also includes "Not Taken"
+
+    // 2. Filter the global 'allCoursesData' array
     const filtered = allCoursesData.filter(course => {
         const code = course.course_code.toString();
+        // Get user status for this course (Completed, Failed, Registered, or None)
         const userState = userHistoryMap[code] || { status: 'NONE' };
         const isCompleted = userState.status === 'COMPLETED';
         
-        // 1. Toggle Filters
+        // A. Check Toggles (Show Completed / Show Failed)
         if (isCompleted && !showCompleted) return false;
         if (!isCompleted && !showFailed) return false;
 
-        // 2. Text Search
+        // B. Check Text Search (Code, English Name, or Arabic Name)
         const nameEn = course.course_name_en.toLowerCase();
         const nameAr = course.course_name_ar ? course.course_name_ar.toLowerCase() : "";
         if (!code.includes(searchText) && !nameEn.includes(searchText) && !nameAr.includes(searchText)) {
             return false;
         }
 
-        // 3. Year Filter (Assuming 1st digit is year, e.g., 201101 -> Year 2?? Or usually index 1? Adjust logic.)
-        // Logic: Usually index 1 in 6-digit codes (311101 -> Year 1). Let's assume index 1 for standard 6 digit.
-        // Or if your code is 101, 201. Let's try matching startsWith logic if needed. 
-        // Based on image: 201101, 311100. Let's assume 2nd digit is year? Or 1st digit is Faculty?
-        // Let's implement a simple "Starts with" logic for now or skip if unsure. 
-        // **Adjustment**: Usually the level is the 2nd digit in a 6 digit code (Faculty-Year-...). 
-        // Example: 311100 -> Year 1. 312... -> Year 2.
+        // C. Year Filter 
+        // Logic: Checks the 3rd digit of the course code (e.g., 311100 -> Year 1)
         if (filterYear !== 'all') {
-            // Check if the 3rd character matches the year (common in some systems) or 2nd. 
-            // Let's look at image: 311100 (Prog 1). 312... (Data Struct). 
-            // It seems the 3rd digit represents the year (1, 2, 3).
             if (code.length >= 3 && code[2] !== filterYear) return false;
         }
 
-        // 4. Category
+        // D. Category Filter
         if (filterCat !== 'all' && course.category !== filterCat) return false;
 
-        // 5. Credits
+        // E. Credits Filter
         if (filterCred !== 'all' && course.credit_hours != filterCred) return false;
 
         return true;
     });
 
+    // 3. Handle Empty Results
     if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">No courses match filters.</td></tr>`;
         return;
     }
 
+    // 4. Render Rows
     filtered.forEach(course => {
         const tr = document.createElement('tr');
         
-        // Name Translation
+        // Select name based on current language
         const name = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
         
-        // Prerequisites Formating
+        // Format Prerequisites (join with comma if multiple)
         const prereqs = course.prerequisites 
             ? course.prerequisites.map(p => p.prereq_code).join(', ') 
             : '-';
 
-        // Status Badge Logic
-        let statusBadge = `<span class="badge badge-gray">${translations[currentLang].status_none}</span>`;
+        // Create Status Badge
+        let statusBadge = `<span class="badge badge-gray">${translations[currentLang].status_none || 'Not Taken'}</span>`;
         const userState = userHistoryMap[course.course_code];
         
         if (userState) {
             if (userState.status === 'COMPLETED') {
-                statusBadge = `<span class="badge badge-green">${translations[currentLang].status_completed} (${userState.grade})</span>`;
+                statusBadge = `<span class="badge badge-green">${translations[currentLang].status_completed || 'Completed'} (${userState.grade})</span>`;
             } else if (userState.status === 'FAILED') {
-                statusBadge = `<span class="badge badge-red">${translations[currentLang].status_failed}</span>`;
+                statusBadge = `<span class="badge badge-red">${translations[currentLang].status_failed || 'Failed'}</span>`;
             } else if (userState.status === 'REGISTERED') {
                  statusBadge = `<span class="badge badge-blue">Registered</span>`;
             }
@@ -589,6 +676,104 @@ function renderCoursesTable() {
         tbody.appendChild(tr);
     });
 }
+
+function renderScheduleTable(scheduleData) {
+    const tbody = document.getElementById('full-schedule-body');
+    const cardGrid = document.getElementById('schedule-card-grid');
+    const tableHeadRow = document.querySelector('.schedule-table thead tr');
+
+    // Ensure Action Header exists (if not already there)
+    if (tableHeadRow && !tableHeadRow.querySelector('.th-action')) {
+        const th = document.createElement('th');
+        th.className = 'th-action';
+        th.setAttribute('data-i18n', 'tbl_action');
+        th.textContent = translations[currentLang].tbl_action || "Action";
+        tableHeadRow.appendChild(th);
+    }
+    
+    tbody.innerHTML = '';
+    cardGrid.innerHTML = '';
+
+    if (!scheduleData || scheduleData.length === 0) {
+        const msg = translations[currentLang].msg_no_schedule;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">${msg}</td></tr>`;
+        cardGrid.innerHTML = `<div class="empty-state">${msg}</div>`;
+        return;
+    }
+
+    scheduleData.forEach(item => {
+        const sec = item.sections;
+        const course = sec.courses;
+        const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
+
+        // 1. Render Table Row (Desktop)
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <strong>${courseName}</strong><br>
+                <small style="color:#666;">${course.course_code} - Sec ${sec.section_number}</small>
+            </td>
+            <td>${sec.schedule_text || 'TBA'}</td>
+            <td>${sec.room_number || 'TBA'}</td>
+            <td>${sec.instructor_name || 'Staff'}</td>
+            <td>${course.credit_hours}</td>
+            <td>
+                <button class="delete-btn" onclick="dropCourse(${item.enrollment_id})">
+                    ${translations[currentLang].btn_drop}
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        // 2. Render Card (Mobile)
+        const card = document.createElement('div');
+        card.className = 'schedule-item-card';
+        card.innerHTML = `
+            <div class="sch-card-header">
+                <span class="sch-course-name">${courseName}</span>
+                <span class="sch-credits">${course.credit_hours} Cr.</span>
+            </div>
+            <div class="sch-card-body">
+                <div class="sch-detail"><span>🕒</span> ${sec.schedule_text || 'TBA'}</div>
+                <div class="sch-detail"><span>📍</span> ${sec.room_number || 'TBA'}</div>
+                <div class="sch-detail"><span>👨‍🏫</span> ${sec.instructor_name || 'Staff'}</div>
+            </div>
+            <div class="sch-card-footer">
+                <button class="delete-btn full-width" onclick="dropCourse(${item.enrollment_id})">
+                     ${translations[currentLang].btn_drop}
+                </button>
+            </div>
+        `;
+        cardGrid.appendChild(card);
+    });
+}
+
+// --- NEW FUNCTION: DROP COURSE ---
+window.dropCourse = async function(enrollmentId) {
+    const confirmMsg = translations[currentLang].msg_confirm_drop || "Are you sure?";
+    if (!confirm(confirmMsg)) return;
+
+    try {
+        const { error } = await supabase
+            .from('enrollments')
+            .delete()
+            .eq('enrollment_id', enrollmentId);
+
+        if (error) throw error;
+
+        alert(translations[currentLang].msg_drop_success || "Dropped successfully");
+        
+        // Refresh the UI
+        if (currentUser) {
+            loadFullSchedule(currentUser.id);   // Reload schedule list
+            loadDashboardData(currentUser.id);  // Update dashboard stats (Absences, etc.)
+        }
+
+    } catch (err) {
+        console.error("Drop Error:", err);
+        alert("Error dropping course: " + err.message);
+    }
+};
 
 // --- EVENT LISTENERS FOR FILTERS ---
 ['sheet-search', 'filter-year', 'filter-category', 'filter-credits', 'check-completed', 'check-failed'].forEach(id => {
@@ -630,13 +815,13 @@ async function logout() {
 // --- AI LOGIC ---
 
 async function fetchStudentContext(userId) {
+    // 1. Fetch COMPLETED courses (These satisfy prerequisites)
     const { data: history, error: historyError } = await supabase
         .from('enrollments')
         .select(`
-            status, grade_value,
+            status, 
             sections (
-                course_code,
-                courses (course_name_en, credit_hours)
+                course_code
             )
         `)
         .eq('user_id', userId)
@@ -645,15 +830,20 @@ async function fetchStudentContext(userId) {
     if (historyError) throw new Error("Could not fetch student history.");
     const passedCourses = history ? history.map(h => h.sections?.course_code).filter(Boolean) : [];
 
+    // 2. Fetch REGISTERED courses (These must be excluded from suggestions)
     const { data: current } = await supabase
         .from('enrollments')
         .select(`sections (course_code)`)
         .eq('user_id', userId)
-        .eq('status', 'ENROLLED');
+        .eq('status', 'REGISTERED'); // Check for REGISTERED specifically
     
-    const inProgressCourses = current ? current.map(c => c.sections?.course_code).filter(Boolean) : [];
-    const allKnowledge = [...passedCourses, ...inProgressCourses];
+    const registeredCourses = current ? current.map(c => c.sections?.course_code).filter(Boolean) : [];
 
+    // 3. Combine for the AI Exclusion List
+    // We send this to the AI so it knows NOT to suggest these codes again
+    const allTakenOrRegistered = [...passedCourses, ...registeredCourses];
+
+    // 4. Fetch Available Sections
     const { data: availableSections, error: sectionsError } = await supabase
         .from('sections')
         .select(`
@@ -667,16 +857,26 @@ async function fetchStudentContext(userId) {
         .eq('status', 'OPEN');
 
     if (sectionsError) throw new Error("Database Error: " + sectionsError.message); 
-    if (!availableSections) return { history: passedCourses, options: [] };
+    if (!availableSections) return { history: allTakenOrRegistered, options: [] };
 
+    // 5. Filter for Eligibility (Prerequisites)
+    // Only 'passedCourses' satisfy prerequisites. 'registeredCourses' do not satisfy prereqs for new courses yet.
     const eligibleSections = availableSections.filter(section => {
+        // Prevent suggesting the exact same course if already registered
+        if (registeredCourses.includes(section.course_code)) return false;
+        if (passedCourses.includes(section.course_code)) return false;
+
+        // Check Prerequisites
         const coursePrereqs = section.courses?.prerequisites || [];
         if (coursePrereqs.length === 0) return true;
-        const unmet = coursePrereqs.filter(p => !allKnowledge.includes(p.prereq_code));
+        
+        // Unmet = Prereqs that are NOT in the passedCourses list
+        const unmet = coursePrereqs.filter(p => !passedCourses.includes(p.prereq_code));
         return unmet.length === 0;
     });
 
-    return { history: passedCourses, options: eligibleSections };
+    // 6. Return 'allTakenOrRegistered' as 'history' for the backend exclusion logic
+    return { history: allTakenOrRegistered, options: eligibleSections };
 }
 
 async function getOpenRouterRecommendations(context, preferences) {
