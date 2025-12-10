@@ -837,13 +837,14 @@ async function fetchStudentContext(userId) {
         .eq('user_id', userId)
         .eq('status', 'REGISTERED');
     
-    // Extract Codes to prevent repeating the same course
+    // Extract Codes (to prevent taking the same course twice)
     const registeredCourses = current ? current.map(c => c.sections?.course_code).filter(Boolean) : [];
     
-    // Extract Times to prevent overlapping (e.g. "Mon Wed 12:30-14:00")
-    const busyTimes = current ? current.map(c => c.sections?.schedule_text).filter(Boolean) : [];
+    // Extract Times (to prevent EXACT overlapping schedules)
+    // We normalize to lowercase to ensure "Mon Wed" matches "mon wed"
+    const busyTimes = current ? current.map(c => (c.sections?.schedule_text || "").toLowerCase().trim()).filter(Boolean) : [];
 
-    // Combined exclusion list
+    // Combined exclusion list (Courses we shouldn't suggest)
     const allTakenOrRegistered = [...passedCourses, ...registeredCourses];
 
     // 3. Fetch Available Sections
@@ -864,10 +865,15 @@ async function fetchStudentContext(userId) {
 
     // 4. Filter Eligible Sections
     const eligibleSections = availableSections.filter(section => {
-        // Exclude if already taken or registered
+        // Rule A: Exclude if already taken or registered
         if (allTakenOrRegistered.includes(section.course_code)) return false;
 
-        // Check Prerequisites
+        // Rule B: HARD FILTER for Time Conflict (Exact Match)
+        // If the section's time string matches a registered course exactly, remove it.
+        const sectionTime = (section.schedule_text || "").toLowerCase().trim();
+        if (busyTimes.includes(sectionTime)) return false;
+
+        // Rule C: Check Prerequisites
         const coursePrereqs = section.courses?.prerequisites || [];
         if (coursePrereqs.length === 0) return true;
         
@@ -875,10 +881,10 @@ async function fetchStudentContext(userId) {
         return unmet.length === 0;
     });
 
-    // RETURN both history (codes) AND busyTimes (schedule strings)
+    // Return the cleaner list to the AI
     return { 
         history: allTakenOrRegistered, 
-        busyTimes: busyTimes, 
+        busyTimes: busyTimes, // We still send this for the AI to check partial overlaps
         options: eligibleSections 
     };
 }
