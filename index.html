@@ -320,6 +320,13 @@
             <div id="plan-container" class="dashboard-view hidden">
                 <div class="plan-header">
                     <h2 class="section-title" data-i18n="nav_plan">Student Plan Map</h2>
+                    
+                    <div class="plan-controls">
+                        <button class="zoom-btn" onclick="changeZoom(0.1)" title="Zoom In">+</button>
+                        <button class="zoom-btn" onclick="changeZoom(-0.1)" title="Zoom Out">-</button>
+                        <button class="zoom-btn" onclick="fitToScreen()" title="Fit to Screen" style="width: auto; padding: 0 10px; font-size: 0.9em;">Fit ⛶</button>
+                    </div>
+
                     <div class="plan-legend">
                         <span class="legend-item"><span class="dot passed"></span> Passed</span>
                         <span class="legend-item"><span class="dot registered"></span> Registered</span>
@@ -327,22 +334,22 @@
                         <span class="legend-item"><span class="dot locked"></span> Locked</span>
                     </div>
                 </div>
-                
-                <div class="tree-scroll-wrapper">
-                    <div id="course-popup" class="hidden">
-                        <button class="close-popup" onclick="closePlanPopup()">×</button>
-                        <h3 id="popup-title">Course Name</h3>
-                        <p id="popup-desc">Full Course Name...</p>
-                        <div class="popup-meta">
-                            <span id="popup-credits" class="badge badge-gray">3 Cr</span>
-                            <span id="popup-status" class="badge">Status</span>
-                        </div>
-                    </div>
-
-                    <div id="plan-tree-canvas">
-                        </div>
-                </div>
+    
+    <div class="tree-scroll-wrapper" id="tree-wrapper">
+        <div id="course-popup" class="hidden">
+            <button class="close-popup" onclick="closePlanPopup()">×</button>
+            <h3 id="popup-title">Course Name</h3>
+            <p id="popup-desc">Full Course Name...</p>
+            <div class="popup-meta">
+                <span id="popup-credits" class="badge badge-gray">3 Cr</span>
+                <span id="popup-status" class="badge">Status</span>
             </div>
+        </div>
+
+        <div id="plan-tree-canvas">
+            </div>
+    </div>
+</div>
         </div>
     </div>
 

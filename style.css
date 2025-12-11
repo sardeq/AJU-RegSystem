@@ -1236,20 +1236,62 @@ button:hover {
 
 /* --- IMPROVED STUDENT PLAN STYLES --- */
 
-/* Tree Scroll Wrapper - The window you look through */
+#plan-container {
+    width: 98% !important; /* Force it to use full width */
+    max-width: none !important; /* Remove the 1000px limit */
+    height: calc(100vh - 100px); /* Fill remaining vertical height */
+    display: flex;
+    flex-direction: column;
+}
+
+.plan-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.zoom-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+}
+
+.zoom-btn:hover {
+    background-color: #e8f5e9;
+    color: #2E7D32;
+    border-color: #2E7D32;
+}
+
 .tree-scroll-wrapper {
+    flex: 1; /* Take up all remaining space */
+    height: auto; /* Override fixed height */
     width: 100%;
-    height: 70vh; /* Dynamic height based on screen */
-    overflow: auto; /* Enable scrolling */
+    background: #fcfcfc;
     border: 1px solid #ddd;
     border-radius: 8px;
-    background: #fcfcfc;
-    position: relative; /* Context for absolute positioning */
+    position: relative;
+    overflow: auto; /* Keep scroll as backup, but we use zoom */
+    cursor: grab;
 }
 
 /* Canvas Background - The actual large drawing board */
 #plan-tree-canvas {
-    /* INCREASED SIZE significantly */
+    transform-origin: 0 0; /* Scale from top-left */
+    transition: transform 0.2s ease-out;
     width: 2600px;
     height: 1200px;
     background-color: #fcfcfc;

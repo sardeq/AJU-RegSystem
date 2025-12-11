@@ -1787,11 +1787,9 @@ async function loadStudentPlan(userId) {
     if(!canvas) return;
     canvas.innerHTML = '<div class="spinner"></div>';
 
-    // Update Legend Text based on current Language
     updatePlanLegend();
 
     try {
-        // 1. Fetch User History
         const { data: history } = await supabase
             .from('enrollments')
             .select('status, sections(course_code)')
@@ -1807,7 +1805,6 @@ async function loadStudentPlan(userId) {
             else registeredCodes.add(code);
         });
 
-        // 2. Fetch Course Names (English & Arabic)
         const { data: courses } = await supabase
             .from('courses')
             .select('course_code, course_name_en, course_name_ar, credit_hours');
@@ -1815,13 +1812,51 @@ async function loadStudentPlan(userId) {
         const courseMap = {};
         courses?.forEach(c => courseMap[c.course_code] = c);
 
-        // 3. Render Tree
         renderPlanTree(passedCodes, registeredCodes, courseMap);
+        
+        // --- NEW: Auto-Fit to screen after rendering ---
+        setTimeout(() => fitToScreen(), 100);
 
     } catch (err) {
         console.error("Plan Error:", err);
         canvas.innerHTML = '<p style="color:red">Failed to load plan map.</p>';
     }
+}
+
+let currentScale = 1;
+
+window.changeZoom = function(delta) {
+    const canvas = document.getElementById('plan-tree-canvas');
+    currentScale += delta;
+    // Limit zoom levels
+    if (currentScale < 0.3) currentScale = 0.3;
+    if (currentScale > 1.5) currentScale = 1.5;
+    
+    canvas.style.transform = `scale(${currentScale})`;
+    
+    // Adjust popup scale inversely so text stays readable? 
+    // Or just hide it on zoom change to prevent misplacement
+    closePlanPopup();
+}
+
+window.fitToScreen = function() {
+    const wrapper = document.getElementById('tree-wrapper');
+    const canvasWidth = 2600; // Matches your tree width
+    
+    if (!wrapper) return;
+    
+    const availableWidth = wrapper.clientWidth;
+    // Calculate scale needed to fit 2600px into available width
+    const scale = (availableWidth / canvasWidth) - 0.05; // -0.05 for padding
+    
+    currentScale = scale;
+    // Apply scale
+    const canvas = document.getElementById('plan-tree-canvas');
+    canvas.style.transform = `scale(${currentScale})`;
+    
+    // Scroll to top left
+    wrapper.scrollTop = 0;
+    wrapper.scrollLeft = 0;
 }
 
 function renderPlanTree(passed, registered, courseDetails) {
