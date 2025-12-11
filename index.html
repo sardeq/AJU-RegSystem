@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
 
@@ -44,8 +45,8 @@
                         <span class="nav-icon">🕒</span> <span data-i18n="lbl_my_schedule">My Schedule</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
+                <li class="nav-item" id="nav-plan">
+                    <a href="#" class="nav-link" onclick="showSection('plan')">
                         <span class="nav-icon">📅</span> <span data-i18n="nav_plan">Student Plan</span>
                     </a>
                 </li>
@@ -313,6 +314,33 @@
                         <tbody id="full-schedule-body">
                             </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div id="plan-container" class="dashboard-view hidden">
+                <div class="plan-header">
+                    <h2 class="section-title" data-i18n="nav_plan">Student Plan Map</h2>
+                    <div class="plan-legend">
+                        <span class="legend-item"><span class="dot passed"></span> Passed</span>
+                        <span class="legend-item"><span class="dot registered"></span> Registered</span>
+                        <span class="legend-item"><span class="dot open"></span> Available</span>
+                        <span class="legend-item"><span class="dot locked"></span> Locked</span>
+                    </div>
+                </div>
+                
+                <div class="tree-scroll-wrapper">
+                    <div id="plan-tree-canvas">
+                        </div>
+                </div>
+
+                <div id="course-popup" class="hidden">
+                    <button class="close-popup" onclick="closePlanPopup()">×</button>
+                    <h3 id="popup-title">Course Name</h3>
+                    <p id="popup-desc">Course Description...</p>
+                    <div class="popup-meta">
+                        <span id="popup-credits" class="badge badge-gray">3 Cr</span>
+                        <span id="popup-status" class="badge">Status</span>
+                    </div>
                 </div>
             </div>
         </div>

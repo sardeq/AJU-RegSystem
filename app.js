@@ -121,7 +121,22 @@ const translations = {
         msg_success_reg: "Successfully Registered!",
         msg_success_wait: "Added to Waitlist! You will be notified if a seat opens.",
         msg_err_full: "Section is full.",
-        msg_err_exists: "Already registered/waitlisted for this course."
+        msg_err_exists: "Already registered/waitlisted for this course.",
+
+        nav_plan: "Student Plan",
+        
+        // Plan Legend & UI
+        plan_legend_passed: "Passed",
+        plan_legend_registered: "Registered",
+        plan_legend_open: "Available",
+        plan_legend_locked: "Locked",
+        
+        // Popup
+        lbl_credits: "Credits",
+        status_passed: "Passed ✅",
+        status_registered: "Registered 🕒",
+        status_open: "Available 🔓",
+        status_locked: "Locked 🔒"
     },
     ar: {
         nav_home: "الرئيسية",
@@ -200,10 +215,118 @@ const translations = {
         msg_success_reg: "تم التسجيل بنجاح!",
         msg_success_wait: "تمت إضافتك إلى قائمة الانتظار! سيتم إشعارك إذا توفر مقعد.",
         msg_err_full: "الشعبة ممتلئة.",
-        msg_err_exists: "أنت مسجّل/على قائمة الانتظار لهذا المساق مسبقًا."
+        msg_err_exists: "أنت مسجّل/على قائمة الانتظار لهذا المساق مسبقًا.",
+
+        nav_plan: "الخطة الدراسية",
+        
+        // Plan Legend & UI
+        plan_legend_passed: "ناجح",
+        plan_legend_registered: "مسجل",
+        plan_legend_open: "متاح للتسجيل",
+        plan_legend_locked: "مغلق (متطلب سابق)",
+        
+        // Popup
+        lbl_credits: "ساعات معتمدة",
+        status_passed: "ناجح ✅",
+        status_registered: "مسجل 🕒",
+        status_open: "متاح 🔓",
+        status_locked: "مغلق 🔒"
 
     }
 };
+
+const planStructure = [
+    // ROOT: Intro to Programming
+    { id: "311100", x: 600, y: 50 }, // Top Center
+
+    // Level 2
+    { id: "313160", x: 200, y: 150 }, // Intro to SE
+    { id: "313269", x: 350, y: 150 }, // Project Mgmt (Linked from 313160)
+    { id: "311101", x: 600, y: 150 }, // Prog 1 (Linked from 311100)
+    { id: "311220", x: 850, y: 150 }, // Digital Logic (Linked from 311100)
+    { id: "311160", x: 950, y: 150 }, // Ethics (Linked from 311100 - Assumption)
+    { id: "601101", x: 1050, y: 150 }, // Calculus 1
+    { id: "311240", x: 1250, y: 150 }, // Database (Linked from 311100)
+
+    // Level 3 (Branches from Level 2)
+    { id: "313466", x: 50,  y: 250 }, // Documentation
+    { id: "313261", x: 200, y: 250 }, // Requirements
+    { id: "313204", x: 500, y: 250 }, // Adv Prog
+    { id: "311202", x: 600, y: 250 }, // OOP
+    { id: "311321", x: 800, y: 250 }, // Arch
+    { id: "311330", x: 900, y: 250 }, // Networks
+    { id: "311210", x: 1050, y: 250 }, // Discrete Math
+    { id: "311340", x: 1200, y: 250 }, // DBMS
+    { id: "311241", x: 1350, y: 250 }, // System Analysis
+
+    // Level 4
+    { id: "313367", x: 50,  y: 350 }, // Specs
+    { id: "313364", x: 200, y: 350 }, // Obj Oriented SE
+    { id: "313262", x: 350, y: 350 }, // Components
+    { id: "311305", x: 500, y: 350 }, // Visual Prog
+    { id: "311304", x: 600, y: 350 }, // Web App
+    { id: "313263", x: 750, y: 350 }, // Multimedia
+    { id: "311468", x: 900, y: 350 }, // Security
+    { id: "311213", x: 700, y: 400 }, // Data Structures (Often linked to OOP)
+
+    // Level 5
+    { id: "313469", x: 50,  y: 450 }, // Special Topics
+    { id: "313464", x: 200, y: 450 }, // Re-engineering
+    { id: "313462", x: 300, y: 450 }, // Architecture
+    { id: "313363", x: 400, y: 450 }, // Design
+    { id: "311314", x: 700, y: 500 }, // Algorithms
+    
+    // Level 6
+    { id: "313365", x: 300, y: 550 }, // Testing
+    { id: "313366", x: 400, y: 550 }, // Quality
+    { id: "311350", x: 700, y: 600 }, // AI
+    { id: "311422", x: 800, y: 500 }, // OS
+    
+    // Level 7
+    { id: "313468", x: 400, y: 650 }  // Maintenance
+];
+
+// Define Connections (Source -> Target)
+const planLinks = [
+    { s: "311100", t: "313160" },
+    { s: "311100", t: "311101" },
+    { s: "311100", t: "311220" },
+    { s: "311100", t: "311240" },
+    
+    { s: "313160", t: "313269" },
+    { s: "313160", t: "313261" },
+    
+    { s: "313261", t: "313364" },
+    { s: "313261", t: "313466" },
+    { s: "313261", t: "313367" },
+    
+    { s: "313364", t: "313464" },
+    { s: "313364", t: "313462" },
+    
+    { s: "313462", t: "313469" },
+
+    { s: "311101", t: "313204" },
+    { s: "311101", t: "311202" },
+    
+    { s: "311202", t: "311305" },
+    { s: "311202", t: "311304" },
+    { s: "311202", t: "311213" },
+    { s: "311202", t: "313262" },
+    
+    { s: "311213", t: "311314" },
+    { s: "311314", t: "311350" },
+    { s: "311220", t: "311321" },
+    { s: "311220", t: "311330" },
+    { s: "311330", t: "311468" },
+    
+    { s: "313262", t: "313363" },
+    { s: "313363", t: "313366" },
+    { s: "313363", t: "313365" },
+    { s: "313366", t: "313468" },
+    
+    { s: "311240", t: "311340" },
+    { s: "311240", t: "311241" }
+];
 
 let allCoursesData = [];
 let userHistoryMap = {}; // Maps course_code -> { status, grade }
@@ -472,18 +595,20 @@ if (menuBtn) {
 }
 
 window.showSection = function(sectionName) {
-    // Hide all containers first
+    // 1. Hide all containers first
     homeContainer.classList.add('hidden');
     regContainer.classList.add('hidden');
     const sheetContainer = document.getElementById('courses-sheet-container');
     const scheduleContainer = document.getElementById('schedule-container');
+    const planContainer = document.getElementById('plan-container'); // Get Plan Container
     
     if(sheetContainer) sheetContainer.classList.add('hidden');
     if(scheduleContainer) scheduleContainer.classList.add('hidden');
+    if(planContainer) planContainer.classList.add('hidden');
 
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-    // Show selected container
+    // 2. Show selected container
     if (sectionName === 'home') {
         homeContainer.classList.remove('hidden');
         if(document.getElementById('nav-home')) document.getElementById('nav-home').classList.add('active');
@@ -496,8 +621,11 @@ window.showSection = function(sectionName) {
         if(allCoursesData.length === 0 && currentUser) loadCoursesSheetData(currentUser.id);
     } else if (sectionName === 'schedule') {
         if(scheduleContainer) scheduleContainer.classList.remove('hidden');
-        // You might want to add a nav-item for schedule or highlight Home if accessed from there
         if(currentUser) loadFullSchedule(currentUser.id);
+    } else if (sectionName === 'plan') {
+        // --- FIX: Unhide the container ---
+        if(planContainer) planContainer.classList.remove('hidden'); 
+        if(currentUser) loadStudentPlan(currentUser.id);
     }
 }
 
@@ -1444,15 +1572,13 @@ if (aiBtn) aiBtn.addEventListener('click', () => {
     aiPrefModal.classList.remove('hidden');
 });
 
+
 if (generateBtn) generateBtn.addEventListener('click', async () => {
+    // 1. Get User Preferences
     const intensityEl = document.querySelector('input[name="intensity"]:checked');
     const intensity = intensityEl ? intensityEl.value : 'Balanced';
     const time = document.getElementById('time-pref').value;
     const focus = document.getElementById('focus-pref').value;
-    
-    // NEW: Capture Credit Hours
-    const targetCredits = document.getElementById('credits-pref').value || "15";
-
     const days = [];
     document.querySelectorAll('input[name="days"]:checked').forEach(cb => days.push(cb.value));
 
@@ -1461,18 +1587,7 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
         return;
     }
 
-    const { min, max } = getCreditLimits();
-    
-    const preferences = { 
-        intensity, 
-        time, 
-        focus, 
-        days, 
-        targetCredits: document.getElementById('credits-pref').value || "15",
-        minCredits: min,
-        maxCredits: max
-    };
-
+    // 2. Prepare UI
     aiPrefModal.classList.add('hidden');
     aiModal.classList.remove('hidden');
     aiLoading.classList.remove('hidden');
@@ -1480,9 +1595,63 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
 
     try {
         const userId = currentUser.id;
+        
+        // 3. Fetch Context (History + Current Schedule)
         const context = await fetchStudentContext(userId);
         
         if (context.options.length === 0) throw new Error("No eligible courses found.");
+
+        // --- FIX STARTS HERE ---
+        
+        // A. Calculate Current Load
+        // We sum up the credits of currently REGISTERED courses from the context we just fetched
+        // (We need to ensure fetchStudentContext returns this, or we calculate it here)
+        // Since fetchStudentContext returns 'busyTimes' but not credits explicitly, 
+        // let's grab the global variable we set in loadRegistrationData, 
+        // OR better: calculate it safe from context if possible. 
+        // For now, we rely on the window global or default to 0.
+        const currentLoad = window.currentTotalCredits || 0;
+
+        // B. Get Semester Limits
+        const { min: uniMin, max: uniMax } = getCreditLimits();
+        
+        // C. Get User's Total Target (e.g., "I want 15 hours total")
+        const desiredTotal = parseInt(document.getElementById('credits-pref').value) || 15;
+
+        // D. Validation
+        if (currentLoad >= uniMax) {
+            throw new Error(`You already have ${currentLoad} credit hours (Max: ${uniMax}). You cannot add more.`);
+        }
+
+        // E. Calculate "Delta" (What to send to AI)
+        const maxAddable = uniMax - currentLoad; // Space left (e.g., 18 - 9 = 9)
+        
+        // How much does user WANT to add? (e.g., 15 - 9 = 6)
+        let targetToAdd = desiredTotal - currentLoad;
+        
+        // Logic: If target is already met or exceeded, suggest minimal addition (3 cr) or just fill remaining space
+        if (targetToAdd <= 0) targetToAdd = 3; 
+        if (targetToAdd > maxAddable) targetToAdd = maxAddable;
+
+        // Min Requirement: If current < Uni Min (12), they MUST add enough to reach 12.
+        // e.g. Current 9, Min 12 => Must add 3.
+        // e.g. Current 13, Min 12 => Must add 0 (but AI needs >0 to work, so we say 3 for 1 course).
+        let minToAdd = Math.max(0, uniMin - currentLoad);
+        if (minToAdd === 0) minToAdd = 3; // Ensure we ask for at least 1 course
+        if (minToAdd > maxAddable) minToAdd = maxAddable; // Cap at max
+
+        console.log(`AI Math: Current=${currentLoad}, TargetTotal=${desiredTotal}, Asking AI for: ${targetToAdd} credits (Min: ${minToAdd}, Max: ${maxAddable})`);
+
+        const preferences = { 
+            intensity, 
+            time, 
+            focus, 
+            days, 
+            targetCredits: targetToAdd, // Send DELTA
+            minCredits: minToAdd,       // Send DELTA
+            maxCredits: maxAddable      // Send DELTA
+        };
+
 
         const plans = await getOpenRouterRecommendations(context, preferences);
         
@@ -1491,7 +1660,11 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
 
     } catch (err) {
         console.error(err);
-        aiLoading.innerHTML = `<p style="color:red; text-align:center;">${err.message}</p>`;
+        aiLoading.innerHTML = `<div style="padding:20px; text-align:center;">
+            <p style="color:#d32f2f; font-weight:bold;">Unable to generate schedule.</p>
+            <p style="color:#666;">${err.message}</p>
+            <button onclick="aiModal.classList.add('hidden')" style="margin-top:10px; padding:5px 10px;">Close</button>
+        </div>`;
     }
 });
 
@@ -1571,6 +1744,178 @@ function updateCreditUI(totalCredits) {
     }
     
     return totalCredits; // Return for use in logic
+}
+
+function updatePlanLegend() {
+    // Updates the static HTML legend items
+    const legendItems = document.querySelectorAll('.plan-legend .legend-item');
+    if(legendItems.length >= 4) {
+        legendItems[0].lastChild.textContent = " " + translations[currentLang].plan_legend_passed;
+        legendItems[1].lastChild.textContent = " " + translations[currentLang].plan_legend_registered;
+        legendItems[2].lastChild.textContent = " " + translations[currentLang].plan_legend_open;
+        legendItems[3].lastChild.textContent = " " + translations[currentLang].plan_legend_locked;
+    }
+}
+
+async function loadStudentPlan(userId) {
+    const canvas = document.getElementById('plan-tree-canvas');
+    if(!canvas) return;
+    canvas.innerHTML = '<div class="spinner"></div>';
+
+    // Update Legend Text based on current Language
+    updatePlanLegend();
+
+    try {
+        // 1. Fetch User History
+        const { data: history } = await supabase
+            .from('enrollments')
+            .select('status, sections(course_code)')
+            .eq('user_id', userId)
+            .in('status', ['COMPLETED', 'REGISTERED', 'ENROLLED']);
+
+        const passedCodes = new Set();
+        const registeredCodes = new Set();
+        
+        history?.forEach(h => {
+            const code = h.sections?.course_code;
+            if (h.status === 'COMPLETED') passedCodes.add(code);
+            else registeredCodes.add(code);
+        });
+
+        // 2. Fetch Course Names (English & Arabic)
+        const { data: courses } = await supabase
+            .from('courses')
+            .select('course_code, course_name_en, course_name_ar, credit_hours');
+            
+        const courseMap = {};
+        courses?.forEach(c => courseMap[c.course_code] = c);
+
+        // 3. Render Tree
+        renderPlanTree(passedCodes, registeredCodes, courseMap);
+
+    } catch (err) {
+        console.error("Plan Error:", err);
+        canvas.innerHTML = '<p style="color:red">Failed to load plan map.</p>';
+    }
+}
+
+function renderPlanTree(passed, registered, courseDetails) {
+    const canvas = document.getElementById('plan-tree-canvas');
+    canvas.innerHTML = '';
+    
+    // Width can be adjusted or dynamic based on screen
+    const width = 1600;
+    const height = 800;
+
+    const svg = d3.select("#plan-tree-canvas")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g");
+
+    // 1. Draw Links
+    planLinks.forEach(link => {
+        const sourceNode = planStructure.find(n => n.id === link.s);
+        const targetNode = planStructure.find(n => n.id === link.t);
+
+        if (sourceNode && targetNode) {
+            svg.append("line")
+                .attr("x1", sourceNode.x + 50)
+                .attr("y1", sourceNode.y + 40)
+                .attr("x2", targetNode.x + 50)
+                .attr("y2", targetNode.y)
+                .attr("stroke", "#ccc")
+                .attr("stroke-width", 2);
+        }
+    });
+
+    // 2. Draw Nodes
+    planStructure.forEach(node => {
+        const details = courseDetails[node.id];
+        
+        // Determine Status
+        let statusClass = "locked";
+        let statusKey = "status_locked";
+
+        if (passed.has(node.id)) {
+            statusClass = "passed";
+            statusKey = "status_passed";
+        } else if (registered.has(node.id)) {
+            statusClass = "registered";
+            statusKey = "status_registered";
+        } else {
+             // Logic: Open if all parents are passed
+             const parents = planLinks.filter(l => l.t === node.id);
+             // If no parents (Root) or all parents are in 'passed' set
+             const parentsPassed = parents.every(p => passed.has(p.s));
+             
+             if(parents.length === 0 || parentsPassed) {
+                 statusClass = "open";
+                 statusKey = "status_open";
+             }
+        }
+
+        const g = svg.append("g")
+            .attr("transform", `translate(${node.x}, ${node.y})`)
+            .style("cursor", "pointer")
+            .on("click", () => showCoursePopup(node.id, details, statusClass, statusKey));
+
+        // Node Box
+        g.append("rect")
+            .attr("width", 100)
+            .attr("height", 40)
+            .attr("rx", 5)
+            .attr("class", `node-box ${statusClass}`);
+
+        // Node Text (Code)
+        g.append("text")
+            .attr("x", 50)
+            .attr("y", 25)
+            .attr("text-anchor", "middle")
+            .attr("fill", "white")
+            .style("font-size", "12px")
+            .style("font-weight", "bold")
+            .text(node.id);
+    });
+}
+
+window.showCoursePopup = function(code, details, statusClass, statusKey) {
+    const popup = document.getElementById('course-popup');
+    const title = document.getElementById('popup-title');
+    const desc = document.getElementById('popup-desc');
+    const credits = document.getElementById('popup-credits');
+    const statusBadge = document.getElementById('popup-status');
+
+    popup.classList.remove('hidden');
+    
+    // 1. Set Title (Course Name from DB)
+    if (details) {
+        // Dynamic Translation: Check currentLang
+        const name = currentLang === 'ar' ? details.course_name_ar : details.course_name_en;
+        title.textContent = `${code} - ${name}`;
+        credits.textContent = `${details.credit_hours} ${translations[currentLang].lbl_credits || 'Cr'}`;
+    } else {
+        title.textContent = code;
+        credits.textContent = "--";
+    }
+
+    // 2. Set Status Text (From Translation Keys)
+    statusBadge.textContent = translations[currentLang][statusKey];
+    
+    // 3. Set Color Class
+    let badgeColor = "badge-gray";
+    if (statusClass === 'passed') badgeColor = "badge-green";
+    else if (statusClass === 'registered') badgeColor = "badge-blue";
+    else if (statusClass === 'open') badgeColor = "badge-yellow";
+    
+    statusBadge.className = `badge ${badgeColor}`;
+    
+    // Description placeholder (or fetch from DB if column exists)
+    desc.textContent = ""; 
+}
+
+window.closePlanPopup = function() {
+    document.getElementById('course-popup').classList.add('hidden');
 }
 
 if(closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
