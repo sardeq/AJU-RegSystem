@@ -1814,13 +1814,53 @@ async function loadStudentPlan(userId) {
 
         renderPlanTree(passedCodes, registeredCodes, courseMap);
         
-        // --- NEW: Auto-Fit to screen after rendering ---
+        // --- NEW: Enable Drag-to-Scroll (Google Maps style) ---
+        enableDragScroll(); // Call helper function
+
+        // Auto-Fit once
         setTimeout(() => fitToScreen(), 100);
 
     } catch (err) {
         console.error("Plan Error:", err);
         canvas.innerHTML = '<p style="color:red">Failed to load plan map.</p>';
     }
+}
+
+// Helper function for Dragging
+function enableDragScroll() {
+    const wrapper = document.getElementById('tree-wrapper');
+    let isDown = false;
+    let startX, startY, scrollLeft, scrollTop;
+
+    wrapper.addEventListener('mousedown', (e) => {
+        isDown = true;
+        wrapper.style.cursor = 'grabbing';
+        startX = e.pageX - wrapper.offsetLeft;
+        startY = e.pageY - wrapper.offsetTop;
+        scrollLeft = wrapper.scrollLeft;
+        scrollTop = wrapper.scrollTop;
+    });
+
+    wrapper.addEventListener('mouseleave', () => {
+        isDown = false;
+        wrapper.style.cursor = 'grab';
+    });
+
+    wrapper.addEventListener('mouseup', () => {
+        isDown = false;
+        wrapper.style.cursor = 'grab';
+    });
+
+    wrapper.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - wrapper.offsetLeft;
+        const y = e.pageY - wrapper.offsetTop;
+        const walkX = (x - startX) * 1.5; // 1.5x speed
+        const walkY = (y - startY) * 1.5;
+        wrapper.scrollLeft = scrollLeft - walkX;
+        wrapper.scrollTop = scrollTop - walkY;
+    });
 }
 
 let currentScale = 1;
@@ -1860,12 +1900,26 @@ window.fitToScreen = function() {
 }
 
 function renderPlanTree(passed, registered, courseDetails) {
-    const canvas = document.getElementById('plan-tree-canvas');
-    canvas.innerHTML = '';
+    const canvasContainer = document.getElementById('plan-tree-canvas');
+    canvasContainer.innerHTML = '';
+
+    // --- 1. Dynamic Size Calculation ---
+    // Find the furthest node to the right and bottom
+    let maxX = 0;
+    let maxY = 0;
     
-    // MATCH CSS DIMENSIONS EXACTLY
-    const width = 2600; 
-    const height = 1200;
+    planStructure.forEach(node => {
+        if(node.x > maxX) maxX = node.x;
+        if(node.y > maxY) maxY = node.y;
+    });
+
+    // Add padding (node width is ~120, height ~60)
+    const width = maxX + 250; 
+    const height = maxY + 150;
+
+    // Apply strict size to container
+    canvasContainer.style.width = `${width}px`;
+    canvasContainer.style.height = `${height}px`;
 
     const svg = d3.select("#plan-tree-canvas")
         .append("svg")
@@ -1873,7 +1927,7 @@ function renderPlanTree(passed, registered, courseDetails) {
         .attr("height", height)
         .append("g");
 
-    // 1. Draw Connectors
+    // --- 2. Draw Connectors ---
     planLinks.forEach(link => {
         const sourceNode = planStructure.find(n => n.id === link.s);
         const targetNode = planStructure.find(n => n.id === link.t);
@@ -1896,7 +1950,7 @@ function renderPlanTree(passed, registered, courseDetails) {
         }
     });
 
-    // 2. Draw Nodes
+    // --- 3. Draw Nodes ---
     planStructure.forEach(node => {
         const details = courseDetails[node.id];
         
@@ -1921,10 +1975,9 @@ function renderPlanTree(passed, registered, courseDetails) {
         const g = svg.append("g")
             .attr("transform", `translate(${node.x}, ${node.y})`)
             .style("cursor", "pointer")
-            // Pass node coordinates (node.x, node.y) to the popup function
             .on("click", (event) => {
-                event.stopPropagation(); // Prevent closing immediately
-                showCoursePopup(node.id, details, statusClass, statusKey, node.x, node.y);
+                event.stopPropagation(); 
+                showCoursePopup(node.id, details, statusClass, statusKey, event.currentTarget);
             });
 
         // Box
@@ -1955,31 +2008,51 @@ function renderPlanTree(passed, registered, courseDetails) {
     });
 }
 
-// Updated Popup Function with Coordinates (x, y)
-window.showCoursePopup = function(code, details, statusClass, statusKey, x, y) {
+window.showCoursePopup = function(code, details, statusClass, statusKey, targetElement) {
     const popup = document.getElementById('course-popup');
+    const overlay = document.getElementById('plan-overlay');
+    const highlightContainer = document.getElementById('node-highlight-container'); 
+    
+    // 1. Get exact position
+    const rect = targetElement.getBoundingClientRect(); 
+    
+    // 2. Create HTML Clone (The "Pop Out")
+    highlightContainer.innerHTML = ''; 
+    highlightContainer.classList.remove('hidden'); // <--- CRITICAL FIX
+    highlightContainer.classList.add('active');
+
+    const div = document.createElement('div');
+    div.className = `node-html-clone ${statusClass}`;
+    
+    // Copy Size and Position exactly
+    div.style.width = `${rect.width}px`;
+    div.style.height = `${rect.height}px`;
+    div.style.top = `${rect.top}px`;
+    div.style.left = `${rect.left}px`;
+    div.style.transform = "scale(1.05)"; 
+    div.style.transition = "transform 0.2s ease";
+
+    // Clone Content
+    const name = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : "Loading...";
+    const shortName = name.length > 18 ? name.substring(0, 16) + ".." : name;
+    
+    div.innerHTML = `
+        <span class="clone-code">${code}</span>
+        <span class="clone-name">${shortName}</span>
+    `;
+
+    highlightContainer.appendChild(div);
+
+    // 3. Populate Popup Content
     const title = document.getElementById('popup-title');
     const desc = document.getElementById('popup-desc');
     const credits = document.getElementById('popup-credits');
     const statusBadge = document.getElementById('popup-status');
 
-    // 1. Position Popup BESIDE the node
-    // Node width is 120, so we place it at x + 130
-    popup.style.left = (x + 130) + 'px'; 
-    popup.style.top = y + 'px';
-    
-    // If it's too far right (near edge of canvas), place it to the left instead
-    if (x > 1400) {
-        popup.style.left = (x - 260) + 'px'; // 250 width + 10 padding
-    }
-
-    popup.classList.remove('hidden');
-    
-    // 2. Populate Content
     if (details) {
-        const name = currentLang === 'ar' ? details.course_name_ar : details.course_name_en;
+        const fullName = currentLang === 'ar' ? details.course_name_ar : details.course_name_en;
         title.textContent = `${code}`;
-        desc.textContent = name; // Using desc for full name
+        desc.textContent = fullName;
         credits.textContent = `${details.credit_hours} ${translations[currentLang].lbl_credits || 'Cr'}`;
     } else {
         title.textContent = code;
@@ -1987,20 +2060,48 @@ window.showCoursePopup = function(code, details, statusClass, statusKey, x, y) {
         credits.textContent = "--";
     }
 
-    // 3. Status Badge
     statusBadge.textContent = translations[currentLang][statusKey];
     let badgeColor = "badge-gray";
     if (statusClass === 'passed') badgeColor = "badge-green";
     else if (statusClass === 'registered') badgeColor = "badge-blue";
     else if (statusClass === 'open') badgeColor = "badge-yellow";
-    
     statusBadge.className = `badge ${badgeColor}`;
+
+    // 4. Position Popup
+    let left = rect.right + 20; 
+    let top = rect.top;
+    const popupWidth = 320;
+
+    if (left + popupWidth > window.innerWidth) {
+        left = rect.left - popupWidth - 20; 
+    }
+    
+    const popupHeight = 200; 
+    if (top + popupHeight > window.innerHeight) {
+        top = window.innerHeight - popupHeight - 20;
+    }
+    if (top < 20) top = 20;
+
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+
+    // 5. Show Elements
+    popup.classList.remove('hidden');
+    if (overlay) overlay.classList.remove('hidden');
 }
 
 window.closePlanPopup = function() {
     document.getElementById('course-popup').classList.add('hidden');
-}
+    const overlay = document.getElementById('plan-overlay');
+    if (overlay) overlay.classList.add('hidden');
 
+    const highlightContainer = document.getElementById('node-highlight-container');
+    if (highlightContainer) {
+        highlightContainer.classList.remove('active');
+        highlightContainer.classList.add('hidden'); // <--- CRITICAL FIX
+        highlightContainer.innerHTML = ''; 
+    }
+}
 if(closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
 if(closeModal) closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
 

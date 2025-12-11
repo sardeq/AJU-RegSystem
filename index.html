@@ -338,7 +338,20 @@
                 </div>
     
     <div class="tree-scroll-wrapper" id="tree-wrapper">
-        <div id="course-popup" class="hidden">
+
+            <div id="plan-tree-canvas">
+            </div>
+        </div>
+    </div>
+    
+        </div>
+    </div>
+
+    <div id="node-highlight-container" class="hidden"></div>
+
+    <div id="plan-overlay" class="hidden" onclick="closePlanPopup()"></div>
+
+    <div id="course-popup" class="hidden">
             <button class="close-popup" onclick="closePlanPopup()">×</button>
             <h3 id="popup-title">Course Name</h3>
             <p id="popup-desc">Full Course Name...</p>
@@ -347,13 +360,6 @@
                 <span id="popup-status" class="badge">Status</span>
             </div>
         </div>
-
-        <div id="plan-tree-canvas">
-            </div>
-    </div>
-</div>
-        </div>
-    </div>
 
     <div id="ai-modal" class="modal hidden">
         <div class="modal-content">
