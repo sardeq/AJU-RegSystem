@@ -1803,52 +1803,43 @@ function renderPlanTree(passed, registered, courseDetails) {
     const canvas = document.getElementById('plan-tree-canvas');
     canvas.innerHTML = '';
     
-    // Increased canvas size for better spacing
-    const width = 1800;
+    // MATCH CSS DIMENSIONS EXACTLY
+    const width = 1800; 
     const height = 900;
 
-    // Create SVG container
     const svg = d3.select("#plan-tree-canvas")
         .append("svg")
         .attr("width", width)
         .attr("height", height)
         .append("g");
 
-    // --- 1. Draw Professional "Stepped" Connectors ---
+    // 1. Draw Connectors
     planLinks.forEach(link => {
         const sourceNode = planStructure.find(n => n.id === link.s);
         const targetNode = planStructure.find(n => n.id === link.t);
 
         if (sourceNode && targetNode) {
-            // Calculate anchor points (Bottom Center of Source -> Top Center of Target)
-            const srcX = sourceNode.x + 60; // 60 = half of node width (120)
-            const srcY = sourceNode.y + 60; // 60 = node height
+            const srcX = sourceNode.x + 60; 
+            const srcY = sourceNode.y + 60; 
             const tgtX = targetNode.x + 60;
             const tgtY = targetNode.y;
-
-            // Calculate mid-point for the right-angle turn
             const midY = srcY + (tgtY - srcY) / 2;
 
-            // Draw Path: Start -> Down -> Horizontal -> Down -> End
-            const pathData = `M ${srcX} ${srcY} 
-                              V ${midY} 
-                              H ${tgtX} 
-                              V ${tgtY}`;
+            const pathData = `M ${srcX} ${srcY} V ${midY} H ${tgtX} V ${tgtY}`;
 
             svg.append("path")
                 .attr("d", pathData)
                 .attr("fill", "none")
-                .attr("stroke", "#b0bec5") // Light gray connector
+                .attr("stroke", "#b0bec5")
                 .attr("stroke-width", 2)
                 .attr("class", "tree-link");
         }
     });
 
-    // --- 2. Draw Enhanced Nodes ---
+    // 2. Draw Nodes
     planStructure.forEach(node => {
         const details = courseDetails[node.id];
         
-        // Determine Status
         let statusClass = "locked";
         let statusKey = "status_locked";
 
@@ -1859,10 +1850,8 @@ function renderPlanTree(passed, registered, courseDetails) {
             statusClass = "registered";
             statusKey = "status_registered";
         } else {
-             // Logic: Open if all parents are passed
              const parents = planLinks.filter(l => l.t === node.id);
              const parentsPassed = parents.every(p => passed.has(p.s));
-             
              if(parents.length === 0 || parentsPassed) {
                  statusClass = "open";
                  statusKey = "status_open";
@@ -1872,82 +1861,80 @@ function renderPlanTree(passed, registered, courseDetails) {
         const g = svg.append("g")
             .attr("transform", `translate(${node.x}, ${node.y})`)
             .style("cursor", "pointer")
-            .on("click", () => showCoursePopup(node.id, details, statusClass, statusKey));
+            // Pass node coordinates (node.x, node.y) to the popup function
+            .on("click", (event) => {
+                event.stopPropagation(); // Prevent closing immediately
+                showCoursePopup(node.id, details, statusClass, statusKey, node.x, node.y);
+            });
 
-        // A. Node Background (The Card)
+        // Box
         g.append("rect")
             .attr("width", 120)
             .attr("height", 60)
-            .attr("rx", 8) // Rounded corners
+            .attr("rx", 8)
             .attr("class", `node-box ${statusClass}`);
 
-        // B. Status Indicator Strip (Left side)
-        g.append("rect")
-            .attr("width", 5)
-            .attr("height", 60)
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("rx", 8) // This will look odd on bottom left, masked by main rect usually or clip path. 
-                           // Simpler: Just a colored left border via CSS or a separate rect clipped.
-            .attr("class", `node-strip ${statusClass}`);
-
-        // C. Course Code (Top)
+        // Code
         g.append("text")
-            .attr("x", 60)
-            .attr("y", 20)
+            .attr("x", 60).attr("y", 20)
             .attr("text-anchor", "middle")
             .attr("class", "node-code")
             .text(node.id);
 
-        // D. Course Name (Bottom, truncated)
+        // Name
         const fullName = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : "Loading...";
         const shortName = fullName.length > 18 ? fullName.substring(0, 16) + ".." : fullName;
 
         g.append("text")
-            .attr("x", 60)
-            .attr("y", 40)
+            .attr("x", 60).attr("y", 40)
             .attr("text-anchor", "middle")
             .attr("class", "node-name")
             .text(shortName);
             
-        // Optional: Add a title tooltip for full name on hover
         g.append("title").text(fullName);
     });
 }
 
-window.showCoursePopup = function(code, details, statusClass, statusKey) {
+// Updated Popup Function with Coordinates (x, y)
+window.showCoursePopup = function(code, details, statusClass, statusKey, x, y) {
     const popup = document.getElementById('course-popup');
     const title = document.getElementById('popup-title');
     const desc = document.getElementById('popup-desc');
     const credits = document.getElementById('popup-credits');
     const statusBadge = document.getElementById('popup-status');
 
+    // 1. Position Popup BESIDE the node
+    // Node width is 120, so we place it at x + 130
+    popup.style.left = (x + 130) + 'px'; 
+    popup.style.top = y + 'px';
+    
+    // If it's too far right (near edge of canvas), place it to the left instead
+    if (x > 1400) {
+        popup.style.left = (x - 260) + 'px'; // 250 width + 10 padding
+    }
+
     popup.classList.remove('hidden');
     
-    // 1. Set Title (Course Name from DB)
+    // 2. Populate Content
     if (details) {
-        // Dynamic Translation: Check currentLang
         const name = currentLang === 'ar' ? details.course_name_ar : details.course_name_en;
-        title.textContent = `${code} - ${name}`;
+        title.textContent = `${code}`;
+        desc.textContent = name; // Using desc for full name
         credits.textContent = `${details.credit_hours} ${translations[currentLang].lbl_credits || 'Cr'}`;
     } else {
         title.textContent = code;
+        desc.textContent = "Loading...";
         credits.textContent = "--";
     }
 
-    // 2. Set Status Text (From Translation Keys)
+    // 3. Status Badge
     statusBadge.textContent = translations[currentLang][statusKey];
-    
-    // 3. Set Color Class
     let badgeColor = "badge-gray";
     if (statusClass === 'passed') badgeColor = "badge-green";
     else if (statusClass === 'registered') badgeColor = "badge-blue";
     else if (statusClass === 'open') badgeColor = "badge-yellow";
     
     statusBadge.className = `badge ${badgeColor}`;
-    
-    // Description placeholder (or fetch from DB if column exists)
-    desc.textContent = ""; 
 }
 
 window.closePlanPopup = function() {
