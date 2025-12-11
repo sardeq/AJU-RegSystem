@@ -1803,33 +1803,48 @@ function renderPlanTree(passed, registered, courseDetails) {
     const canvas = document.getElementById('plan-tree-canvas');
     canvas.innerHTML = '';
     
-    // Width can be adjusted or dynamic based on screen
-    const width = 1600;
-    const height = 800;
+    // Increased canvas size for better spacing
+    const width = 1800;
+    const height = 900;
 
+    // Create SVG container
     const svg = d3.select("#plan-tree-canvas")
         .append("svg")
         .attr("width", width)
         .attr("height", height)
         .append("g");
 
-    // 1. Draw Links
+    // --- 1. Draw Professional "Stepped" Connectors ---
     planLinks.forEach(link => {
         const sourceNode = planStructure.find(n => n.id === link.s);
         const targetNode = planStructure.find(n => n.id === link.t);
 
         if (sourceNode && targetNode) {
-            svg.append("line")
-                .attr("x1", sourceNode.x + 50)
-                .attr("y1", sourceNode.y + 40)
-                .attr("x2", targetNode.x + 50)
-                .attr("y2", targetNode.y)
-                .attr("stroke", "#ccc")
-                .attr("stroke-width", 2);
+            // Calculate anchor points (Bottom Center of Source -> Top Center of Target)
+            const srcX = sourceNode.x + 60; // 60 = half of node width (120)
+            const srcY = sourceNode.y + 60; // 60 = node height
+            const tgtX = targetNode.x + 60;
+            const tgtY = targetNode.y;
+
+            // Calculate mid-point for the right-angle turn
+            const midY = srcY + (tgtY - srcY) / 2;
+
+            // Draw Path: Start -> Down -> Horizontal -> Down -> End
+            const pathData = `M ${srcX} ${srcY} 
+                              V ${midY} 
+                              H ${tgtX} 
+                              V ${tgtY}`;
+
+            svg.append("path")
+                .attr("d", pathData)
+                .attr("fill", "none")
+                .attr("stroke", "#b0bec5") // Light gray connector
+                .attr("stroke-width", 2)
+                .attr("class", "tree-link");
         }
     });
 
-    // 2. Draw Nodes
+    // --- 2. Draw Enhanced Nodes ---
     planStructure.forEach(node => {
         const details = courseDetails[node.id];
         
@@ -1846,7 +1861,6 @@ function renderPlanTree(passed, registered, courseDetails) {
         } else {
              // Logic: Open if all parents are passed
              const parents = planLinks.filter(l => l.t === node.id);
-             // If no parents (Root) or all parents are in 'passed' set
              const parentsPassed = parents.every(p => passed.has(p.s));
              
              if(parents.length === 0 || parentsPassed) {
@@ -1860,22 +1874,44 @@ function renderPlanTree(passed, registered, courseDetails) {
             .style("cursor", "pointer")
             .on("click", () => showCoursePopup(node.id, details, statusClass, statusKey));
 
-        // Node Box
+        // A. Node Background (The Card)
         g.append("rect")
-            .attr("width", 100)
-            .attr("height", 40)
-            .attr("rx", 5)
+            .attr("width", 120)
+            .attr("height", 60)
+            .attr("rx", 8) // Rounded corners
             .attr("class", `node-box ${statusClass}`);
 
-        // Node Text (Code)
+        // B. Status Indicator Strip (Left side)
+        g.append("rect")
+            .attr("width", 5)
+            .attr("height", 60)
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("rx", 8) // This will look odd on bottom left, masked by main rect usually or clip path. 
+                           // Simpler: Just a colored left border via CSS or a separate rect clipped.
+            .attr("class", `node-strip ${statusClass}`);
+
+        // C. Course Code (Top)
         g.append("text")
-            .attr("x", 50)
-            .attr("y", 25)
+            .attr("x", 60)
+            .attr("y", 20)
             .attr("text-anchor", "middle")
-            .attr("fill", "white")
-            .style("font-size", "12px")
-            .style("font-weight", "bold")
+            .attr("class", "node-code")
             .text(node.id);
+
+        // D. Course Name (Bottom, truncated)
+        const fullName = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : "Loading...";
+        const shortName = fullName.length > 18 ? fullName.substring(0, 16) + ".." : fullName;
+
+        g.append("text")
+            .attr("x", 60)
+            .attr("y", 40)
+            .attr("text-anchor", "middle")
+            .attr("class", "node-name")
+            .text(shortName);
+            
+        // Optional: Add a title tooltip for full name on hover
+        g.append("title").text(fullName);
     });
 }
 
