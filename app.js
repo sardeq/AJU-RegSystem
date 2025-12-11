@@ -236,123 +236,142 @@ const translations = {
 };
 
 const planStructure = [
+    // --- SIDE LABELS (Circles) ---
+    { id: "lbl_95", x: 50, y: 50, type: 'label-circle', label: "95\nساعه" },
+    { id: "lbl_75", x: 1550, y: 50, type: 'label-circle', label: "75\n%" },
+
     // --- LEVEL 1 (ROOT) ---
-    { id: "311100", x: 1100, y: 50 }, // Top Center
+    { id: "311100", x: 800, y: 50, type: 'course' }, // Root
 
     // --- LEVEL 2 (Direct Children) ---
-    // Left Wing (Software Eng)
-    { id: "313160", x: 400, y: 200 }, // Intro to SE
-    { id: "313269", x: 600, y: 200 }, // Project Mgmt
+    { id: "313160", x: 200, y: 200, type: 'course' }, // Left Branch Start
+    { id: "313269", x: 400, y: 200, type: 'course' }, // Beside Left Branch
     
-    // Center-Left (Programming)
-    { id: "311101", x: 1100, y: 200 }, // Prog 1
+    { id: "311101", x: 650, y: 200, type: 'course' }, // Center-Left Branch
     
-    // Center-Right (Architecture/Ethics)
-    { id: "311220", x: 1500, y: 200 }, // Digital Logic
-    { id: "311160", x: 1700, y: 200 }, // Ethics
-    { id: "601101", x: 1900, y: 200 }, // Calculus 1
+    { id: "311160", x: 950, y: 200, type: 'course' }, // Ethics (Floating)
+    { id: "311220", x: 1150, y: 200, type: 'course' }, // Center-Right Branch
+    { id: "601101", x: 1350, y: 200, type: 'course' }, // Math (Floating)
     
-    // Far Right (Data)
-    { id: "311240", x: 2200, y: 200 }, // Database
+    { id: "311240", x: 1550, y: 200, type: 'course' }, // Far-Right Branch
 
     // --- LEVEL 3 ---
-    // SE Branch
-    { id: "313261", x: 400, y: 350 }, // Requirements
-    { id: "313466", x: 200, y: 350 }, // Documentation
+    // Left Branch
+    { id: "313261", x: 200, y: 350, type: 'course' },
+    { id: "313466", x: 50, y: 350, type: 'course' }, // Side of Left Branch
     
-    // Programming Branch
-    { id: "313204", x: 900, y: 350 },  // Adv Prog
-    { id: "311202", x: 1100, y: 350 }, // OOP
+    // Center-Left Branch
+    { id: "313204", x: 500, y: 350, type: 'course' }, // Side of C-L Branch
+    { id: "311202", x: 650, y: 350, type: 'course' },
     
-    // Arch Branch
-    { id: "311321", x: 1400, y: 350 }, // Arch
-    { id: "311330", x: 1600, y: 350 }, // Networks
+    // Center-Right Branch
+    { id: "311321", x: 1150, y: 350, type: 'course' },
+    { id: "311330", x: 1350, y: 350, type: 'course' }, // Side of C-R Branch
     
     // Math/Data Branch
-    { id: "311210", x: 1900, y: 350 }, // Discrete Math
-    { id: "311340", x: 2100, y: 350 }, // DBMS
-    { id: "311241", x: 2300, y: 350 }, // System Analysis
+    { id: "311210", x: 1350, y: 350, type: 'course' }, // Below Math
+    { id: "311340", x: 1550, y: 350, type: 'course' },
+    { id: "311241", x: 1750, y: 350, type: 'course' }, // Side of Data Branch
 
     // --- LEVEL 4 ---
-    // SE Branch Children
-    { id: "313367", x: 200, y: 500 }, // Specs
-    { id: "313364", x: 400, y: 500 }, // Obj Oriented SE
+    // Left Branch
+    { id: "313367", x: 50, y: 500, type: 'course' },
+    { id: "313364", x: 200, y: 500, type: 'course' },
     
-    // Programming Branch Children
-    { id: "311305", x: 900, y: 500 },  // Visual Prog
-    { id: "311304", x: 1050, y: 500 }, // Web App
-    { id: "313262", x: 600, y: 500 },  // Components (Linked to OOP)
-    { id: "311213", x: 1200, y: 500 }, // Data Structures
-    { id: "313263", x: 1350, y: 500 }, // Multimedia
+    // Center-Left Branch
+    { id: "311305", x: 500, y: 500, type: 'course' },
+    { id: "311304", x: 650, y: 500, type: 'course' },
+    { id: "313263", x: 800, y: 500, type: 'course' },
     
-    // Security (Linked to Networks)
-    { id: "311468", x: 1600, y: 500 }, // Security
+    // Between Branches
+    { id: "313262", x: 350, y: 500, type: 'course' },
+    { id: "311213", x: 950, y: 500, type: 'course' },
+
+    // Right Side
+    { id: "311468", x: 1350, y: 500, type: 'course' }, // Security
 
     // --- LEVEL 5 ---
-    // SE Advanced
-    { id: "313469", x: 200, y: 650 }, // Special Topics
-    { id: "313464", x: 350, y: 650 }, // Re-engineering
-    { id: "313462", x: 500, y: 650 }, // Architecture
-    { id: "313363", x: 650, y: 650 }, // Design
+    { id: "313469", x: 50, y: 650, type: 'course' },
+    { id: "313464", x: 200, y: 650, type: 'course' },
+    { id: "313462", x: 350, y: 650, type: 'course' },
+    { id: "313363", x: 500, y: 650, type: 'course' },
     
-    // Algorithms (Linked to Data Struct)
-    { id: "311314", x: 1200, y: 650 }, 
+    { id: "311314", x: 950, y: 650, type: 'course' }, // Algorithms
 
     // --- LEVEL 6 ---
-    // Quality/Testing
-    { id: "313365", x: 550, y: 800 }, // Testing
-    { id: "313366", x: 700, y: 800 }, // Quality
+    { id: "313365", x: 500, y: 800, type: 'course' },
+    { id: "313366", x: 650, y: 800, type: 'course' },
     
-    // Advanced CS
-    { id: "311350", x: 1100, y: 800 }, // AI
-    { id: "311422", x: 1300, y: 800 }, // OS
-    
+    { id: "311350", x: 850, y: 800, type: 'course' }, // AI
+    { id: "311422", x: 1050, y: 800, type: 'course' }, // OS
+
     // --- LEVEL 7 ---
-    { id: "313468", x: 650, y: 950 }  // Maintenance
+    { id: "313468", x: 500, y: 950, type: 'course' },
+
+    // --- BOTTOM LEGEND BOXES (Right Side) ---
+    { id: "leg_1", x: 1750, y: 600, type: 'label-box', label: "متطلبات جامعة\nاجباري 12\nساعة" },
+    { id: "leg_2", x: 1750, y: 720, type: 'label-box', label: "متطلبات حرة\nخارج الخطة\n3 ساعات" },
+    { id: "leg_3", x: 1750, y: 840, type: 'label-box', label: "متطلبات مساندة\nاجباري\n6 ساعات" },
+    { id: "leg_4", x: 1750, y: 960, type: 'label-box', label: "متطلبات جامعة\nاختياري\n15 ساعات" },
+
+    // --- BOTTOM PROJECT/TRAINING ---
+    { id: "proj_grad", x: 1250, y: 1100, type: 'label-box-green', label: "مشروع تخرج\nمشروط بقطع\n110 ساعات نجاح" },
+    { id: "proj_train", x: 1450, y: 1100, type: 'label-box-green', label: "تدريب ميداني\nمشروط بـ90\nساعه نجاح" }
 ];
 
-// Define Connections (Source -> Target)
 const planLinks = [
+    // Root Connections
     { s: "311100", t: "313160" },
+    { s: "311100", t: "313269" },
     { s: "311100", t: "311101" },
+    { s: "311100", t: "311160" },
     { s: "311100", t: "311220" },
+    { s: "311100", t: "601101" },
     { s: "311100", t: "311240" },
-    
-    { s: "313160", t: "313269" },
+
+    // Left Branch
     { s: "313160", t: "313261" },
-    
+    { s: "313160", t: "313466" },
     { s: "313261", t: "313364" },
-    { s: "313261", t: "313466" },
     { s: "313261", t: "313367" },
-    
     { s: "313364", t: "313464" },
     { s: "313364", t: "313462" },
+    { s: "313364", t: "313469" },
     
-    { s: "313462", t: "313469" },
-
+    // Center-Left Branch
     { s: "311101", t: "313204" },
     { s: "311101", t: "311202" },
-    
     { s: "311202", t: "311305" },
     { s: "311202", t: "311304" },
-    { s: "311202", t: "311213" },
-    { s: "311202", t: "313262" },
+    { s: "311202", t: "313263" },
     
-    { s: "311213", t: "311314" },
-    { s: "311314", t: "311350" },
+    // Cross-Branch Connections
+    { s: "313269", t: "313262" },
+    { s: "311101", t: "313262" }, // From image, seems connected to Prog 1 too
+    { s: "313262", t: "313363" },
+    { s: "313462", t: "313363" },
+    { s: "313363", t: "313365" },
+    { s: "313363", t: "313366" },
+    { s: "313365", t: "313468" },
+
+    // Center-Right Branch
     { s: "311220", t: "311321" },
     { s: "311220", t: "311330" },
     { s: "311330", t: "311468" },
-    
-    { s: "313262", t: "313363" },
-    { s: "313363", t: "313366" },
-    { s: "313363", t: "313365" },
-    { s: "313366", t: "313468" },
-    
-    { s: "311240", t: "311340" },
-    { s: "311240", t: "311241" }
-];
 
+    // Math/Data Branch
+    { s: "601101", t: "311210" },
+    { s: "311240", t: "311340" },
+    { s: "311240", t: "311241" },
+    { s: "311210", t: "311213" },
+    { s: "311321", t: "311213" }, // From image
+    { s: "311213", t: "311314" },
+    { s: "311314", t: "311350" },
+    { s: "311314", t: "311422" },
+
+    // Bottom Connection
+    { s: "proj_train", t: "proj_grad" }
+];
 let allCoursesData = [];
 let userHistoryMap = {}; // Maps course_code -> { status, grade }
 
@@ -1903,21 +1922,23 @@ function renderPlanTree(passed, registered, courseDetails) {
     const canvasContainer = document.getElementById('plan-tree-canvas');
     canvasContainer.innerHTML = '';
 
-    // --- 1. Dynamic Size Calculation ---
-    // Find the furthest node to the right and bottom
+    // --- 1. Dynamic Size Calculation (Updated for tighter fit) ---
     let maxX = 0;
     let maxY = 0;
     
     planStructure.forEach(node => {
-        if(node.x > maxX) maxX = node.x;
-        if(node.y > maxY) maxY = node.y;
+        // Consider the node's dimension in the max calculation
+        const nodeWidth = node.type === 'label-circle' ? 100 : 120;
+        const nodeHeight = node.type === 'label-circle' ? 100 : (node.type.includes('label-box') ? 100 : 60);
+        
+        if(node.x + nodeWidth > maxX) maxX = node.x + nodeWidth;
+        if(node.y + nodeHeight > maxY) maxY = node.y + nodeHeight;
     });
 
-    // Add padding (node width is ~120, height ~60)
-    const width = maxX + 250; 
-    const height = maxY + 150;
+    // Reduced padding to minimize whitespace
+    const width = maxX + 50; 
+    const height = maxY + 50;
 
-    // Apply strict size to container
     canvasContainer.style.width = `${width}px`;
     canvasContainer.style.height = `${height}px`;
 
@@ -1927,24 +1948,42 @@ function renderPlanTree(passed, registered, courseDetails) {
         .attr("height", height)
         .append("g");
 
-    // --- 2. Draw Connectors ---
+    // --- 2. Draw Connectors (Only for courses and bottom project) ---
     planLinks.forEach(link => {
         const sourceNode = planStructure.find(n => n.id === link.s);
         const targetNode = planStructure.find(n => n.id === link.t);
 
         if (sourceNode && targetNode) {
-            const srcX = sourceNode.x + 60; 
-            const srcY = sourceNode.y + 60; 
-            const tgtX = targetNode.x + 60;
-            const tgtY = targetNode.y;
-            const midY = srcY + (tgtY - srcY) / 2;
+            // Different connector attachment points based on node type
+            let srcX, srcY, tgtX, tgtY;
 
-            const pathData = `M ${srcX} ${srcY} V ${midY} H ${tgtX} V ${tgtY}`;
+            if (sourceNode.type.includes('label-box')) {
+                 srcX = sourceNode.x;
+                 srcY = sourceNode.y + 50; // Middle of 100px height
+                 tgtX = targetNode.x + 120;
+                 tgtY = targetNode.y + 50;
+            } else {
+                // Standard Course Node
+                srcX = sourceNode.x + 60; 
+                srcY = sourceNode.y + 60; 
+                tgtX = targetNode.x + 60;
+                tgtY = targetNode.y;
+            }
 
+            let pathData;
+            if (sourceNode.y === targetNode.y) {
+                // Horizontal Link (for bottom project)
+                pathData = `M ${srcX} ${srcY} H ${tgtX}`;
+            } else {
+                // Standard elbow connector
+                const midY = srcY + (tgtY - srcY) / 2;
+                pathData = `M ${srcX} ${srcY} V ${midY} H ${tgtX} V ${tgtY}`;
+            }
+            
             svg.append("path")
                 .attr("d", pathData)
                 .attr("fill", "none")
-                .attr("stroke", "#b0bec5")
+                .attr("stroke", "#0d47a1") // Dark blue from image
                 .attr("stroke-width", 2)
                 .attr("class", "tree-link");
         }
@@ -1952,62 +1991,106 @@ function renderPlanTree(passed, registered, courseDetails) {
 
     // --- 3. Draw Nodes ---
     planStructure.forEach(node => {
-        const details = courseDetails[node.id];
-        
-        let statusClass = "locked";
-        let statusKey = "status_locked";
-
-        if (passed.has(node.id)) {
-            statusClass = "passed";
-            statusKey = "status_passed";
-        } else if (registered.has(node.id)) {
-            statusClass = "registered";
-            statusKey = "status_registered";
-        } else {
-             const parents = planLinks.filter(l => l.t === node.id);
-             const parentsPassed = parents.every(p => passed.has(p.s));
-             if(parents.length === 0 || parentsPassed) {
-                 statusClass = "open";
-                 statusKey = "status_open";
-             }
-        }
-
         const g = svg.append("g")
-            .attr("transform", `translate(${node.x}, ${node.y})`)
-            .style("cursor", "pointer")
-            .on("click", (event) => {
+            .attr("transform", `translate(${node.x}, ${node.y})`);
+
+        if (node.type === 'label-circle') {
+            // --- CIRCULAR LABEL NODE ---
+            g.append("circle")
+                .attr("cx", 50).attr("cy", 50).attr("r", 50)
+                .attr("fill", "#0d47a1") // Dark blue
+                .attr("stroke", "#fff").attr("stroke-width", 2);
+            
+            // Multiline Text Support
+            const lines = node.label.split('\n');
+            lines.forEach((line, i) => {
+                g.append("text")
+                    .attr("x", 50)
+                    .attr("y", 50 - ((lines.length - 1) * 10) + (i * 20)) // Center multiline text
+                    .attr("text-anchor", "middle")
+                    .attr("dominant-baseline", "middle")
+                    .attr("fill", "white")
+                    .attr("font-weight", "bold")
+                    .attr("font-size", i === 0 ? "24px" : "16px") // First line bigger
+                    .text(line);
+            });
+
+        } else if (node.type && node.type.includes('label-box')) {
+            // --- RECTANGULAR LABEL BOX ---
+            const bgColor = node.type === 'label-box-green' ? "#1b5e20" : "#0d47a1"; // Dark green or blue
+            
+            g.append("rect")
+                .attr("width", 120).attr("height", 100).attr("rx", 0)
+                .attr("fill", bgColor)
+                .attr("stroke", "#fff").attr("stroke-width", 1);
+            
+            const lines = node.label.split('\n');
+            lines.forEach((line, i) => {
+                 g.append("text")
+                    .attr("x", 60)
+                    .attr("y", 50 - ((lines.length - 1) * 10) + (i * 20))
+                    .attr("text-anchor", "middle")
+                    .attr("dominant-baseline", "middle")
+                    .attr("fill", "white")
+                    .attr("font-size", "12px")
+                    .text(line);
+            });
+
+        } else {
+            // --- STANDARD COURSE NODE (Existing Logic) ---
+            const details = courseDetails[node.id];
+            let statusClass = "locked";
+            let statusKey = "status_locked";
+
+            if (passed.has(node.id)) {
+                statusClass = "passed"; statusKey = "status_passed";
+            } else if (registered.has(node.id)) {
+                statusClass = "registered"; statusKey = "status_registered";
+            } else {
+                 const parents = planLinks.filter(l => l.t === node.id);
+                 const parentsPassed = parents.every(p => passed.has(p.s) || planStructure.find(n => n.id === p.s).type !== 'course');
+                 if(parents.length === 0 || parentsPassed) {
+                     statusClass = "open"; statusKey = "status_open";
+                 }
+            }
+
+            // Make clickable only if it's a course
+            g.style("cursor", "pointer")
+             .on("click", (event) => {
                 event.stopPropagation(); 
                 showCoursePopup(node.id, details, statusClass, statusKey, event.currentTarget);
             });
 
-        // Box
-        g.append("rect")
-            .attr("width", 120)
-            .attr("height", 60)
-            .attr("rx", 8)
-            .attr("class", `node-box ${statusClass}`);
+            // Root node gets a distinct dark green color from image
+            const isRoot = node.id === '311100';
+            const rootClass = isRoot ? 'root-node' : '';
 
-        // Code
-        g.append("text")
-            .attr("x", 60).attr("y", 20)
-            .attr("text-anchor", "middle")
-            .attr("class", "node-code")
-            .text(node.id);
+            // Box
+            g.append("rect")
+                .attr("width", 120).attr("height", 60).attr("rx", 8)
+                .attr("class", `node-box ${statusClass} ${rootClass}`);
 
-        // Name
-        const fullName = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : "Loading...";
-        const shortName = fullName.length > 18 ? fullName.substring(0, 16) + ".." : fullName;
+            // Code
+            g.append("text")
+                .attr("x", 60).attr("y", 20)
+                .attr("text-anchor", "middle")
+                .attr("class", `node-code ${isRoot ? 'root-text' : ''}`)
+                .text(node.id);
 
-        g.append("text")
-            .attr("x", 60).attr("y", 40)
-            .attr("text-anchor", "middle")
-            .attr("class", "node-name")
-            .text(shortName);
-            
-        g.append("title").text(fullName);
+            // Name
+            const fullName = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : (isRoot ? "مقدمة الى برمجة الحاسوب" : "Loading...");
+            const shortName = fullName.length > 18 ? fullName.substring(0, 16) + ".." : fullName;
+
+            g.append("text")
+                .attr("x", 60).attr("y", 40)
+                .attr("text-anchor", "middle")
+                .attr("class", `node-name ${isRoot ? 'root-text' : ''}`)
+                .text(shortName);
+                
+            g.append("title").text(fullName);
+        }
     });
 }
-
 window.showCoursePopup = function(code, details, statusClass, statusKey, targetElement) {
     const popup = document.getElementById('course-popup');
     const overlay = document.getElementById('plan-overlay');
