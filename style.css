@@ -1249,13 +1249,13 @@ button:hover {
 
 /* Canvas Background - The actual large drawing board */
 #plan-tree-canvas {
-    /* CRITICAL: Must match the SVG size in JS (1800x900) */
-    width: 1800px;
-    height: 900px;
+    /* INCREASED SIZE significantly */
+    width: 2600px;
+    height: 1200px;
     background-color: #fcfcfc;
-    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-    background-size: 20px 20px; /* Dot grid */
-    position: relative; /* Allows popup to position absolutely inside this */
+    background-image: radial-gradient(#e0e0e0 2px, transparent 2px); /* Slightly clearer dots */
+    background-size: 30px 30px; /* Bigger grid cells */
+    position: relative; 
 }
 
 /* 1. Connector Lines */

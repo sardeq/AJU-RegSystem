@@ -236,54 +236,79 @@ const translations = {
 };
 
 const planStructure = [
-    // ROOT: Intro to Programming
-    { id: "311100", x: 600, y: 50 }, // Top Center
+    // --- LEVEL 1 (ROOT) ---
+    { id: "311100", x: 1100, y: 50 }, // Top Center
 
-    // Level 2
-    { id: "313160", x: 200, y: 150 }, // Intro to SE
-    { id: "313269", x: 350, y: 150 }, // Project Mgmt (Linked from 313160)
-    { id: "311101", x: 600, y: 150 }, // Prog 1 (Linked from 311100)
-    { id: "311220", x: 850, y: 150 }, // Digital Logic (Linked from 311100)
-    { id: "311160", x: 950, y: 150 }, // Ethics (Linked from 311100 - Assumption)
-    { id: "601101", x: 1050, y: 150 }, // Calculus 1
-    { id: "311240", x: 1250, y: 150 }, // Database (Linked from 311100)
-
-    // Level 3 (Branches from Level 2)
-    { id: "313466", x: 50,  y: 250 }, // Documentation
-    { id: "313261", x: 200, y: 250 }, // Requirements
-    { id: "313204", x: 500, y: 250 }, // Adv Prog
-    { id: "311202", x: 600, y: 250 }, // OOP
-    { id: "311321", x: 800, y: 250 }, // Arch
-    { id: "311330", x: 900, y: 250 }, // Networks
-    { id: "311210", x: 1050, y: 250 }, // Discrete Math
-    { id: "311340", x: 1200, y: 250 }, // DBMS
-    { id: "311241", x: 1350, y: 250 }, // System Analysis
-
-    // Level 4
-    { id: "313367", x: 50,  y: 350 }, // Specs
-    { id: "313364", x: 200, y: 350 }, // Obj Oriented SE
-    { id: "313262", x: 350, y: 350 }, // Components
-    { id: "311305", x: 500, y: 350 }, // Visual Prog
-    { id: "311304", x: 600, y: 350 }, // Web App
-    { id: "313263", x: 750, y: 350 }, // Multimedia
-    { id: "311468", x: 900, y: 350 }, // Security
-    { id: "311213", x: 700, y: 400 }, // Data Structures (Often linked to OOP)
-
-    // Level 5
-    { id: "313469", x: 50,  y: 450 }, // Special Topics
-    { id: "313464", x: 200, y: 450 }, // Re-engineering
-    { id: "313462", x: 300, y: 450 }, // Architecture
-    { id: "313363", x: 400, y: 450 }, // Design
-    { id: "311314", x: 700, y: 500 }, // Algorithms
+    // --- LEVEL 2 (Direct Children) ---
+    // Left Wing (Software Eng)
+    { id: "313160", x: 400, y: 200 }, // Intro to SE
+    { id: "313269", x: 600, y: 200 }, // Project Mgmt
     
-    // Level 6
-    { id: "313365", x: 300, y: 550 }, // Testing
-    { id: "313366", x: 400, y: 550 }, // Quality
-    { id: "311350", x: 700, y: 600 }, // AI
-    { id: "311422", x: 800, y: 500 }, // OS
+    // Center-Left (Programming)
+    { id: "311101", x: 1100, y: 200 }, // Prog 1
     
-    // Level 7
-    { id: "313468", x: 400, y: 650 }  // Maintenance
+    // Center-Right (Architecture/Ethics)
+    { id: "311220", x: 1500, y: 200 }, // Digital Logic
+    { id: "311160", x: 1700, y: 200 }, // Ethics
+    { id: "601101", x: 1900, y: 200 }, // Calculus 1
+    
+    // Far Right (Data)
+    { id: "311240", x: 2200, y: 200 }, // Database
+
+    // --- LEVEL 3 ---
+    // SE Branch
+    { id: "313261", x: 400, y: 350 }, // Requirements
+    { id: "313466", x: 200, y: 350 }, // Documentation
+    
+    // Programming Branch
+    { id: "313204", x: 900, y: 350 },  // Adv Prog
+    { id: "311202", x: 1100, y: 350 }, // OOP
+    
+    // Arch Branch
+    { id: "311321", x: 1400, y: 350 }, // Arch
+    { id: "311330", x: 1600, y: 350 }, // Networks
+    
+    // Math/Data Branch
+    { id: "311210", x: 1900, y: 350 }, // Discrete Math
+    { id: "311340", x: 2100, y: 350 }, // DBMS
+    { id: "311241", x: 2300, y: 350 }, // System Analysis
+
+    // --- LEVEL 4 ---
+    // SE Branch Children
+    { id: "313367", x: 200, y: 500 }, // Specs
+    { id: "313364", x: 400, y: 500 }, // Obj Oriented SE
+    
+    // Programming Branch Children
+    { id: "311305", x: 900, y: 500 },  // Visual Prog
+    { id: "311304", x: 1050, y: 500 }, // Web App
+    { id: "313262", x: 600, y: 500 },  // Components (Linked to OOP)
+    { id: "311213", x: 1200, y: 500 }, // Data Structures
+    { id: "313263", x: 1350, y: 500 }, // Multimedia
+    
+    // Security (Linked to Networks)
+    { id: "311468", x: 1600, y: 500 }, // Security
+
+    // --- LEVEL 5 ---
+    // SE Advanced
+    { id: "313469", x: 200, y: 650 }, // Special Topics
+    { id: "313464", x: 350, y: 650 }, // Re-engineering
+    { id: "313462", x: 500, y: 650 }, // Architecture
+    { id: "313363", x: 650, y: 650 }, // Design
+    
+    // Algorithms (Linked to Data Struct)
+    { id: "311314", x: 1200, y: 650 }, 
+
+    // --- LEVEL 6 ---
+    // Quality/Testing
+    { id: "313365", x: 550, y: 800 }, // Testing
+    { id: "313366", x: 700, y: 800 }, // Quality
+    
+    // Advanced CS
+    { id: "311350", x: 1100, y: 800 }, // AI
+    { id: "311422", x: 1300, y: 800 }, // OS
+    
+    // --- LEVEL 7 ---
+    { id: "313468", x: 650, y: 950 }  // Maintenance
 ];
 
 // Define Connections (Source -> Target)
@@ -1804,8 +1829,8 @@ function renderPlanTree(passed, registered, courseDetails) {
     canvas.innerHTML = '';
     
     // MATCH CSS DIMENSIONS EXACTLY
-    const width = 1800; 
-    const height = 900;
+    const width = 2600; 
+    const height = 1200;
 
     const svg = d3.select("#plan-tree-canvas")
         .append("svg")
