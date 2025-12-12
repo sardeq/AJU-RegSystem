@@ -136,7 +136,12 @@ const translations = {
         status_passed: "Passed ✅",
         status_registered: "Registered 🕒",
         status_open: "Available 🔓",
-        status_locked: "Locked 🔒"
+        status_locked: "Locked 🔒",
+
+        lbl_history: "Academic History",
+        tbl_grade: "Grade",
+        msg_no_history: "No completed courses found for this semester.",
+        opt_all_semesters: "All Semesters"
     },
     ar: {
         nav_home: "الرئيسية",
@@ -230,7 +235,12 @@ const translations = {
         status_passed: "ناجح ✅",
         status_registered: "مسجل 🕒",
         status_open: "متاح 🔓",
-        status_locked: "مغلق 🔒"
+        status_locked: "مغلق 🔒",
+
+        lbl_history: "السجل الأكاديمي",
+        tbl_grade: "العلامة",
+        msg_no_history: "لا يوجد مواد مكتملة في هذا الفصل.",
+        opt_all_semesters: "جميع الفصول"
 
     }
 };
@@ -679,7 +689,10 @@ window.showSection = function(sectionName) {
         if(allCoursesData.length === 0 && currentUser) loadCoursesSheetData(currentUser.id);
     } else if (sectionName === 'schedule') {
         if(scheduleContainer) scheduleContainer.classList.remove('hidden');
-        if(currentUser) loadFullSchedule(currentUser.id);
+        if(currentUser) {
+            loadFullSchedule(currentUser.id); // Existing weekly schedule
+            initHistory(currentUser.id);      // NEW: Load history filters
+        }
     } else if (sectionName === 'plan') {
         // --- FIX: Unhide the container ---
         if(planContainer) planContainer.classList.remove('hidden'); 
@@ -2249,6 +2262,149 @@ window.closePlanPopup = function() {
         highlightContainer.innerHTML = ''; 
     }
 }
+
+
+async function initHistory(userId) {
+    const select = document.getElementById('history-sem-filter');
+    if (!select) return;
+    
+    // Prevent reloading if already populated (optional optimization)
+    if (select.options.length > 1) return; 
+
+    select.innerHTML = `<option value="">${translations[currentLang].lbl_loading || 'Loading...'}</option>`;
+
+    try {
+        // 1. Fetch all distinct semesters from user's enrollment history
+        const { data, error } = await supabase
+            .from('enrollments')
+            .select(`
+                sections (
+                    semester_id,
+                    semesters (name)
+                )
+            `)
+            .eq('user_id', userId)
+            // Filter out current active/registered courses if you only want 'History'
+            .in('status', ['COMPLETED', 'FAILED']); 
+
+        if (error) throw error;
+
+        // 2. Process unique semesters
+        const semMap = new Map();
+        data.forEach(item => {
+            if (item.sections && item.sections.semesters) {
+                const id = item.sections.semester_id;
+                const name = item.sections.semesters.name;
+                if (!semMap.has(id)) semMap.set(id, name);
+            }
+        });
+
+        // 3. Sort Descending (Newest First)
+        const sortedIds = Array.from(semMap.keys()).sort((a, b) => b - a);
+
+        // 4. Populate Dropdown
+        const allText = translations[currentLang].opt_all_semesters || "All Semesters";
+        select.innerHTML = `<option value="all">${allText}</option>`;
+        
+        sortedIds.forEach(id => {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = semMap.get(id);
+            select.appendChild(option);
+        });
+
+        // 5. Add Event Listener
+        select.onchange = () => loadHistoryTable(userId, select.value);
+
+        // 6. Auto-load the most recent semester history
+        if (sortedIds.length > 0) {
+            select.value = sortedIds[0];
+            loadHistoryTable(userId, sortedIds[0]);
+        } else {
+            select.innerHTML = `<option value="">No history found</option>`;
+        }
+
+    } catch (err) {
+        console.error("History Init Error:", err);
+        select.innerHTML = `<option value="">Error loading semesters</option>`;
+    }
+}
+
+async function loadHistoryTable(userId, semesterId) {
+    const tbody = document.getElementById('history-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+
+    try {
+        // 1. Fetch History Data
+        const { data, error } = await supabase
+            .from('enrollments')
+            .select(`
+                status, 
+                grade_value,
+                sections (
+                    semester_id,
+                    courses (
+                        course_code, 
+                        course_name_en, 
+                        course_name_ar, 
+                        credit_hours
+                    )
+                )
+            `)
+            .eq('user_id', userId)
+            .in('status', ['COMPLETED', 'FAILED']); // Only past courses
+
+        if (error) throw error;
+
+        // 2. Filter in JS (Client-side) for simplicity
+        // (Supabase deep filtering syntax can be verbose)
+        let filtered = data;
+        if (semesterId && semesterId !== 'all') {
+            filtered = data.filter(d => d.sections.semester_id == semesterId);
+        }
+
+        // 3. Render
+        if (filtered.length === 0) {
+            const msg = translations[currentLang].msg_no_history || "No courses found.";
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">${msg}</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        filtered.forEach(row => {
+            const tr = document.createElement('tr');
+            const course = row.sections.courses;
+            const name = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
+            
+            // Status Badge Logic
+            let badgeClass = 'badge-gray';
+            let statusText = row.status;
+            if (row.status === 'COMPLETED') {
+                badgeClass = 'badge-green';
+                statusText = translations[currentLang].status_passed || 'Passed';
+            } else if (row.status === 'FAILED') {
+                badgeClass = 'badge-red';
+                statusText = translations[currentLang].status_failed || 'Failed';
+            }
+
+            tr.innerHTML = `
+                <td><strong>${course.course_code}</strong></td>
+                <td>${name}</td>
+                <td>${course.credit_hours}</td>
+                <td style="font-weight:bold; color: #333;">${row.grade_value !== null ? row.grade_value : '-'}</td>
+                <td><span class="badge ${badgeClass}">${statusText}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (err) {
+        console.error("History Load Error:", err);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load history data.</td></tr>';
+    }
+}
+
 if(closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
 if(closeModal) closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
 

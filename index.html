@@ -293,28 +293,43 @@
             <div id="schedule-container" class="dashboard-view hidden">
                 <div class="schedule-header">
                     <h2 class="section-title" data-i18n="lbl_my_schedule">My Weekly Schedule</h2>
-                    <div id="sch-credit-status" class="credit-status-text"></div>
-                    <button class="print-btn" onclick="window.print()">🖨️ Print</button>
-                </div>
-
-                <div class="schedule-grid" id="schedule-card-grid">
                     </div>
 
+                <div class="schedule-grid" id="schedule-card-grid"></div>
                 <div class="schedule-table-wrapper">
                     <table class="schedule-table">
-                        <thead>
-                            <tr>
-                                <th data-i18n="tbl_course">Course</th>
-                                <th data-i18n="tbl_day_time">Day & Time</th>
-                                <th data-i18n="tbl_room">Room</th>
-                                <th data-i18n="tbl_instructor">Instructor</th>
-                                <th data-i18n="tbl_credits">Credits</th>
-                            </tr>
-                        </thead>
-                        <tbody id="full-schedule-body">
-                            </tbody>
+                        <tbody id="full-schedule-body"></tbody>
                     </table>
                 </div>
+
+                <hr style="margin: 40px 0; border: 0; border-top: 1px solid #ddd;">
+
+                <div class="schedule-header">
+                    <h2 class="section-title" data-i18n="lbl_history">Academic History</h2>
+                    <div class="filter-wrapper">
+                        <select id="history-sem-filter" class="custom-select" style="min-width: 250px; padding: 8px;">
+                            <option value="" data-i18n="lbl_loading">Loading semesters...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="schedule-table-wrapper">
+                    <table class="schedule-table" id="history-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="tbl_code">Code</th>
+                                <th data-i18n="tbl_course">Course Name</th>
+                                <th data-i18n="tbl_credits">Cr.</th>
+                                <th data-i18n="tbl_grade">Grade</th>
+                                <th data-i18n="tbl_status">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <tr><td colspan="5" style="text-align:center; padding: 20px; color: #666;">Select a semester to view history</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
 
             <div id="plan-container" class="dashboard-view hidden">
