@@ -237,86 +237,79 @@ const translations = {
 
 const planStructure = [
     // --- SIDE LABELS (Circles) ---
-    { id: "lbl_95", x: 50, y: 50, type: 'label-circle', label: "95\nساعه" },
-    { id: "lbl_75", x: 1550, y: 50, type: 'label-circle', label: "75\n%" },
+    { id: "lbl_95", x: 20, y: 50, type: 'label-circle', label: "95\nساعه" },
+    { id: "lbl_75", x: 1750, y: 50, type: 'label-circle', label: "75\n%" },
 
     // --- LEVEL 1 (ROOT) ---
-    { id: "311100", x: 800, y: 50, type: 'course' }, // Root
+    { id: "311100", x: 800, y: 50, type: 'course' }, 
 
-    // --- LEVEL 2 (Direct Children) ---
-    { id: "313160", x: 200, y: 200, type: 'course' }, // Left Branch Start
-    { id: "313269", x: 400, y: 200, type: 'course' }, // Beside Left Branch
+    // --- LEVEL 2 ---
+    { id: "313160", x: 150, y: 200, type: 'course' }, // Intro SE
+    { id: "313269", x: 350, y: 200, type: 'course' }, // Proj Mgmt
+    { id: "311101", x: 650, y: 200, type: 'course' }, // Prog 1
     
-    { id: "311101", x: 650, y: 200, type: 'course' }, // Center-Left Branch
-    
-    { id: "311160", x: 950, y: 200, type: 'course' }, // Ethics (Floating)
-    { id: "311220", x: 1150, y: 200, type: 'course' }, // Center-Right Branch
-    { id: "601101", x: 1350, y: 200, type: 'course' }, // Math (Floating)
-    
-    { id: "311240", x: 1550, y: 200, type: 'course' }, // Far-Right Branch
+    { id: "311160", x: 1000, y: 200, type: 'course' }, // Ethics
+    { id: "311220", x: 1200, y: 200, type: 'course' }, // Digital Logic
+    { id: "601101", x: 1400, y: 200, type: 'course' }, // Calculus
+    { id: "311240", x: 1600, y: 200, type: 'course' }, // Database
 
     // --- LEVEL 3 ---
-    // Left Branch
-    { id: "313261", x: 200, y: 350, type: 'course' },
-    { id: "313466", x: 50, y: 350, type: 'course' }, // Side of Left Branch
+    // SE Branch
+    { id: "313466", x: 20, y: 350, type: 'course' }, // Doc
+    { id: "313261", x: 150, y: 350, type: 'course' }, // Req
     
-    // Center-Left Branch
-    { id: "313204", x: 500, y: 350, type: 'course' }, // Side of C-L Branch
-    { id: "311202", x: 650, y: 350, type: 'course' },
+    // Prog Branch
+    { id: "313204", x: 550, y: 350, type: 'course' }, // Adv Prog
+    { id: "311202", x: 750, y: 350, type: 'course' }, // OOP
+
+    // Arch/Logic Branch
+    { id: "311321", x: 1100, y: 350, type: 'course' }, // Arch
+    { id: "311330", x: 1250, y: 350, type: 'course' }, // Networks
     
-    // Center-Right Branch
-    { id: "311321", x: 1150, y: 350, type: 'course' },
-    { id: "311330", x: 1350, y: 350, type: 'course' }, // Side of C-R Branch
-    
-    // Math/Data Branch
-    { id: "311210", x: 1350, y: 350, type: 'course' }, // Below Math
-    { id: "311340", x: 1550, y: 350, type: 'course' },
-    { id: "311241", x: 1750, y: 350, type: 'course' }, // Side of Data Branch
+    // Math/Data
+    { id: "311210", x: 1400, y: 350, type: 'course' }, // Discrete
+    { id: "311340", x: 1550, y: 350, type: 'course' }, // DB Mgmt
+    { id: "311241", x: 1750, y: 350, type: 'course' }, // Sys Analysis
 
     // --- LEVEL 4 ---
-    // Left Branch
-    { id: "313367", x: 50, y: 500, type: 'course' },
-    { id: "313364", x: 200, y: 500, type: 'course' },
+    { id: "313367", x: 20, y: 500, type: 'course' }, // Specs
+    { id: "313364", x: 150, y: 500, type: 'course' }, // OO SE
     
-    // Center-Left Branch
-    { id: "311305", x: 500, y: 500, type: 'course' },
-    { id: "311304", x: 650, y: 500, type: 'course' },
-    { id: "313263", x: 800, y: 500, type: 'course' },
+    { id: "313262", x: 350, y: 500, type: 'course' }, // Components
+    { id: "311305", x: 550, y: 500, type: 'course' }, // Visual
+    { id: "311304", x: 700, y: 500, type: 'course' }, // Web
+    { id: "313263", x: 850, y: 500, type: 'course' }, // Multimedia
     
-    // Between Branches
-    { id: "313262", x: 350, y: 500, type: 'course' },
-    { id: "311213", x: 950, y: 500, type: 'course' },
-
-    // Right Side
-    { id: "311468", x: 1350, y: 500, type: 'course' }, // Security
+    { id: "311213", x: 1050, y: 500, type: 'course' }, // Data Struct
+    { id: "311468", x: 1250, y: 500, type: 'course' }, // Security
 
     // --- LEVEL 5 ---
-    { id: "313469", x: 50, y: 650, type: 'course' },
-    { id: "313464", x: 200, y: 650, type: 'course' },
-    { id: "313462", x: 350, y: 650, type: 'course' },
-    { id: "313363", x: 500, y: 650, type: 'course' },
+    { id: "313469", x: 20, y: 650, type: 'course' }, // Special
+    { id: "313464", x: 150, y: 650, type: 'course' }, // Re-eng
+    { id: "313462", x: 280, y: 650, type: 'course' }, // Arch
+    { id: "313363", x: 410, y: 650, type: 'course' }, // Design
     
-    { id: "311314", x: 950, y: 650, type: 'course' }, // Algorithms
+    { id: "311314", x: 1050, y: 650, type: 'course' }, // Algorithms
 
     // --- LEVEL 6 ---
-    { id: "313365", x: 500, y: 800, type: 'course' },
-    { id: "313366", x: 650, y: 800, type: 'course' },
+    { id: "313365", x: 350, y: 800, type: 'course' }, // Testing
+    { id: "313366", x: 500, y: 800, type: 'course' }, // Quality
     
-    { id: "311350", x: 850, y: 800, type: 'course' }, // AI
-    { id: "311422", x: 1050, y: 800, type: 'course' }, // OS
+    { id: "311350", x: 950, y: 800, type: 'course' }, // AI
+    { id: "311422", x: 1150, y: 800, type: 'course' }, // OS
 
     // --- LEVEL 7 ---
-    { id: "313468", x: 500, y: 950, type: 'course' },
+    { id: "313468", x: 420, y: 950, type: 'course' }, // Maint
 
-    // --- BOTTOM LEGEND BOXES (Right Side) ---
+    // --- RIGHT SIDE LEGEND (Aligned tight) ---
     { id: "leg_1", x: 1750, y: 600, type: 'label-box', label: "متطلبات جامعة\nاجباري 12\nساعة" },
     { id: "leg_2", x: 1750, y: 720, type: 'label-box', label: "متطلبات حرة\nخارج الخطة\n3 ساعات" },
     { id: "leg_3", x: 1750, y: 840, type: 'label-box', label: "متطلبات مساندة\nاجباري\n6 ساعات" },
     { id: "leg_4", x: 1750, y: 960, type: 'label-box', label: "متطلبات جامعة\nاختياري\n15 ساعات" },
 
-    // --- BOTTOM PROJECT/TRAINING ---
-    { id: "proj_grad", x: 1250, y: 1100, type: 'label-box-green', label: "مشروع تخرج\nمشروط بقطع\n110 ساعات نجاح" },
-    { id: "proj_train", x: 1450, y: 1100, type: 'label-box-green', label: "تدريب ميداني\nمشروط بـ90\nساعه نجاح" }
+    // --- BOTTOM BOXES (Aligned Center-Right) ---
+    { id: "proj_grad", x: 1300, y: 1000, type: 'label-box-green', label: "مشروع تخرج\nمشروط بقطع\n110 ساعات نجاح" },
+    { id: "proj_train", x: 1500, y: 1000, type: 'label-box-green', label: "تدريب ميداني\nمشروط بـ90\nساعه نجاح" }
 ];
 
 const planLinks = [
@@ -409,7 +402,28 @@ if (langBtn) {
     });
 }
 
-// --- DATA FETCHING ---
+function getCategoryClass(category) {
+    if (!category) return 'cat-default';
+    const c = category.toLowerCase();
+    
+    if (c.includes('university')) return 'cat-univ';
+    if (c.includes('college')) return 'cat-college';
+    if (c.includes('major compulsory')) return 'cat-major-req';
+    if (c.includes('major elective')) return 'cat-major-elec';
+    if (c.includes('supportive') || c.includes('basic')) return 'cat-support';
+    if (c.includes('remedial')) return 'cat-other';
+    
+    return 'cat-default';
+}
+
+// 2. Helper to get Status Icon
+function getStatusIcon(status) {
+    if (status === 'passed') return '✅';
+    if (status === 'registered') return '🕒';
+    if (status === 'locked') return '🔒';
+    if (status === 'open') return '🔓';
+    return '';
+}
 
 async function loadDashboardData(userId) {
     try {
@@ -1920,62 +1934,93 @@ window.fitToScreen = function() {
 
 function renderPlanTree(passed, registered, courseDetails) {
     const canvasContainer = document.getElementById('plan-tree-canvas');
-    canvasContainer.innerHTML = '';
+    if (!canvasContainer) return;
+    canvasContainer.innerHTML = ''; // Clear previous render
 
-    // --- 1. Dynamic Size Calculation (Updated for tighter fit) ---
+    // --- STEP A: WHITESPACE REDUCTION LOGIC ---
+    
+    // 1. Find the widest X coordinate of the actual "Tree" (Course nodes only)
+    let maxTreeX = 0;
+    planStructure.forEach(node => {
+        // We ignore the legends (x=1750) to find the true edge of the tree
+        if (node.type === 'course' && node.x > maxTreeX) {
+            maxTreeX = node.x;
+        }
+    });
+
+    // 2. Define the shift parameters
+    const originalLegendX = 1750; // The X position defined in your static planStructure
+    const gap = 200; // Desired gap between tree and legends
+    
+    // Calculate how much we need to move the legends to the left
+    // New Legend X should be: maxTreeX + gap
+    // Shift Amount = Old X - New X
+    const shiftAmount = originalLegendX - (maxTreeX + gap);
+
+    // 3. Create 'renderData': A copy of nodes with adjusted coordinates
+    const renderData = planStructure.map(node => {
+        // If this is a legend node or the right-side circle, shift it
+        if (node.x >= originalLegendX) {
+            return { ...node, x: node.x - shiftAmount };
+        }
+        return node;
+    });
+
+    // --- STEP B: CALCULATE CANVAS SIZE ---
+    
     let maxX = 0;
     let maxY = 0;
     
-    planStructure.forEach(node => {
-        // Consider the node's dimension in the max calculation
-        const nodeWidth = node.type === 'label-circle' ? 100 : 120;
-        const nodeHeight = node.type === 'label-circle' ? 100 : (node.type.includes('label-box') ? 100 : 60);
-        
-        if(node.x + nodeWidth > maxX) maxX = node.x + nodeWidth;
-        if(node.y + nodeHeight > maxY) maxY = node.y + nodeHeight;
+    renderData.forEach(node => {
+        // Approx width calculation to ensure container fits the content
+        const w = (node.type === 'label-circle') ? 100 : 140; 
+        const h = 80;
+        if ((node.x + w) > maxX) maxX = node.x + w;
+        if ((node.y + h) > maxY) maxY = node.y + h;
     });
 
-    // Reduced padding to minimize whitespace
-    const width = maxX + 50; 
-    const height = maxY + 50;
+    const padding = 50; 
+    const finalWidth = maxX + padding;
+    const finalHeight = maxY + padding;
 
-    canvasContainer.style.width = `${width}px`;
-    canvasContainer.style.height = `${height}px`;
+    // Apply explicit size to container (important for drag-scroll)
+    canvasContainer.style.width = `${finalWidth}px`;
+    canvasContainer.style.height = `${finalHeight}px`;
 
+    // --- STEP C: DRAW SVG ---
+    
     const svg = d3.select("#plan-tree-canvas")
         .append("svg")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", finalWidth)
+        .attr("height", finalHeight)
         .append("g");
 
-    // --- 2. Draw Connectors (Only for courses and bottom project) ---
+    // 1. DRAW LINKS (Connections)
     planLinks.forEach(link => {
-        const sourceNode = planStructure.find(n => n.id === link.s);
-        const targetNode = planStructure.find(n => n.id === link.t);
+        // Find the nodes in our new 'renderData' to get updated X/Y
+        const sourceNode = renderData.find(n => n.id === link.s);
+        const targetNode = renderData.find(n => n.id === link.t);
 
         if (sourceNode && targetNode) {
-            // Different connector attachment points based on node type
             let srcX, srcY, tgtX, tgtY;
-
-            if (sourceNode.type.includes('label-box')) {
-                 srcX = sourceNode.x;
-                 srcY = sourceNode.y + 50; // Middle of 100px height
-                 tgtX = targetNode.x + 120;
-                 tgtY = targetNode.y + 50;
+            
+            // Adjust connection points based on node type
+            if (sourceNode.type && sourceNode.type.includes('label-box')) {
+                 srcX = sourceNode.x; srcY = sourceNode.y + 40; 
+                 tgtX = targetNode.x + 60; tgtY = targetNode.y + 40; // Connect to side
             } else {
-                // Standard Course Node
-                srcX = sourceNode.x + 60; 
-                srcY = sourceNode.y + 60; 
-                tgtX = targetNode.x + 60;
-                tgtY = targetNode.y;
+                // Standard Course-to-Course connection (Bottom to Top)
+                srcX = sourceNode.x + 65; srcY = sourceNode.y + 65; 
+                tgtX = targetNode.x + 65; tgtY = targetNode.y;
             }
 
+            // Path Calculation
             let pathData;
-            if (sourceNode.y === targetNode.y) {
-                // Horizontal Link (for bottom project)
+            // If nodes are on the same horizontal level (Project boxes)
+            if (Math.abs(sourceNode.y - targetNode.y) < 10) {
                 pathData = `M ${srcX} ${srcY} H ${tgtX}`;
             } else {
-                // Standard elbow connector
+                // Elbow connector (Vertical -> Horizontal -> Vertical)
                 const midY = srcY + (tgtY - srcY) / 2;
                 pathData = `M ${srcX} ${srcY} V ${midY} H ${tgtX} V ${tgtY}`;
             }
@@ -1983,114 +2028,133 @@ function renderPlanTree(passed, registered, courseDetails) {
             svg.append("path")
                 .attr("d", pathData)
                 .attr("fill", "none")
-                .attr("stroke", "#0d47a1") // Dark blue from image
+                .attr("stroke", "#cfd8dc") // Light gray for clean look
                 .attr("stroke-width", 2)
                 .attr("class", "tree-link");
         }
     });
 
-    // --- 3. Draw Nodes ---
-    planStructure.forEach(node => {
+    // 2. DRAW NODES
+    renderData.forEach(node => {
         const g = svg.append("g")
             .attr("transform", `translate(${node.x}, ${node.y})`);
 
+        // --- TYPE 1: CIRCLE LABELS (95 Hours / 75%) ---
         if (node.type === 'label-circle') {
-            // --- CIRCULAR LABEL NODE ---
             g.append("circle")
-                .attr("cx", 50).attr("cy", 50).attr("r", 50)
-                .attr("fill", "#0d47a1") // Dark blue
-                .attr("stroke", "#fff").attr("stroke-width", 2);
+                .attr("cx", 50).attr("cy", 50).attr("r", 40)
+                .attr("fill", "#2E7D32") // Theme Green
+                .attr("stroke", "#fff").attr("stroke-width", 2)
+                .attr("filter", "drop-shadow(0px 3px 3px rgba(0,0,0,0.2))");
             
-            // Multiline Text Support
             const lines = node.label.split('\n');
             lines.forEach((line, i) => {
                 g.append("text")
                     .attr("x", 50)
-                    .attr("y", 50 - ((lines.length - 1) * 10) + (i * 20)) // Center multiline text
+                    .attr("y", 50 - ((lines.length-1)*8) + (i*16))
                     .attr("text-anchor", "middle")
                     .attr("dominant-baseline", "middle")
                     .attr("fill", "white")
                     .attr("font-weight", "bold")
-                    .attr("font-size", i === 0 ? "24px" : "16px") // First line bigger
                     .text(line);
             });
-
-        } else if (node.type && node.type.includes('label-box')) {
-            // --- RECTANGULAR LABEL BOX ---
-            const bgColor = node.type === 'label-box-green' ? "#1b5e20" : "#0d47a1"; // Dark green or blue
-            
-            g.append("rect")
-                .attr("width", 120).attr("height", 100).attr("rx", 0)
-                .attr("fill", bgColor)
-                .attr("stroke", "#fff").attr("stroke-width", 1);
-            
-            const lines = node.label.split('\n');
-            lines.forEach((line, i) => {
+        } 
+        
+        // --- TYPE 2: LABEL BOXES (Legend/Project Requirements) ---
+        else if (node.type && node.type.includes('label-box')) {
+             const isGreen = node.type === 'label-box-green';
+             // These remain filled blocks to distinguish them from courses
+             g.append("rect")
+                .attr("width", 120).attr("height", 80).attr("rx", 8)
+                .attr("fill", isGreen ? "#2E7D32" : "#1565c0")
+                .attr("stroke", "white").attr("stroke-width", 1)
+                .attr("filter", "drop-shadow(0px 3px 3px rgba(0,0,0,0.1))");
+             
+             const lines = node.label.split('\n');
+             lines.forEach((line, i) => {
                  g.append("text")
                     .attr("x", 60)
-                    .attr("y", 50 - ((lines.length - 1) * 10) + (i * 20))
+                    .attr("y", 40 - ((lines.length-1)*9) + (i*18))
                     .attr("text-anchor", "middle")
                     .attr("dominant-baseline", "middle")
                     .attr("fill", "white")
-                    .attr("font-size", "12px")
+                    .attr("font-size", "11px")
                     .text(line);
-            });
-
-        } else {
-            // --- STANDARD COURSE NODE (Existing Logic) ---
+             });
+        }
+        
+        // --- TYPE 3: COURSE CARDS (The Main Nodes) ---
+        else {
             const details = courseDetails[node.id];
-            let statusClass = "locked";
-            let statusKey = "status_locked";
-
-            if (passed.has(node.id)) {
-                statusClass = "passed"; statusKey = "status_passed";
-            } else if (registered.has(node.id)) {
-                statusClass = "registered"; statusKey = "status_registered";
-            } else {
+            
+            // A. Determine Status
+            let statusKey = "locked";
+            if (passed.has(node.id)) statusKey = "passed";
+            else if (registered.has(node.id)) statusKey = "registered";
+            else {
+                 // Check if prerequisites (parents) are passed
                  const parents = planLinks.filter(l => l.t === node.id);
-                 const parentsPassed = parents.every(p => passed.has(p.s) || planStructure.find(n => n.id === p.s).type !== 'course');
-                 if(parents.length === 0 || parentsPassed) {
-                     statusClass = "open"; statusKey = "status_open";
-                 }
+                 // A course is Open if it has no parents OR all parents are passed/non-course labels
+                 const parentsPassed = parents.every(p => {
+                     const pNode = planStructure.find(n => n.id === p.s);
+                     return passed.has(p.s) || (pNode && pNode.type !== 'course');
+                 });
+                 if(parents.length === 0 || parentsPassed) statusKey = "open";
             }
 
-            // Make clickable only if it's a course
+            // B. Determine Category CSS Class
+            const catString = details ? details.category : "";
+            const catClass = getCategoryClass(catString);
+
+            // C. Interaction
             g.style("cursor", "pointer")
              .on("click", (event) => {
                 event.stopPropagation(); 
-                showCoursePopup(node.id, details, statusClass, statusKey, event.currentTarget);
+                // Using the global showCoursePopup function
+                if(window.showCoursePopup) {
+                    window.showCoursePopup(node.id, details, statusKey, `status_${statusKey}`, event.currentTarget);
+                }
             });
 
-            // Root node gets a distinct dark green color from image
-            const isRoot = node.id === '311100';
-            const rootClass = isRoot ? 'root-node' : '';
-
-            // Box
+            // D. Draw The Card (White Background, Colored Border)
             g.append("rect")
-                .attr("width", 120).attr("height", 60).attr("rx", 8)
-                .attr("class", `node-box ${statusClass} ${rootClass}`);
+                .attr("width", 130)
+                .attr("height", 65)
+                .attr("rx", 8) // Rounded corners
+                .attr("class", `node-box ${catClass}`) // CSS handles stroke color
+                .style("fill", "#ffffff"); // Explicit White Background
 
-            // Code
+            // E. Status Icon (Top Right)
             g.append("text")
-                .attr("x", 60).attr("y", 20)
+                .attr("x", 118)
+                .attr("y", 18)
                 .attr("text-anchor", "middle")
-                .attr("class", `node-code ${isRoot ? 'root-text' : ''}`)
+                .attr("class", `status-icon ${statusKey}`) // CSS handles fill color
+                .style("font-size", "14px")
+                .text(getStatusIcon(statusKey));
+
+            // F. Course Code
+            g.append("text")
+                .attr("x", 65)
+                .attr("y", 25)
+                .attr("text-anchor", "middle")
+                .attr("class", "node-code")
                 .text(node.id);
 
-            // Name
-            const fullName = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : (isRoot ? "مقدمة الى برمجة الحاسوب" : "Loading...");
+            // G. Course Name (Truncated)
+            const fullName = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : "Loading...";
             const shortName = fullName.length > 18 ? fullName.substring(0, 16) + ".." : fullName;
 
             g.append("text")
-                .attr("x", 60).attr("y", 40)
+                .attr("x", 65)
+                .attr("y", 45)
                 .attr("text-anchor", "middle")
-                .attr("class", `node-name ${isRoot ? 'root-text' : ''}`)
+                .attr("class", "node-name")
                 .text(shortName);
-                
-            g.append("title").text(fullName);
         }
     });
 }
+
 window.showCoursePopup = function(code, details, statusClass, statusKey, targetElement) {
     const popup = document.getElementById('course-popup');
     const overlay = document.getElementById('plan-overlay');
