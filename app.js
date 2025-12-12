@@ -2266,15 +2266,18 @@ window.closePlanPopup = function() {
 
 async function initHistory(userId) {
     const select = document.getElementById('history-sem-filter');
-    if (!select) return;
+    const tbody = document.getElementById('history-table-body');
     
-    // Prevent reloading if already populated (optional optimization)
-    if (select.options.length > 1) return; 
+    if (!select || !tbody) return;
 
-    select.innerHTML = `<option value="">${translations[currentLang].lbl_loading || 'Loading...'}</option>`;
+    // FIX: Force clear the dropdown every time to remove previous user's data
+    select.innerHTML = `<option value="" data-i18n="lbl_loading">${translations[currentLang].lbl_loading || 'Loading...'}</option>`;
+    
+    // Clear the table view too so old data doesn't linger
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #666;">Select a semester</td></tr>';
 
     try {
-        // 1. Fetch all distinct semesters from user's enrollment history
+        // 1. Fetch all distinct semesters from THIS user's enrollment history
         const { data, error } = await supabase
             .from('enrollments')
             .select(`
@@ -2283,8 +2286,7 @@ async function initHistory(userId) {
                     semesters (name)
                 )
             `)
-            .eq('user_id', userId)
-            // Filter out current active/registered courses if you only want 'History'
+            .eq('user_id', userId) // Explicitly filter by CURRENT userId
             .in('status', ['COMPLETED', 'FAILED']); 
 
         if (error) throw error;
@@ -2306,6 +2308,12 @@ async function initHistory(userId) {
         const allText = translations[currentLang].opt_all_semesters || "All Semesters";
         select.innerHTML = `<option value="all">${allText}</option>`;
         
+        if (sortedIds.length === 0) {
+            select.innerHTML = `<option value="">No history found</option>`;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">No academic history found.</td></tr>';
+            return;
+        }
+
         sortedIds.forEach(id => {
             const option = document.createElement('option');
             option.value = id;
@@ -2313,16 +2321,12 @@ async function initHistory(userId) {
             select.appendChild(option);
         });
 
-        // 5. Add Event Listener
+        // 5. Add Event Listener (Re-binds with the NEW userId)
         select.onchange = () => loadHistoryTable(userId, select.value);
 
-        // 6. Auto-load the most recent semester history
-        if (sortedIds.length > 0) {
-            select.value = sortedIds[0];
-            loadHistoryTable(userId, sortedIds[0]);
-        } else {
-            select.innerHTML = `<option value="">No history found</option>`;
-        }
+        // 6. Auto-load the most recent semester
+        select.value = sortedIds[0];
+        loadHistoryTable(userId, sortedIds[0]);
 
     } catch (err) {
         console.error("History Init Error:", err);
