@@ -322,102 +322,97 @@ const pdfElectiveData = {
 
 
 const planStructure = [
-    // --- LABELS ---
-    { id: "lbl_95", x: 20, y: 50, type: 'label-circle', label: "95\nساعه" },
-    { id: "lbl_75", x: 1750, y: 50, type: 'label-circle', label: "75\n%" },
+    // --- LABELS (Moved slightly to fit new scale) ---
+    { id: "lbl_95", x: 50, y: 50, type: 'label-circle', label: "95\nCr" },
+    { id: "lbl_75", x: 2100, y: 50, type: 'label-circle', label: "75\n%" },
 
-    // --- MAIN TREE  ---
-    { id: "311100", x: 800, y: 50, type: 'course' }, 
-    { id: "313160", x: 150, y: 200, type: 'course' },
-    { id: "313269", x: 350, y: 200, type: 'course' },
-    { id: "311101", x: 650, y: 200, type: 'course' },
-    { id: "311160", x: 1000, y: 200, type: 'course' },
-    { id: "311220", x: 1200, y: 200, type: 'course' },
-    { id: "601101", x: 1400, y: 200, type: 'course' },
-    { id: "311240", x: 1600, y: 200, type: 'course' },
+    // --- LEVEL 1 (Y=50) ---
+    { id: "311100", x: 950, y: 50, type: 'course' }, 
 
-    // Level 3
-    { id: "313466", x: 20, y: 350, type: 'course' },
-    { id: "313261", x: 150, y: 350, type: 'course' },
-    { id: "313204", x: 550, y: 350, type: 'course' },
-    { id: "311202", x: 750, y: 350, type: 'course' },
-    { id: "311321", x: 1100, y: 350, type: 'course' },
-    { id: "311330", x: 1250, y: 350, type: 'course' },
-    { id: "311210", x: 1400, y: 350, type: 'course' },
-    { id: "311340", x: 1550, y: 350, type: 'course' },
-    { id: "311241", x: 1750, y: 350, type: 'course' },
+    // --- LEVEL 2 (Y=220) ---
+    { id: "313160", x: 200, y: 220, type: 'course' },
+    { id: "313269", x: 450, y: 220, type: 'course' },
+    { id: "311101", x: 800, y: 220, type: 'course' },
+    { id: "311160", x: 1200, y: 220, type: 'course' },
+    { id: "311220", x: 1450, y: 220, type: 'course' },
+    { id: "601101", x: 1700, y: 220, type: 'course' },
+    { id: "311240", x: 1950, y: 220, type: 'course' },
 
-    // Level 4
-    { id: "313367", x: 20, y: 500, type: 'course' },
-    { id: "313364", x: 150, y: 500, type: 'course' },
-    { id: "313262", x: 350, y: 500, type: 'course' },
-    { id: "311305", x: 550, y: 500, type: 'course' },
-    { id: "311304", x: 700, y: 500, type: 'course' },
-    { id: "313263", x: 850, y: 500, type: 'course' },
-    { id: "311213", x: 1050, y: 500, type: 'course' },
-    { id: "311468", x: 1250, y: 500, type: 'course' },
+    // --- LEVEL 3 (Y=400) ---
+    { id: "313466", x: 50, y: 400, type: 'course' },
+    { id: "313261", x: 250, y: 400, type: 'course' },
+    { id: "313204", x: 700, y: 400, type: 'course' },
+    { id: "311202", x: 950, y: 400, type: 'course' },
+    { id: "311321", x: 1350, y: 400, type: 'course' },
+    { id: "311330", x: 1550, y: 400, type: 'course' },
+    { id: "311210", x: 1750, y: 400, type: 'course' },
+    { id: "311340", x: 1950, y: 400, type: 'course' },
+    { id: "311241", x: 2150, y: 400, type: 'course' },
 
-    // Level 5
-    { id: "313469", x: 20, y: 650, type: 'course' },
-    { id: "313464", x: 150, y: 650, type: 'course' },
-    { id: "313462", x: 280, y: 650, type: 'course' },
-    { id: "313363", x: 410, y: 650, type: 'course' },
-    { id: "311314", x: 1050, y: 650, type: 'course' },
+    // --- LEVEL 4 (Y=580) ---
+    { id: "313367", x: 50, y: 580, type: 'course' },
+    { id: "313364", x: 250, y: 580, type: 'course' },
+    { id: "313262", x: 450, y: 580, type: 'course' },
+    { id: "311305", x: 750, y: 580, type: 'course' },
+    { id: "311304", x: 950, y: 580, type: 'course' },
+    { id: "313263", x: 1150, y: 580, type: 'course' },
+    { id: "311213", x: 1350, y: 580, type: 'course' },
+    { id: "311468", x: 1550, y: 580, type: 'course' },
 
-    // Level 6
-    { id: "313365", x: 350, y: 800, type: 'course' },
-    { id: "313366", x: 500, y: 800, type: 'course' },
-    { id: "311350", x: 950, y: 800, type: 'course' },
-    { id: "311422", x: 1150, y: 800, type: 'course' },
+    // --- LEVEL 5 (Y=760) ---
+    { id: "313469", x: 50, y: 760, type: 'course' },
+    { id: "313464", x: 200, y: 760, type: 'course' },
+    { id: "313462", x: 350, y: 760, type: 'course' },
+    { id: "313363", x: 500, y: 760, type: 'course' },
+    { id: "311314", x: 1350, y: 760, type: 'course' },
 
-    // Level 7
-    { id: "313468", x: 420, y: 950, type: 'course' },
+    // --- LEVEL 6 (Y=940) ---
+    { id: "313365", x: 400, y: 940, type: 'course' },
+    { id: "313366", x: 600, y: 940, type: 'course' },
+    { id: "311350", x: 1250, y: 940, type: 'course' },
+    { id: "311422", x: 1450, y: 940, type: 'course' },
 
-   // 1. University Compulsory (12 Hours)
+    // --- LEVEL 7 (Y=1120) ---
+    { id: "313468", x: 500, y: 1120, type: 'course' },
+
+    // --- RIGHT SIDE SUMMARY BLOCKS (Adjusted X to 2400) ---
     { 
         id: "summ_uni_comp", 
-        x: 2200, y: 200, 
+        x: 2400, y: 220, 
         type: 'summary-block', 
         label: "University Requirements\nCompulsory (12 Cr)", 
         group: "University Compulsory",
         subtext: "Click to View" 
     },
-
-    // 2. University Elective (15 Hours)
     { 
         id: "summ_uni_elec", 
-        x: 2200, y: 350, 
+        x: 2400, y: 400, 
         type: 'summary-block', 
         label: "University Requirements\nElective (15 Cr)", 
         group: "University Elective",
-        subtext: "Click to Select"
+        subtext: "Click to Select" 
     },
-
-    // 3. Free Elective (3 Hours)
     { 
         id: "summ_free", 
-        x: 2200, y: 500, 
+        x: 2400, y: 580, 
         type: 'summary-block', 
         label: "Free Requirements\n(3 Cr)", 
-        group: "Free Elective", // Key used for dynamic fetch
+        group: "Free Elective", 
         subtext: "Any Course Outside Plan"
     },
-
-    // 4. Supportive Compulsory (6 Hours)
     { 
         id: "summ_support", 
-        x: 2200, y: 650, 
+        x: 2400, y: 760, 
         type: 'summary-block', 
         label: "Supportive Requirements\nCompulsory (6 Cr)", 
         group: "Supportive Compulsory",
         subtext: "Stats & Numerical Analysis"
     },
 
-    // --- GRADUATION & TRAINING (Bottom) ---
-    { id: "proj_grad", x: 1300, y: 1000, type: 'label-box-green', label: "Graduation Project\nReq: 110 Cr Passed" },
-    { id: "proj_train", x: 1500, y: 1000, type: 'label-box-green', label: "Field Training\nReq: 90 Cr Passed" }
+    // --- GRADUATION & TRAINING (Bottom Right) ---
+    { id: "proj_grad", x: 1500, y: 1120, type: 'label-box-green', label: "Graduation Project\nReq: 110 Cr Passed" },
+    { id: "proj_train", x: 1700, y: 1120, type: 'label-box-green', label: "Field Training\nReq: 90 Cr Passed" }
 ];
-
 const planLinks = [
     // Root Connections
     { s: "311100", t: "313160" },
@@ -2287,6 +2282,27 @@ window.renderPlanTree = function(passed, registered, rawCourseData) {
     // Reset container
     container.innerHTML = '';
     
+    // --- CONFIG: Colors & Styles ---
+    const colors = {
+        major: "#1565c0",     // Blue
+        college: "#2E7D32",   // Green
+        univ: "#f57c00",      // Orange
+        elective: "#0097a7",  // Teal
+        support: "#7b1fa2",   // Purple
+        default: "#546e7a"    // Grey Blue
+    };
+
+    // Helper to get color from category text
+    const getBorderColor = (cat) => {
+        if(!cat) return colors.default;
+        const c = cat.toLowerCase();
+        if(c.includes('major')) return c.includes('elective') ? colors.elective : colors.major;
+        if(c.includes('college')) return colors.college;
+        if(c.includes('university')) return colors.univ;
+        if(c.includes('supportive')) return colors.support;
+        return colors.default;
+    };
+
     // Create SVG Layer for Lines
     const svgNs = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNs, "svg");
@@ -2295,33 +2311,30 @@ window.renderPlanTree = function(passed, registered, rawCourseData) {
     svg.style.position = "absolute";
     svg.style.top = "0";
     svg.style.left = "0";
-    svg.style.overflow = "visible"; // Allow lines to go outside if needed
+    svg.style.overflow = "visible"; 
     container.appendChild(svg);
 
-    // 1. Draw Links First (so they are behind nodes)
+    // 1. Draw Links
     planLinks.forEach(link => {
         const sourceNode = planStructure.find(n => n.id === link.s);
         const targetNode = planStructure.find(n => n.id === link.t);
 
         if (sourceNode && targetNode) {
-            // Calculate centers assuming width=130 height=60 roughly for standard nodes
-            // Adjust offsets based on your visual preference
-            const sx = sourceNode.x + 65; 
-            const sy = sourceNode.y + 30;
-            const tx = targetNode.x + 65;
-            const ty = targetNode.y + 30;
+            // Updated Offset for wider nodes (Width 140, Height 70)
+            const sx = sourceNode.x + 70; 
+            const sy = sourceNode.y + 35;
+            const tx = targetNode.x + 70;
+            const ty = targetNode.y + 35;
 
-            const path = document.createElementNS(svgNs, "path");
-            // Draw a stepped line (Right-Angle connector) like the image
-            // Move down half way, then across, then down
             const midY = sy + (ty - sy) / 2;
             const d = `M ${sx} ${sy} L ${sx} ${midY} L ${tx} ${midY} L ${tx} ${ty}`;
             
+            const path = document.createElementNS(svgNs, "path");
             path.setAttribute("d", d);
-            path.setAttribute("stroke", "#0e5b78"); // Blue-ish color from image
+            path.setAttribute("stroke", "#cfd8dc"); // Lighter Gray lines
             path.setAttribute("stroke-width", "2");
             path.setAttribute("fill", "none");
-            path.classList.add("tree-link");
+            path.classList.add("tree-link"); // hover effect in CSS
             svg.appendChild(path);
         }
     });
@@ -2333,121 +2346,146 @@ window.renderPlanTree = function(passed, registered, rawCourseData) {
         el.style.left = `${node.x}px`;
         el.style.top = `${node.y}px`;
         
-        // A. Standard Course Node
+        // --- A. Course Node ---
         if (node.type === 'course') {
-            const courseDetails = rawCourseData[node.id] || { course_name_en: "Loading...", credit_hours: 3 };
-            const name = (window.currentLang === 'ar' && courseDetails.course_name_ar) ? courseDetails.course_name_ar : courseDetails.course_name_en;
+            const course = rawCourseData[node.id] || { course_name_en: "Loading...", credit_hours: 3, category: "" };
+            const name = (window.currentLang === 'ar' && course.course_name_ar) ? course.course_name_ar : course.course_name_en;
             
             // Determine Status
-            let statusClass = "locked"; // Default
-            if (passed.has(node.id)) statusClass = "passed";
-            else if (registered.has(node.id)) statusClass = "registered";
-            else {
-                // Check prereqs logic if you want 'open' status, for now default locked
-                statusClass = "locked"; 
+            let status = "locked";
+            if (passed.has(node.id)) status = "passed";
+            else if (registered.has(node.id)) status = "registered";
+            else if (isPrereqMet(node.id, passed)) status = "open"; // Helper logic below
+
+            // Style Variables
+            const borderColor = getBorderColor(course.category);
+            let bgColor = "white";
+            let opacity = "1";
+            let icon = "";
+
+            // Apply Status Styling
+            if(status === 'passed') {
+                bgColor = "#e8f5e9"; // Light Green Tint
+                icon = "<span style='color:#2E7D32; font-size:14px; position:absolute; top:-8px; right:-8px; background:white; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.1);'>✅</span>";
+            } else if (status === 'registered') {
+                bgColor = "#e3f2fd"; // Light Blue Tint
+                icon = "<span style='color:#1565c0; font-size:14px; position:absolute; top:-8px; right:-8px; background:white; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.1);'>🕒</span>";
+            } else if (status === 'locked') {
+                bgColor = "#f5f5f5"; // Gray
+                opacity = "0.8";
+                icon = "<span style='color:#999; font-size:12px; position:absolute; top:4px; right:4px;'>🔒</span>";
             }
-            
-            // Override coloring to match image (Blue/Teal background)
-            // We use the CSS class for shape, but inline style for specific colors if needed
-            el.className = `node-box ${statusClass}`;
-            // Basic box style
-            el.style.width = "130px";
-            el.style.height = "60px";
-            el.style.background = "#0b4f6c"; // Dark Blue from image
-            if(statusClass === 'passed') el.style.background = "#2E7D32";
-            
-            el.style.color = "white";
+
+            // Main Node Style
+            el.className = `node-box ${status}`;
+            el.style.width = "140px";
+            el.style.height = "70px";
+            el.style.background = bgColor;
+            el.style.border = `2px solid ${borderColor}`;
+            // Add a thicker left border for category emphasis
+            el.style.borderLeft = `6px solid ${borderColor}`;
+            el.style.borderRadius = "8px";
+            el.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)";
             el.style.display = "flex";
             el.style.flexDirection = "column";
             el.style.justifyContent = "center";
             el.style.alignItems = "center";
             el.style.textAlign = "center";
-            el.style.fontSize = "11px";
-            el.style.borderRadius = "4px";
             el.style.cursor = "pointer";
             el.style.zIndex = "10";
+            el.style.opacity = opacity;
+            el.style.transition = "transform 0.2s, box-shadow 0.2s";
+
+            // Hover Effect (Inline)
+            el.onmouseenter = () => { el.style.transform = "translateY(-3px)"; el.style.boxShadow = "0 6px 12px rgba(0,0,0,0.1)"; };
+            el.onmouseleave = () => { el.style.transform = "translateY(0)"; el.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)"; };
+
+            // HTML Content
             el.innerHTML = `
-                <div style="font-size:10px; opacity:0.8;">${name.substring(0,25)}</div>
-                <div style="font-weight:bold; font-size:13px;">${node.id}</div>
+                ${icon}
+                <div style="font-weight:800; font-size:13px; color:#333; margin-bottom:2px;">${node.id}</div>
+                <div style="font-size:10px; color:#555; line-height:1.2; padding:0 4px;">${name.substring(0,30)}</div>
             `;
             
-            // Click to see details
-            el.onclick = () => showCoursePopup(node.id, courseDetails, statusClass, 'status_'+statusClass, el);
+            // Click Action
+            el.onclick = () => showCoursePopup(node.id, course, status, 'status_'+status, el);
         }
-        
-        // B. Elective Node (The Drawer Button)
-        else if (node.type === 'elective-node') {
-            el.className = "node-box cat-uni-elective";
-            el.style.width = "130px";
-            el.style.height = "60px";
-            el.style.background = "#fff";
-            el.style.border = "2px dashed #F57C00";
-            el.style.color = "#333";
+
+        // --- B. Summary Blocks (Right Side) ---
+        else if (node.type === 'summary-block') {
+            const borderColor = getBorderColor(node.group); // Use group to color match
+            
+            el.className = "node-box summary";
+            el.style.width = "160px";
+            el.style.height = "80px";
+            el.style.background = "white";
+            el.style.border = `2px solid ${borderColor}`;
+            el.style.borderLeft = `6px solid ${borderColor}`; // Matching Left Border
+            el.style.borderRadius = "8px";
             el.style.display = "flex";
+            el.style.flexDirection = "column";
             el.style.alignItems = "center";
             el.style.justifyContent = "center";
             el.style.textAlign = "center";
             el.style.cursor = "pointer";
-            el.style.fontSize = "11px";
-            el.style.fontWeight = "bold";
-            el.innerText = node.label;
+            el.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
             
-            el.onclick = () => openPdfDrawer(node.group, node.label);
+            el.innerHTML = `
+                <div style="font-weight:bold; font-size:11px; color:#333; margin-bottom:4px;">${node.label.replace(/\n/g, '<br>')}</div>
+                <div style="font-size:10px; color:#888;">${node.subtext}</div>
+            `;
+
+            el.onclick = () => openPdfDrawer(node.group, node.label.replace(/\n/g, ' '));
         }
 
-        // C. Labels (Circles / Boxes)
+        // --- C. Labels ---
         else if (node.type === 'label-circle') {
-            el.style.background = "#0b4f6c";
-            el.style.color = "white";
-            el.style.borderRadius = "50%";
-            el.style.width = "60px";
-            el.style.height = "60px";
-            el.style.display = "flex";
-            el.style.alignItems = "center";
-            el.style.justifyContent = "center";
-            el.style.textAlign = "center";
-            el.style.fontWeight = "bold";
-            el.innerText = node.label;
+             el.style.background = "#fff";
+             el.style.border = "2px solid #2E7D32";
+             el.style.color = "#2E7D32";
+             el.style.borderRadius = "50%";
+             el.style.width = "60px";
+             el.style.height = "60px";
+             el.style.display = "flex";
+             el.style.alignItems = "center";
+             el.style.justifyContent = "center";
+             el.style.textAlign = "center";
+             el.style.fontWeight = "bold";
+             el.style.fontSize = "12px";
+             el.innerText = node.label;
         }
-        else if (node.type === 'label-box' || node.type === 'label-box-green') {
-            el.style.background = node.type === 'label-box-green' ? "#1b5e20" : "#0b4f6c";
-            el.style.color = "white";
-            el.style.padding = "10px";
-            el.style.width = "140px";
-            el.style.textAlign = "center";
-            el.style.fontSize = "12px";
-            el.innerText = node.label;
+        else if (node.type.includes('label-box')) {
+             el.style.background = "#2E7D32";
+             el.style.color = "white";
+             el.style.padding = "10px";
+             el.style.borderRadius = "6px";
+             el.style.width = "150px";
+             el.style.textAlign = "center";
+             el.style.fontSize = "12px";
+             el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.2)";
+             el.innerText = node.label;
         }
-
-        else if (node.type === 'summary-block') {
-    el.className = "node-box"; 
-    // Styling to match the "Blue Blocks" in your reference image
-    el.style.width = "160px";
-    el.style.height = "80px";
-    el.style.background = "#0b4f6c"; // Dark Blue color from image
-    el.style.color = "white";
-    el.style.border = "2px solid #083d56";
-    el.style.borderRadius = "6px";
-    el.style.display = "flex";
-    el.style.flexDirection = "column";
-    el.style.alignItems = "center";
-    el.style.justifyContent = "center";
-    el.style.textAlign = "center";
-    el.style.cursor = "pointer";
-    el.style.boxShadow = "0 4px 6px rgba(0,0,0,0.15)";
-    
-    el.innerHTML = `
-        <div style="font-weight:bold; font-size:12px; margin-bottom:4px; line-height:1.4;">${node.label.replace(/\n/g, '<br>')}</div>
-        <div style="font-size:10px; color:#cfd8dc;">${node.subtext || 'Click to View'}</div>
-    `;
-
-    // Click Action: Open the Drawer with the list from pdfElectiveData
-    el.onclick = () => openPdfDrawer(node.group, node.label.replace(/\n/g, ' '));
-}
 
         container.appendChild(el);
     });
+    
+    // Resize container
+    container.style.width = "2700px";
+    container.style.height = "1300px";
 };
+
+// Simple Prereq Check Helper (assumes basic structure)
+function isPrereqMet(courseCode, passedSet) {
+    // In a real app, you'd check specific prereqs from DB.
+    // For visual purposes, we can assume if it's not passed/reg, it might be open
+    // unless it's deep in the tree. 
+    // You can refine this using 'allCoursesData'
+    const course = allCoursesData.find(c => c.course_code == courseCode);
+    if(!course || !course.prerequisites || course.prerequisites.length === 0) return true;
+    
+    // Check if all prereqs are in 'passedSet'
+    return course.prerequisites.every(p => passedSet.has(p.prereq_code));
+}
 
 window.openPdfDrawer = function(groupKey, title) {
     const drawer = document.getElementById('elective-drawer');
@@ -2532,34 +2570,36 @@ window.showCoursePopup = function(code, details, statusClass, statusKey, targetE
     // 1. Get exact position
     const rect = targetElement.getBoundingClientRect(); 
     
-    // 2. Create HTML Clone (The "Pop Out")
+    // 2. Create Clone
     highlightContainer.innerHTML = ''; 
-    highlightContainer.classList.remove('hidden'); // <--- CRITICAL FIX
+    highlightContainer.classList.remove('hidden'); 
     highlightContainer.classList.add('active');
 
     const div = document.createElement('div');
-    div.className = `node-html-clone ${statusClass}`;
+    // Copy the exact classes from the source element
+    div.className = targetElement.className + " node-html-clone";
     
-    // Copy Size and Position exactly
+    // Copy Styles (Background, Border, etc)
+    div.style.cssText = targetElement.style.cssText;
+    
+    // Force absolute positioning for the clone on top of the screen
+    div.style.position = "fixed";
     div.style.width = `${rect.width}px`;
     div.style.height = `${rect.height}px`;
     div.style.top = `${rect.top}px`;
     div.style.left = `${rect.left}px`;
-    div.style.transform = "scale(1.05)"; 
-    div.style.transition = "transform 0.2s ease";
+    div.style.margin = "0";
+    div.style.transform = "scale(1.1)"; // Slight pop
+    div.style.zIndex = "1001";
+    div.style.cursor = "default";
+    div.style.boxShadow = "0 15px 30px rgba(0,0,0,0.2)"; // Stronger shadow
 
-    // Clone Content
-    const name = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : "Loading...";
-    const shortName = name.length > 18 ? name.substring(0, 16) + ".." : name;
-    
-    div.innerHTML = `
-        <span class="clone-code">${code}</span>
-        <span class="clone-name">${shortName}</span>
-    `;
+    // Copy Content
+    div.innerHTML = targetElement.innerHTML;
 
     highlightContainer.appendChild(div);
 
-    // 3. Populate Popup Content
+    // 3. Populate & Show Detail Popup
     const title = document.getElementById('popup-title');
     const desc = document.getElementById('popup-desc');
     const credits = document.getElementById('popup-credits');
@@ -2570,38 +2610,30 @@ window.showCoursePopup = function(code, details, statusClass, statusKey, targetE
         title.textContent = `${code}`;
         desc.textContent = fullName;
         credits.textContent = `${details.credit_hours} ${translations[currentLang].lbl_credits || 'Cr'}`;
-    } else {
-        title.textContent = code;
-        desc.textContent = "Loading...";
-        credits.textContent = "--";
     }
 
-    statusBadge.textContent = translations[currentLang][statusKey];
-    let badgeColor = "badge-gray";
-    if (statusClass === 'passed') badgeColor = "badge-green";
-    else if (statusClass === 'registered') badgeColor = "badge-blue";
-    else if (statusClass === 'open') badgeColor = "badge-yellow";
-    statusBadge.className = `badge ${badgeColor}`;
+    // Set Badge Text
+    statusBadge.textContent = translations[currentLang][statusKey] || statusClass;
+    
+    // Determine badge color
+    let badgeClass = "badge-gray";
+    if (statusClass === 'passed') badgeClass = "badge-green";
+    else if (statusClass === 'registered') badgeClass = "badge-blue";
+    else if (statusClass === 'open') badgeClass = "badge-yellow";
+    
+    statusBadge.className = `badge ${badgeClass}`;
 
-    // 4. Position Popup
+    // Position the details card near the node
     let left = rect.right + 20; 
     let top = rect.top;
-    const popupWidth = 320;
-
-    if (left + popupWidth > window.innerWidth) {
-        left = rect.left - popupWidth - 20; 
-    }
     
-    const popupHeight = 200; 
-    if (top + popupHeight > window.innerHeight) {
-        top = window.innerHeight - popupHeight - 20;
-    }
-    if (top < 20) top = 20;
+    // Boundary checks
+    if (left + 300 > window.innerWidth) left = rect.left - 320; 
+    if (top + 200 > window.innerHeight) top = window.innerHeight - 220;
 
     popup.style.left = `${left}px`;
     popup.style.top = `${top}px`;
 
-    // 5. Show Elements
     popup.classList.remove('hidden');
     if (overlay) overlay.classList.remove('hidden');
 }
