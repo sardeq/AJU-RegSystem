@@ -357,12 +357,15 @@
                         <span class="legend-item">🔒 Locked</span>
                     </div>
                 </div>
-    
-    <div class="tree-scroll-wrapper" id="tree-wrapper">
 
-            <div id="plan-tree-canvas">
-            </div>
-        </div>
+                <div class="tree-container" id="plan-tree-container">
+    </div>
+    
+                <div class="tree-scroll-wrapper" id="tree-wrapper">
+
+                        <div id="plan-tree-canvas">
+                        </div>
+                    </div>
             </div>
 
             <div id="exceptions-container" class="dashboard-view hidden">
@@ -524,6 +527,16 @@
 
                 <button id="generate-schedule-btn" class="enhance-ai-btn" data-i18n="btn_generate">Generate Recommendations ✨</button>            </div>
         </div>
+    </div>
+
+    <div id="elective-drawer-overlay" class="side-drawer-overlay" onclick="closeDrawer()"></div>
+    <div id="elective-drawer" class="side-drawer">
+        <div class="drawer-header">
+            <h3 id="drawer-title" style="margin:0; color:#2E7D32;">Electives</h3>
+            <button onclick="closeDrawer()" style="background:none; border:none; font-size:1.5em; cursor:pointer;">&times;</button>
+        </div>
+        <div id="drawer-content" class="drawer-list">
+            </div>
     </div>
 
     <script type="module" src="app.js"></script>

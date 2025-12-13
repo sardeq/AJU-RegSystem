@@ -1586,3 +1586,93 @@ textarea.custom-input {
 .l-coll { border-color: #2E7D32; }
 .l-major { border-color: #1565c0; }
 .l-elec { border-color: #0097a7; }
+
+/* --- 1. CATEGORY COLORS (Left Borders) --- */
+.tree-node {
+    border-left-width: 6px !important;
+    border-left-style: solid !important;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Category Specific Colors */
+.cat-major-comp { border-left-color: #2E7D32; } /* Strong Green */
+.cat-college-comp { border-left-color: #66BB6A; } /* Light Green */
+.cat-uni-comp { border-left-color: #1B5E20; } /* Dark Forest Green */
+.cat-uni-elective { border-left-color: #F57C00; } /* Orange (Accent) */
+.cat-major-elective { border-left-color: #009688; } /* Teal (Accent) */
+.cat-support { border-left-color: #78909C; } /* Blue Grey */
+
+/* --- 2. ELECTIVE BLOCKS (The 4 separated blocks) --- */
+.elective-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 2px dashed #eee;
+    flex-wrap: wrap;
+}
+
+.elective-block {
+    width: 140px;
+    height: 100px;
+    background: white;
+    border: 2px dashed #ccc; /* Dashed to show it's a "slot" */
+    border-left: 6px solid #ccc;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+
+.elective-block:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    background-color: #f9fbf9;
+}
+
+/* --- 3. SIDE DRAWER (Slide from Left) --- */
+.side-drawer-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    opacity: 0; visibility: hidden;
+    transition: all 0.3s;
+}
+.side-drawer {
+    position: fixed;
+    top: 0; left: -400px; /* Hidden */
+    width: 350px; height: 100%;
+    background: white;
+    z-index: 2001;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transition: left 0.3s ease-out;
+    padding: 20px;
+    display: flex; flex-direction: column;
+}
+.side-drawer.open { left: 0; }
+.side-drawer-overlay.open { opacity: 1; visibility: visible; }
+
+.drawer-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 15px;
+}
+.drawer-list { overflow-y: auto; flex: 1; }
+
+/* Mini Course Cards inside Drawer */
+.drawer-node {
+    background: white;
+    border: 1px solid #eee;
+    border-left: 4px solid #ccc;
+    border-radius: 6px;
+    padding: 12px; margin-bottom: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.drawer-node:hover { transform: translateX(5px); background: #f1f8e9; }

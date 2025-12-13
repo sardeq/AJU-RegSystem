@@ -283,79 +283,116 @@ const translations = {
     }
 };
 
+const pdfElectiveData = {
+    "University Elective": [
+        { code: "201101", name: "القانون في حياتنا", cr: 3 },
+        { code: "202132", name: "حقوق الانسان", cr: 3 },
+        { code: "401100", name: "مبادىء الإدارة", cr: 3 },
+        { code: "704102", name: "مبادئ علم المكتبات", cr: 3 },
+        { code: "704103", name: "قضايا دولية وعربية", cr: 3 },
+        { code: "704104", name: "الثقافة الإسلامية", cr: 3 },
+        { code: "704105", name: "جغرافية الأردن", cr: 3 },
+        { code: "704108", name: "النزاهة والشفافية", cr: 3 },
+        { code: "704110", name: "الثقافة الرقمية", cr: 3 },
+        { code: "704112", name: "مهارات اللغة العربية 2", cr: 3 },
+        { code: "704113", name: "فن الخطابة والحوار", cr: 3 },
+        { code: "704114", name: "التنمية والبيئة", cr: 3 },
+        { code: "704115", name: "التنمية وتنظيم الأسرة", cr: 3 },
+        { code: "704141", name: "تاريخ القدس", cr: 3 },
+        { code: "704151", name: "مهارات الحاسوب 1", cr: 3 },
+        { code: "704152", name: "مهارات الحاسوب 2", cr: 3 },
+        { code: "704163", name: "لغة أجنبية", cr: 3 },
+        { code: "704171", name: "التغذية وصحة المجتمع", cr: 3 },
+        { code: "704172", name: "الرياضة والصحة", cr: 3 }
+    ],
+    "Major Elective": [
+        { code: "313204", name: "برمجة متقدمة", cr: 3 },
+        { code: "313263", name: "انظمة الوسائط المتعددة", cr: 3 },
+        { code: "313267", name: "المناهج الاساسية", cr: 3 },
+        { code: "313269", name: "إدارة المشاريع البرمجية", cr: 3 },
+        { code: "313360", name: "تصميم مواقع انترنت", cr: 3 },
+        { code: "313366", name: "جودة البرمجيات", cr: 3 },
+        { code: "313367", name: "مواصفات البرمجيات", cr: 3 },
+        { code: "313462", name: "معمارية البرمجيات", cr: 3 },
+        { code: "313463", name: "هندسة البرمجيات الامنة", cr: 3 },
+        { code: "313464", name: "إعادة هندسة البرمجيات", cr: 3 },
+        { code: "313469", name: "موضوعات خاصة", cr: 3 }
+    ],
+    "Free Elective": [
+         // "Required 3 hours outside plan"
+        { code: "FREE01", name: "Any University Course", cr: 3 }
+    ]
+};
+
+// --- 2. UPDATE PLAN STRUCTURE (Add Elective Nodes) ---
+// I added the 5 University Electives and 1 Free Elective into the structure
 const planStructure = [
-    // --- SIDE LABELS (Circles) ---
+    // --- LABELS ---
     { id: "lbl_95", x: 20, y: 50, type: 'label-circle', label: "95\nساعه" },
     { id: "lbl_75", x: 1750, y: 50, type: 'label-circle', label: "75\n%" },
 
-    // --- LEVEL 1 (ROOT) ---
+    // --- MAIN TREE (Existing) ---
     { id: "311100", x: 800, y: 50, type: 'course' }, 
+    { id: "313160", x: 150, y: 200, type: 'course' },
+    { id: "313269", x: 350, y: 200, type: 'course' },
+    { id: "311101", x: 650, y: 200, type: 'course' },
+    { id: "311160", x: 1000, y: 200, type: 'course' },
+    { id: "311220", x: 1200, y: 200, type: 'course' },
+    { id: "601101", x: 1400, y: 200, type: 'course' },
+    { id: "311240", x: 1600, y: 200, type: 'course' },
 
-    // --- LEVEL 2 ---
-    { id: "313160", x: 150, y: 200, type: 'course' }, // Intro SE
-    { id: "313269", x: 350, y: 200, type: 'course' }, // Proj Mgmt
-    { id: "311101", x: 650, y: 200, type: 'course' }, // Prog 1
-    
-    { id: "311160", x: 1000, y: 200, type: 'course' }, // Ethics
-    { id: "311220", x: 1200, y: 200, type: 'course' }, // Digital Logic
-    { id: "601101", x: 1400, y: 200, type: 'course' }, // Calculus
-    { id: "311240", x: 1600, y: 200, type: 'course' }, // Database
+    // Level 3
+    { id: "313466", x: 20, y: 350, type: 'course' },
+    { id: "313261", x: 150, y: 350, type: 'course' },
+    { id: "313204", x: 550, y: 350, type: 'course' },
+    { id: "311202", x: 750, y: 350, type: 'course' },
+    { id: "311321", x: 1100, y: 350, type: 'course' },
+    { id: "311330", x: 1250, y: 350, type: 'course' },
+    { id: "311210", x: 1400, y: 350, type: 'course' },
+    { id: "311340", x: 1550, y: 350, type: 'course' },
+    { id: "311241", x: 1750, y: 350, type: 'course' },
 
-    // --- LEVEL 3 ---
-    // SE Branch
-    { id: "313466", x: 20, y: 350, type: 'course' }, // Doc
-    { id: "313261", x: 150, y: 350, type: 'course' }, // Req
-    
-    // Prog Branch
-    { id: "313204", x: 550, y: 350, type: 'course' }, // Adv Prog
-    { id: "311202", x: 750, y: 350, type: 'course' }, // OOP
+    // Level 4
+    { id: "313367", x: 20, y: 500, type: 'course' },
+    { id: "313364", x: 150, y: 500, type: 'course' },
+    { id: "313262", x: 350, y: 500, type: 'course' },
+    { id: "311305", x: 550, y: 500, type: 'course' },
+    { id: "311304", x: 700, y: 500, type: 'course' },
+    { id: "313263", x: 850, y: 500, type: 'course' },
+    { id: "311213", x: 1050, y: 500, type: 'course' },
+    { id: "311468", x: 1250, y: 500, type: 'course' },
 
-    // Arch/Logic Branch
-    { id: "311321", x: 1100, y: 350, type: 'course' }, // Arch
-    { id: "311330", x: 1250, y: 350, type: 'course' }, // Networks
-    
-    // Math/Data
-    { id: "311210", x: 1400, y: 350, type: 'course' }, // Discrete
-    { id: "311340", x: 1550, y: 350, type: 'course' }, // DB Mgmt
-    { id: "311241", x: 1750, y: 350, type: 'course' }, // Sys Analysis
+    // Level 5
+    { id: "313469", x: 20, y: 650, type: 'course' },
+    { id: "313464", x: 150, y: 650, type: 'course' },
+    { id: "313462", x: 280, y: 650, type: 'course' },
+    { id: "313363", x: 410, y: 650, type: 'course' },
+    { id: "311314", x: 1050, y: 650, type: 'course' },
 
-    // --- LEVEL 4 ---
-    { id: "313367", x: 20, y: 500, type: 'course' }, // Specs
-    { id: "313364", x: 150, y: 500, type: 'course' }, // OO SE
-    
-    { id: "313262", x: 350, y: 500, type: 'course' }, // Components
-    { id: "311305", x: 550, y: 500, type: 'course' }, // Visual
-    { id: "311304", x: 700, y: 500, type: 'course' }, // Web
-    { id: "313263", x: 850, y: 500, type: 'course' }, // Multimedia
-    
-    { id: "311213", x: 1050, y: 500, type: 'course' }, // Data Struct
-    { id: "311468", x: 1250, y: 500, type: 'course' }, // Security
+    // Level 6
+    { id: "313365", x: 350, y: 800, type: 'course' },
+    { id: "313366", x: 500, y: 800, type: 'course' },
+    { id: "311350", x: 950, y: 800, type: 'course' },
+    { id: "311422", x: 1150, y: 800, type: 'course' },
 
-    // --- LEVEL 5 ---
-    { id: "313469", x: 20, y: 650, type: 'course' }, // Special
-    { id: "313464", x: 150, y: 650, type: 'course' }, // Re-eng
-    { id: "313462", x: 280, y: 650, type: 'course' }, // Arch
-    { id: "313363", x: 410, y: 650, type: 'course' }, // Design
-    
-    { id: "311314", x: 1050, y: 650, type: 'course' }, // Algorithms
+    // Level 7
+    { id: "313468", x: 420, y: 950, type: 'course' },
 
-    // --- LEVEL 6 ---
-    { id: "313365", x: 350, y: 800, type: 'course' }, // Testing
-    { id: "313366", x: 500, y: 800, type: 'course' }, // Quality
-    
-    { id: "311350", x: 950, y: 800, type: 'course' }, // AI
-    { id: "311422", x: 1150, y: 800, type: 'course' }, // OS
+    // --- ELECTIVE NODES (Integrated into Tree) ---
+    // University Electives (15h = 5 Courses). Placing them in a column on the far right.
+    { id: "UE1", x: 1950, y: 200, type: 'elective-node', label: "University\nElective 1", group: "University Elective" },
+    { id: "UE2", x: 1950, y: 350, type: 'elective-node', label: "University\nElective 2", group: "University Elective" },
+    { id: "UE3", x: 1950, y: 500, type: 'elective-node', label: "University\nElective 3", group: "University Elective" },
+    { id: "UE4", x: 1950, y: 650, type: 'elective-node', label: "University\nElective 4", group: "University Elective" },
+    { id: "UE5", x: 1950, y: 800, type: 'elective-node', label: "University\nElective 5", group: "University Elective" },
 
-    // --- LEVEL 7 ---
-    { id: "313468", x: 420, y: 950, type: 'course' }, // Maint
+    // Free Elective (3h = 1 Course)
+    { id: "FE1", x: 1950, y: 950, type: 'elective-node', label: "Free\nElective", group: "Free Elective" },
 
-    // --- RIGHT SIDE LEGEND (Aligned tight) ---
+    // --- LEGEND & GRADUATION ---
     { id: "leg_1", x: 1750, y: 600, type: 'label-box', label: "متطلبات جامعة\nاجباري 12\nساعة" },
     { id: "leg_2", x: 1750, y: 720, type: 'label-box', label: "متطلبات حرة\nخارج الخطة\n3 ساعات" },
-    { id: "leg_3", x: 1750, y: 840, type: 'label-box', label: "متطلبات مساندة\nاجباري\n6 ساعات" },
-    { id: "leg_4", x: 1750, y: 960, type: 'label-box', label: "متطلبات جامعة\nاختياري\n15 ساعات" },
-
-    // --- BOTTOM BOXES (Aligned Center-Right) ---
+    
     { id: "proj_grad", x: 1300, y: 1000, type: 'label-box-green', label: "مشروع تخرج\nمشروط بقطع\n110 ساعات نجاح" },
     { id: "proj_train", x: 1500, y: 1000, type: 'label-box-green', label: "تدريب ميداني\nمشروط بـ90\nساعه نجاح" }
 ];
@@ -451,17 +488,16 @@ if (langBtn) {
 }
 
 function getCategoryClass(category) {
-    if (!category) return 'cat-default';
-    const c = category.toLowerCase();
+    if (!category) return 'cat-support';
+    const cat = category.toLowerCase();
     
-    if (c.includes('university')) return 'cat-univ';
-    if (c.includes('college')) return 'cat-college';
-    if (c.includes('major compulsory')) return 'cat-major-req';
-    if (c.includes('major elective')) return 'cat-major-elec';
-    if (c.includes('supportive') || c.includes('basic')) return 'cat-support';
-    if (c.includes('remedial')) return 'cat-other';
+    if (cat.includes('major compulsory')) return 'cat-major-comp';
+    if (cat.includes('college compulsory')) return 'cat-college-comp';
+    if (cat.includes('university compulsory')) return 'cat-uni-comp';
+    if (cat.includes('university elective')) return 'cat-uni-elective';
+    if (cat.includes('major elective') || cat.includes('department elective')) return 'cat-major-elective';
     
-    return 'cat-default';
+    return 'cat-support';
 }
 
 // 2. Helper to get Status Icon
@@ -1575,6 +1611,183 @@ function renderRegistrationList(sections) {
     });
 }
 
+window.updateAcademicProgress = function() {
+    // 1. Calculate Total (from DB courses)
+    // Assuming typical total is 132 if not calculating dynamically, but let's sum DB
+    const totalCredits = 132; // Fixed standard, or use: allCoursesData.reduce((sum, c) => sum + c.credit_hours, 0);
+
+    // 2. Calculate Earned (from passedCourses array)
+    let earnedCredits = 0;
+    
+    if (window.passedCourses && window.allCoursesData) {
+        // Create unique set to avoid duplicates
+        const uniquePassed = [...new Set(window.passedCourses)];
+        
+        uniquePassed.forEach(code => {
+            // Find the course object to get its credit hours
+            // Ensure we compare strings
+            const course = allCoursesData.find(c => c.course_code.toString() === code.toString());
+            if (course) {
+                earnedCredits += course.credit_hours;
+            }
+        });
+    }
+
+    // 3. Update UI Elements
+    // Update Hours Number
+    const hoursElement = document.getElementById('stat-hours-val'); // Make sure your HTML has this ID
+    // OR if you don't have IDs, use selector (adjust based on your actual HTML structure)
+    const cardHeaders = document.querySelectorAll('.stat-card h3');
+    if(cardHeaders.length >= 2) {
+        cardHeaders[1].textContent = earnedCredits; // Assuming 2nd card is hours
+    }
+
+    // Update Percentage
+    const percentage = Math.min(100, Math.round((earnedCredits / totalCredits) * 100));
+    const percentText = document.querySelector('.progress-text'); // Text inside circle
+    if (percentText) percentText.textContent = `${percentage}%`;
+    
+    // Update Circle Stroke (SVG)
+    const circle = document.querySelector('.progress-ring__circle');
+    if (circle) {
+        const radius = circle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+        const offset = circumference - (percentage / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+    }
+};
+
+window.openDrawer = function(categoryFilter, title) {
+    const drawer = document.getElementById('elective-drawer');
+    const overlay = document.getElementById('elective-drawer-overlay');
+    const list = document.getElementById('drawer-content');
+    const titleEl = document.getElementById('drawer-title');
+    
+    titleEl.textContent = title;
+    list.innerHTML = ''; 
+
+    // Find courses matching the category
+    const courses = allCoursesData.filter(c => 
+        c.category && c.category.toLowerCase().includes(categoryFilter.toLowerCase())
+    );
+
+    if (courses.length === 0) {
+        list.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No courses found.</p>';
+    } else {
+        courses.forEach(c => {
+            const name = currentLang === 'ar' ? c.course_name_ar : c.course_name_en;
+            const item = document.createElement('div');
+            item.className = `drawer-node ${getCategoryClass(c.category)}`;
+            
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-weight:bold; color:#2E7D32;">${c.course_code}</span>
+                    <span style="font-size:0.8em; background:#eee; padding:2px 6px; borderRadius:4px;">${c.credit_hours} Cr</span>
+                </div>
+                <div style="font-size:0.9em; color:#333; margin-top:4px;">${name}</div>
+            `;
+            
+            // Clicking item in drawer opens full details
+            item.onclick = () => {
+                closeDrawer(); // Close drawer first
+                showCourseDetails(c.course_code); // Open existing details overlay
+            };
+            
+            list.appendChild(item);
+        });
+    }
+
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+};
+
+window.closeDrawer = function() {
+    document.getElementById('elective-drawer').classList.remove('open');
+    document.getElementById('elective-drawer-overlay').classList.remove('open');
+};
+
+
+// Call this after rendering the main tree
+function renderElectiveBlocks() {
+    const container = document.getElementById('plan-tree-container'); // Or specific container for these
+    
+    // Define the 4 blocks manually since they might not be in the standard node list
+    const electiveTypes = [
+        { name: "University Elective", count: 2, filterKey: "University Elective" },
+        { name: "Major Elective", count: 2, filterKey: "Major Compulsory" } // Or whatever category maps to this
+    ];
+
+    // Create a container for them if not exists
+    let electivesRow = document.createElement('div');
+    electivesRow.style.display = 'flex';
+    electivesRow.style.gap = '20px';
+    electivesRow.style.justifyContent = 'center';
+    electivesRow.style.marginTop = '40px';
+    
+    electiveTypes.forEach(type => {
+        // Create 2 blocks for each type (example)
+        for(let i=1; i<=type.count; i++) {
+            const block = document.createElement('div');
+            block.className = `tree-node ${getCategoryClass(type.filterKey)}`;
+            block.style.borderStyle = "dashed"; // Dashed to indicate "Select one"
+            block.style.cursor = "pointer";
+            block.innerHTML = `<strong>${type.name} ${i}</strong><br>Click to Select`;
+            
+            // OPEN DRAWER ON CLICK
+            block.onclick = () => openDrawer(type.filterKey, `${type.name} Options`);
+            
+            electivesRow.appendChild(block);
+        }
+    });
+
+    container.appendChild(electivesRow);
+}
+
+// --- DRAWER FUNCTIONS ---
+
+window.openDrawer = function(categoryFilter, title) {
+    const drawer = document.getElementById('elective-drawer');
+    const overlay = document.getElementById('elective-drawer-overlay');
+    const list = document.getElementById('drawer-content');
+    const titleEl = document.getElementById('drawer-title');
+    
+    titleEl.textContent = title;
+    list.innerHTML = ''; // Clear previous
+
+    // Filter courses from global data
+    const courses = allCoursesData.filter(c => 
+        c.category && c.category.toLowerCase().includes(categoryFilter.toLowerCase())
+    );
+
+    if (courses.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:#666;">No courses found for this category.</p>';
+    } else {
+        courses.forEach(c => {
+            const item = document.createElement('div');
+            item.className = `drawer-node ${getCategoryClass(c.category)}`;
+            item.innerHTML = `
+                <div style="font-weight:bold; color:#333;">${c.course_code}</div>
+                <div style="font-size:0.9em; color:#555;">${c.course_name_en}</div>
+                <div style="font-size:0.8em; color:#999; margin-top:4px;">${c.credit_hours} Credits</div>
+            `;
+            // Clicking item shows the main overlay
+            item.onclick = () => {
+                closeDrawer();
+                showCourseDetails(c.course_code); // Use your existing overlay function
+            };
+            list.appendChild(item);
+        });
+    }
+
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+};
+
+window.closeDrawer = function() {
+    document.getElementById('elective-drawer').classList.remove('open');
+    document.getElementById('elective-drawer-overlay').classList.remove('open');
+};
+
 window.requestPrereqOverride = function(courseCode, courseName) {
     // 1. Navigate to Exception Section
     showSection('exceptions');
@@ -1930,7 +2143,7 @@ function updatePlanLegend() {
     }
 }
 
-async function loadStudentPlan(userId) {
+window.loadStudentPlan = async function(userId) {
     const canvas = document.getElementById('plan-tree-canvas');
     if(!canvas) return;
     canvas.innerHTML = '<div class="spinner"></div>';
@@ -1938,6 +2151,7 @@ async function loadStudentPlan(userId) {
     updatePlanLegend();
 
     try {
+        // Fetch History
         const { data: history } = await supabase
             .from('enrollments')
             .select('status, sections(course_code)')
@@ -1953,6 +2167,7 @@ async function loadStudentPlan(userId) {
             else registeredCodes.add(code);
         });
 
+        // Fetch Courses for Names
         const { data: courses } = await supabase
             .from('courses')
             .select('course_code, course_name_en, course_name_ar, credit_hours');
@@ -1960,17 +2175,20 @@ async function loadStudentPlan(userId) {
         const courseMap = {};
         courses?.forEach(c => courseMap[c.course_code] = c);
 
+        // Render using the FIXED Coordinates
         renderPlanTree(passedCodes, registeredCodes, courseMap);
         
-        // --- NEW: Enable Drag-to-Scroll (Google Maps style) ---
-        enableDragScroll(); // Call helper function
+        enableDragScroll(); 
+        
+        // Ensure the layout dimensions are large enough so it doesn't get cut off
+        canvas.style.width = "2200px";
+        canvas.style.height = "1200px";
 
-        // Auto-Fit once
         setTimeout(() => fitToScreen(), 100);
 
     } catch (err) {
         console.error("Plan Error:", err);
-        canvas.innerHTML = '<p style="color:red">Failed to load plan map.</p>';
+        canvas.innerHTML = '<p style="color:red; text-align:center;">Failed to load plan map.</p>';
     }
 }
 
@@ -2047,228 +2265,184 @@ window.fitToScreen = function() {
     wrapper.scrollLeft = 0;
 }
 
-function renderPlanTree(passed, registered, courseDetails) {
-    const canvasContainer = document.getElementById('plan-tree-canvas');
-    if (!canvasContainer) return;
-    canvasContainer.innerHTML = ''; // Clear previous render
+window.renderPlanTree = function(passed, registered, rawCourseData) {
+    const container = document.getElementById('plan-tree-canvas');
+    if (!container) return;
 
-    // --- STEP A: WHITESPACE REDUCTION LOGIC ---
+    // Reset container
+    container.innerHTML = '';
     
-    // 1. Find the widest X coordinate of the actual "Tree" (Course nodes only)
-    let maxTreeX = 0;
-    planStructure.forEach(node => {
-        // We ignore the legends (x=1750) to find the true edge of the tree
-        if (node.type === 'course' && node.x > maxTreeX) {
-            maxTreeX = node.x;
-        }
-    });
+    // Create SVG Layer for Lines
+    const svgNs = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNs, "svg");
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    svg.style.position = "absolute";
+    svg.style.top = "0";
+    svg.style.left = "0";
+    svg.style.overflow = "visible"; // Allow lines to go outside if needed
+    container.appendChild(svg);
 
-    // 2. Define the shift parameters
-    const originalLegendX = 1750; // The X position defined in your static planStructure
-    const gap = 200; // Desired gap between tree and legends
-    
-    // Calculate how much we need to move the legends to the left
-    // New Legend X should be: maxTreeX + gap
-    // Shift Amount = Old X - New X
-    const shiftAmount = originalLegendX - (maxTreeX + gap);
-
-    // 3. Create 'renderData': A copy of nodes with adjusted coordinates
-    const renderData = planStructure.map(node => {
-        // If this is a legend node or the right-side circle, shift it
-        if (node.x >= originalLegendX) {
-            return { ...node, x: node.x - shiftAmount };
-        }
-        return node;
-    });
-
-    // --- STEP B: CALCULATE CANVAS SIZE ---
-    
-    let maxX = 0;
-    let maxY = 0;
-    
-    renderData.forEach(node => {
-        // Approx width calculation to ensure container fits the content
-        const w = (node.type === 'label-circle') ? 100 : 140; 
-        const h = 80;
-        if ((node.x + w) > maxX) maxX = node.x + w;
-        if ((node.y + h) > maxY) maxY = node.y + h;
-    });
-
-    const padding = 50; 
-    const finalWidth = maxX + padding;
-    const finalHeight = maxY + padding;
-
-    // Apply explicit size to container (important for drag-scroll)
-    canvasContainer.style.width = `${finalWidth}px`;
-    canvasContainer.style.height = `${finalHeight}px`;
-
-    // --- STEP C: DRAW SVG ---
-    
-    const svg = d3.select("#plan-tree-canvas")
-        .append("svg")
-        .attr("width", finalWidth)
-        .attr("height", finalHeight)
-        .append("g");
-
-    // 1. DRAW LINKS (Connections)
+    // 1. Draw Links First (so they are behind nodes)
     planLinks.forEach(link => {
-        // Find the nodes in our new 'renderData' to get updated X/Y
-        const sourceNode = renderData.find(n => n.id === link.s);
-        const targetNode = renderData.find(n => n.id === link.t);
+        const sourceNode = planStructure.find(n => n.id === link.s);
+        const targetNode = planStructure.find(n => n.id === link.t);
 
         if (sourceNode && targetNode) {
-            let srcX, srcY, tgtX, tgtY;
-            
-            // Adjust connection points based on node type
-            if (sourceNode.type && sourceNode.type.includes('label-box')) {
-                 srcX = sourceNode.x; srcY = sourceNode.y + 40; 
-                 tgtX = targetNode.x + 60; tgtY = targetNode.y + 40; // Connect to side
-            } else {
-                // Standard Course-to-Course connection (Bottom to Top)
-                srcX = sourceNode.x + 65; srcY = sourceNode.y + 65; 
-                tgtX = targetNode.x + 65; tgtY = targetNode.y;
-            }
+            // Calculate centers assuming width=130 height=60 roughly for standard nodes
+            // Adjust offsets based on your visual preference
+            const sx = sourceNode.x + 65; 
+            const sy = sourceNode.y + 30;
+            const tx = targetNode.x + 65;
+            const ty = targetNode.y + 30;
 
-            // Path Calculation
-            let pathData;
-            // If nodes are on the same horizontal level (Project boxes)
-            if (Math.abs(sourceNode.y - targetNode.y) < 10) {
-                pathData = `M ${srcX} ${srcY} H ${tgtX}`;
-            } else {
-                // Elbow connector (Vertical -> Horizontal -> Vertical)
-                const midY = srcY + (tgtY - srcY) / 2;
-                pathData = `M ${srcX} ${srcY} V ${midY} H ${tgtX} V ${tgtY}`;
-            }
+            const path = document.createElementNS(svgNs, "path");
+            // Draw a stepped line (Right-Angle connector) like the image
+            // Move down half way, then across, then down
+            const midY = sy + (ty - sy) / 2;
+            const d = `M ${sx} ${sy} L ${sx} ${midY} L ${tx} ${midY} L ${tx} ${ty}`;
             
-            svg.append("path")
-                .attr("d", pathData)
-                .attr("fill", "none")
-                .attr("stroke", "#cfd8dc") // Light gray for clean look
-                .attr("stroke-width", 2)
-                .attr("class", "tree-link");
+            path.setAttribute("d", d);
+            path.setAttribute("stroke", "#0e5b78"); // Blue-ish color from image
+            path.setAttribute("stroke-width", "2");
+            path.setAttribute("fill", "none");
+            path.classList.add("tree-link");
+            svg.appendChild(path);
         }
     });
 
-    // 2. DRAW NODES
-    renderData.forEach(node => {
-        const g = svg.append("g")
-            .attr("transform", `translate(${node.x}, ${node.y})`);
-
-        // --- TYPE 1: CIRCLE LABELS (95 Hours / 75%) ---
-        if (node.type === 'label-circle') {
-            g.append("circle")
-                .attr("cx", 50).attr("cy", 50).attr("r", 40)
-                .attr("fill", "#2E7D32") // Theme Green
-                .attr("stroke", "#fff").attr("stroke-width", 2)
-                .attr("filter", "drop-shadow(0px 3px 3px rgba(0,0,0,0.2))");
-            
-            const lines = node.label.split('\n');
-            lines.forEach((line, i) => {
-                g.append("text")
-                    .attr("x", 50)
-                    .attr("y", 50 - ((lines.length-1)*8) + (i*16))
-                    .attr("text-anchor", "middle")
-                    .attr("dominant-baseline", "middle")
-                    .attr("fill", "white")
-                    .attr("font-weight", "bold")
-                    .text(line);
-            });
-        } 
+    // 2. Draw Nodes
+    planStructure.forEach(node => {
+        const el = document.createElement('div');
+        el.style.position = "absolute";
+        el.style.left = `${node.x}px`;
+        el.style.top = `${node.y}px`;
         
-        // --- TYPE 2: LABEL BOXES (Legend/Project Requirements) ---
-        else if (node.type && node.type.includes('label-box')) {
-             const isGreen = node.type === 'label-box-green';
-             // These remain filled blocks to distinguish them from courses
-             g.append("rect")
-                .attr("width", 120).attr("height", 80).attr("rx", 8)
-                .attr("fill", isGreen ? "#2E7D32" : "#1565c0")
-                .attr("stroke", "white").attr("stroke-width", 1)
-                .attr("filter", "drop-shadow(0px 3px 3px rgba(0,0,0,0.1))");
-             
-             const lines = node.label.split('\n');
-             lines.forEach((line, i) => {
-                 g.append("text")
-                    .attr("x", 60)
-                    .attr("y", 40 - ((lines.length-1)*9) + (i*18))
-                    .attr("text-anchor", "middle")
-                    .attr("dominant-baseline", "middle")
-                    .attr("fill", "white")
-                    .attr("font-size", "11px")
-                    .text(line);
-             });
-        }
-        
-        // --- TYPE 3: COURSE CARDS (The Main Nodes) ---
-        else {
-            const details = courseDetails[node.id];
+        // A. Standard Course Node
+        if (node.type === 'course') {
+            const courseDetails = rawCourseData[node.id] || { course_name_en: "Loading...", credit_hours: 3 };
+            const name = (window.currentLang === 'ar' && courseDetails.course_name_ar) ? courseDetails.course_name_ar : courseDetails.course_name_en;
             
-            // A. Determine Status
-            let statusKey = "locked";
-            if (passed.has(node.id)) statusKey = "passed";
-            else if (registered.has(node.id)) statusKey = "registered";
+            // Determine Status
+            let statusClass = "locked"; // Default
+            if (passed.has(node.id)) statusClass = "passed";
+            else if (registered.has(node.id)) statusClass = "registered";
             else {
-                 // Check if prerequisites (parents) are passed
-                 const parents = planLinks.filter(l => l.t === node.id);
-                 // A course is Open if it has no parents OR all parents are passed/non-course labels
-                 const parentsPassed = parents.every(p => {
-                     const pNode = planStructure.find(n => n.id === p.s);
-                     return passed.has(p.s) || (pNode && pNode.type !== 'course');
-                 });
-                 if(parents.length === 0 || parentsPassed) statusKey = "open";
+                // Check prereqs logic if you want 'open' status, for now default locked
+                statusClass = "locked"; 
             }
-
-            // B. Determine Category CSS Class
-            const catString = details ? details.category : "";
-            const catClass = getCategoryClass(catString);
-
-            // C. Interaction
-            g.style("cursor", "pointer")
-             .on("click", (event) => {
-                event.stopPropagation(); 
-                // Using the global showCoursePopup function
-                if(window.showCoursePopup) {
-                    window.showCoursePopup(node.id, details, statusKey, `status_${statusKey}`, event.currentTarget);
-                }
-            });
-
-            // D. Draw The Card (White Background, Colored Border)
-            g.append("rect")
-                .attr("width", 130)
-                .attr("height", 65)
-                .attr("rx", 8) // Rounded corners
-                .attr("class", `node-box ${catClass}`) // CSS handles stroke color
-                .style("fill", "#ffffff"); // Explicit White Background
-
-            // E. Status Icon (Top Right)
-            g.append("text")
-                .attr("x", 118)
-                .attr("y", 18)
-                .attr("text-anchor", "middle")
-                .attr("class", `status-icon ${statusKey}`) // CSS handles fill color
-                .style("font-size", "14px")
-                .text(getStatusIcon(statusKey));
-
-            // F. Course Code
-            g.append("text")
-                .attr("x", 65)
-                .attr("y", 25)
-                .attr("text-anchor", "middle")
-                .attr("class", "node-code")
-                .text(node.id);
-
-            // G. Course Name (Truncated)
-            const fullName = details ? (currentLang === 'ar' ? details.course_name_ar : details.course_name_en) : "Loading...";
-            const shortName = fullName.length > 18 ? fullName.substring(0, 16) + ".." : fullName;
-
-            g.append("text")
-                .attr("x", 65)
-                .attr("y", 45)
-                .attr("text-anchor", "middle")
-                .attr("class", "node-name")
-                .text(shortName);
+            
+            // Override coloring to match image (Blue/Teal background)
+            // We use the CSS class for shape, but inline style for specific colors if needed
+            el.className = `node-box ${statusClass}`;
+            // Basic box style
+            el.style.width = "130px";
+            el.style.height = "60px";
+            el.style.background = "#0b4f6c"; // Dark Blue from image
+            if(statusClass === 'passed') el.style.background = "#2E7D32";
+            
+            el.style.color = "white";
+            el.style.display = "flex";
+            el.style.flexDirection = "column";
+            el.style.justifyContent = "center";
+            el.style.alignItems = "center";
+            el.style.textAlign = "center";
+            el.style.fontSize = "11px";
+            el.style.borderRadius = "4px";
+            el.style.cursor = "pointer";
+            el.style.zIndex = "10";
+            el.innerHTML = `
+                <div style="font-size:10px; opacity:0.8;">${name.substring(0,25)}</div>
+                <div style="font-weight:bold; font-size:13px;">${node.id}</div>
+            `;
+            
+            // Click to see details
+            el.onclick = () => showCoursePopup(node.id, courseDetails, statusClass, 'status_'+statusClass, el);
         }
+        
+        // B. Elective Node (The Drawer Button)
+        else if (node.type === 'elective-node') {
+            el.className = "node-box cat-uni-elective";
+            el.style.width = "130px";
+            el.style.height = "60px";
+            el.style.background = "#fff";
+            el.style.border = "2px dashed #F57C00";
+            el.style.color = "#333";
+            el.style.display = "flex";
+            el.style.alignItems = "center";
+            el.style.justifyContent = "center";
+            el.style.textAlign = "center";
+            el.style.cursor = "pointer";
+            el.style.fontSize = "11px";
+            el.style.fontWeight = "bold";
+            el.innerText = node.label;
+            
+            el.onclick = () => openPdfDrawer(node.group, node.label);
+        }
+
+        // C. Labels (Circles / Boxes)
+        else if (node.type === 'label-circle') {
+            el.style.background = "#0b4f6c";
+            el.style.color = "white";
+            el.style.borderRadius = "50%";
+            el.style.width = "60px";
+            el.style.height = "60px";
+            el.style.display = "flex";
+            el.style.alignItems = "center";
+            el.style.justifyContent = "center";
+            el.style.textAlign = "center";
+            el.style.fontWeight = "bold";
+            el.innerText = node.label;
+        }
+        else if (node.type === 'label-box' || node.type === 'label-box-green') {
+            el.style.background = node.type === 'label-box-green' ? "#1b5e20" : "#0b4f6c";
+            el.style.color = "white";
+            el.style.padding = "10px";
+            el.style.width = "140px";
+            el.style.textAlign = "center";
+            el.style.fontSize = "12px";
+            el.innerText = node.label;
+        }
+
+        container.appendChild(el);
     });
-}
+};
+
+window.openPdfDrawer = function(groupKey, title) {
+    const drawer = document.getElementById('elective-drawer');
+    const overlay = document.getElementById('elective-drawer-overlay');
+    const list = document.getElementById('drawer-content');
+    const titleEl = document.getElementById('drawer-title');
+    
+    titleEl.textContent = title;
+    list.innerHTML = ''; 
+
+    // Get list from hardcoded PDF data
+    const courses = pdfElectiveData[groupKey] || [];
+
+    if (courses.length === 0) {
+        list.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No courses found in PDF data.</p>';
+    } else {
+        courses.forEach(c => {
+            const item = document.createElement('div');
+            item.className = `drawer-node`;
+            item.style.borderLeft = "4px solid #F57C00";
+            
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-weight:bold; color:#333;">${c.code}</span>
+                    <span style="font-size:0.8em; background:#eee; padding:2px 6px; borderRadius:4px;">${c.cr} Cr</span>
+                </div>
+                <div style="font-size:0.9em; color:#555; margin-top:4px;">${c.name}</div>
+            `;
+            
+            list.appendChild(item);
+        });
+    }
+
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+};
 
 window.showCoursePopup = function(code, details, statusClass, statusKey, targetElement) {
     const popup = document.getElementById('course-popup');
@@ -2722,6 +2896,7 @@ function setupCourseSearch(inputId, hiddenId, listId) {
         }
     });
 }
+
 
 // Initialize listeners immediately
 document.addEventListener('DOMContentLoaded', () => {
