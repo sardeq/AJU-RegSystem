@@ -141,7 +141,26 @@ const translations = {
         lbl_history: "Academic History",
         tbl_grade: "Grade",
         msg_no_history: "No completed courses found for this semester.",
-        opt_all_semesters: "All Semesters"
+        opt_all_semesters: "All Semesters",
+
+        exc_title: "Exception Requests",
+        exc_new_req: "New Request",
+        exc_type_label: "Request Type",
+        opt_prereq: "Prerequisite Override",
+        opt_alt: "Alternative Course",
+        exc_target_label: "Target Course",
+        ph_search_target: "Start typing course name or code...",
+        exc_alt_label: "Replacing Course (Optional)",
+        ph_search_alt: "Search replacement course...",
+        exc_reason_label: "Reason / Justification",
+        ph_reason: "Explain why you need this exception...",
+        btn_submit_req: "Submit Request",
+        exc_history_title: "Request History",
+        exc_desc_prereq: "Request to enroll in a course without meeting the prerequisite.",
+        exc_desc_alt: "Request to take a different course in place of a required one.",
+        
+        // Tooltip for the new button
+        btn_req_override: "Request Prerequisite Override"
     },
     ar: {
         nav_home: "الرئيسية",
@@ -240,7 +259,26 @@ const translations = {
         lbl_history: "السجل الأكاديمي",
         tbl_grade: "العلامة",
         msg_no_history: "لا يوجد مواد مكتملة في هذا الفصل.",
-        opt_all_semesters: "جميع الفصول"
+        opt_all_semesters: "جميع الفصول",
+
+        exc_title: "طلبات الاستثناء",
+        exc_new_req: "طلب جديد",
+        exc_type_label: "نوع الطلب",
+        opt_prereq: "تجاوز المتطلب السابق",
+        opt_alt: "مادة بديلة",
+        exc_target_label: "المادة المطلوبة",
+        ph_search_target: "ابدأ بكتابة اسم أو رمز المادة...",
+        exc_alt_label: "المادة المستبدلة (اختياري)",
+        ph_search_alt: "ابحث عن المادة التي تريد استبدالها...",
+        exc_reason_label: "السبب / التبرير",
+        ph_reason: "اشرح سبب حاجتك لهذا الاستثناء...",
+        btn_submit_req: "إرسال الطلب",
+        exc_history_title: "سجل الطلبات",
+        exc_desc_prereq: "طلب التسجيل في مادة دون إنهاء المتطلب السابق.",
+        exc_desc_alt: "طلب دراسة مادة مختلفة بدلاً من مادة إجبارية في الخطة.",
+
+        // Tooltip for the new button
+        btn_req_override: "طلب تجاوز المتطلب السابق"
 
     }
 };
@@ -1372,35 +1410,74 @@ function renderRegistrationList(sections) {
         const alreadyHasCourse = window.enrolledCourseCodes && window.enrolledCourseCodes.includes(course.course_code);
         
         // CHECK 2: PREREQUISITES MET?
-        // We get list of required codes and check if they exist in 'passedCourses'
         const reqs = course.prerequisites || [];
         const missingPrereqs = reqs.filter(req => !window.passedCourses.includes(req.prereq_code));
         const hasPrereqs = missingPrereqs.length === 0;
 
+        // --- NEW WRAPPER STRUCTURE ---
+        // Creates a row: [ Accordion (Flexible Width) ] [ Button (Fixed Width) ]
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.alignItems = 'flex-start'; // Keep button at top even if accordion expands
+        wrapper.style.gap = '10px';
+        wrapper.style.marginBottom = '15px';
+
+        // 1. Create Accordion Element
         const accordion = document.createElement('div');
         accordion.className = 'course-accordion collapsed';
+        accordion.style.flex = '1'; // Take all available space
+        accordion.style.marginBottom = '0'; // Wrapper handles margin
         
-        // Add a visual indicator if prerequisites are missing
-        const prereqBadge = !hasPrereqs 
-            ? `<span class="badge badge-red" style="font-size:0.7em; margin-left:10px;">Missing Prereq</span>` 
-            : '';
+        // Internal Badges
+        let badgeHtml = '';
+        if (!hasPrereqs) {
+            badgeHtml = `<span class="badge badge-red" style="font-size:0.7em; margin-left:10px;">Missing Prereq</span>`;
+        } else if (alreadyHasCourse) {
+            badgeHtml = '<span class="status-text success" style="margin-left:10px; font-size:0.7em;">Enrolled</span>';
+        }
 
         accordion.innerHTML = `
             <div class="accordion-header" onclick="toggleAccordion(this)">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span class="chevron">›</span>
                     <span class="cat-title"><strong>${course.course_code}</strong> - ${courseName}</span>
-                    ${alreadyHasCourse ? '<span class="status-text success" style="margin-left:10px; font-size:0.7em;">Enrolled</span>' : ''}
-                    ${prereqBadge}
+                    ${badgeHtml}
                 </div>
                 <div class="accordion-meta">
                     <span class="badge badge-gray">${course.credit_hours} Cr</span>
-                    <span style="font-size:0.8em; color:#666;">${group.sections.length} Sec</span>
+                    <span style="font-size:0.8em; color:#666; margin-left:10px;">${group.sections.length} Sec</span>
                 </div>
             </div>
             <div class="accordion-content hidden"></div>
         `;
 
+        // 2. Create External Button (if needed)
+        let externalButton = null;
+        if (!hasPrereqs) {
+             const safeName = courseName.replace(/'/g, "\\'"); 
+             const tooltip = translations[currentLang].btn_req_override;
+             
+             externalButton = document.createElement('button');
+             externalButton.className = 'circle-btn time-btn';
+             // Styling to make it look nice outside
+             externalButton.style.cssText = `
+                background-color: #f57c00; 
+                width: 45px; 
+                height: 45px; 
+                flex-shrink: 0; 
+                margin-top: 5px; /* Aligns visually with the header center */
+                box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                font-size: 1.2em;
+             `;
+             externalButton.title = tooltip;
+             externalButton.innerHTML = '⚠️';
+             externalButton.onclick = () => requestPrereqOverride(course.course_code, safeName);
+        }
+
+        // 3. Fill Accordion Content (Sections)
         const contentDiv = accordion.querySelector('.accordion-content');
         let visibleSectionsCount = 0;
 
@@ -1425,36 +1502,26 @@ function renderRegistrationList(sections) {
             const isRegisteredThisSection = currentEnrollments.includes(sec.section_id);
             const isWaitlisted = currentWaitlist.includes(sec.section_id);
 
-            // --- BUTTON LOGIC ---
+            // Buttons inside the drawer
             let actionButtons = '';
             let rowOpacity = '1';
 
             if (isRegisteredThisSection) {
-                // 1. Registered
                 actionButtons = `<span class="status-text success">Registered ✅</span>`;
-            
             } else if (alreadyHasCourse) {
-                // 2. Different Section Registered
                 actionButtons = `<span class="status-text" style="color:#666; background:#eee; font-size:0.75em;">Course Enrolled</span>`;
                 rowOpacity = '0.6';
-
             } else if (!hasPrereqs) {
-                // 3. PREREQ MISSING (New Check)
+                // Just text inside
                 const missingText = missingPrereqs.map(p => p.prereq_code).join(', ');
                 actionButtons = `<span class="status-text" style="color:#c62828; background:#ffebee; border:1px solid #c62828; font-size:0.75em;" title="Missing: ${missingText}">Prereq Missing 🔒</span>`;
                 rowOpacity = '0.5';
-
             } else if (isWaitlisted) {
-                // 4. Waitlisted
                 actionButtons = `<span class="status-text warning">Waitlisted 🕒</span>`;
-            
             } else if (hasConflict) {
-                // 5. Conflict
                 actionButtons = `<span class="status-text" style="color:#c62828; background:#ffebee; border:1px solid #c62828; font-size:0.75em;">Time Conflict ⚠️</span>`;
                 rowOpacity = '0.7'; 
-            
             } else if (isFull) {
-                // 6. Full -> Waitlist
                 actionButtons = `
                     <button class="circle-btn time-btn" onclick="handleWaitlist(${sec.section_id})" title="Join Waitlist">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16">
@@ -1463,7 +1530,6 @@ function renderRegistrationList(sections) {
                     </button>
                 `;
             } else {
-                // 7. Open -> Register
                 actionButtons = `
                     <button class="circle-btn add-btn" onclick="handleRegister(${sec.section_id})" title="Register">
                         +
@@ -1500,10 +1566,38 @@ function renderRegistrationList(sections) {
         });
 
         if (visibleSectionsCount > 0) {
-            container.appendChild(accordion);
+            wrapper.appendChild(accordion);
+            if (externalButton) {
+                wrapper.appendChild(externalButton);
+            }
+            container.appendChild(wrapper);
         }
     });
 }
+
+window.requestPrereqOverride = function(courseCode, courseName) {
+    // 1. Navigate to Exception Section
+    showSection('exceptions');
+
+    // 2. Set Type to Prerequisite
+    const typeSelect = document.getElementById('exc-type');
+    typeSelect.value = 'PREREQ';
+    toggleExcFields(); // Update description text
+
+    // 3. Pre-fill Course Data
+    // We set the hidden ID (used for submission) and the visual Input
+    document.getElementById('exc-target-code-hidden').value = courseCode;
+    document.getElementById('exc-target-search').value = `${courseCode} - ${courseName}`;
+
+    // 4. Clear other fields
+    document.getElementById('exc-reason').value = '';
+    document.getElementById('exc-alt-code-hidden').value = '';
+    document.getElementById('exc-alt-search').value = '';
+
+    // 5. Scroll to top/focus to ensure user sees it
+    document.getElementById('exceptions-container').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('exc-reason').focus();
+};
 
 // 4. Accordion Toggle
 window.toggleAccordion = function(header) {
@@ -2424,11 +2518,12 @@ window.toggleExcFields = function() {
     const desc = document.getElementById('exc-type-desc');
     const altGroup = document.getElementById('alt-course-group');
 
+    // Use translation keys based on currentLang
     if (type === 'PREREQ') {
-        desc.textContent = "Request to enroll in a course without meeting the prerequisite.";
+        desc.textContent = translations[currentLang].exc_desc_prereq;
         altGroup.classList.add('hidden');
     } else {
-        desc.textContent = "Request to take a different course in place of a required one (e.g., for graduates).";
+        desc.textContent = translations[currentLang].exc_desc_alt;
         altGroup.classList.remove('hidden');
     }
 };

@@ -366,57 +366,55 @@
             </div>
 
             <div id="exceptions-container" class="dashboard-view hidden">
-    <h2 class="section-title" data-i18n="nav_exceptions">Exception Requests</h2>
+    <h2 class="section-title" data-i18n="exc_title">Exception Requests</h2>
 
     <div class="home-layout">
         <div class="left-col">
             <div class="filter-panel" style="padding: 25px;">
-                <h3 style="margin-top:0; color:#2E7D32;">New Request</h3>
+                <h3 style="margin-top:0; color:#2E7D32;" data-i18n="exc_new_req">New Request</h3>
                 
                 <div class="form-group">
-                    <label class="form-label">Request Type</label>
+                    <label class="form-label" data-i18n="exc_type_label">Request Type</label>
                     <select id="exc-type" class="custom-select" onchange="toggleExcFields()">
-                        <option value="PREREQ">Prerequisite Override</option>
-                        <option value="ALTERNATIVE">Alternative Course</option>
+                        <option value="PREREQ" data-i18n="opt_prereq">Prerequisite Override</option>
+                        <option value="ALTERNATIVE" data-i18n="opt_alt">Alternative Course</option>
                     </select>
                     <small id="exc-type-desc" style="color:#666; display:block; margin-top:5px;">
-                        Request to enroll in a course without meeting the prerequisite.
-                    </small>
+                        </small>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Target Course</label>
+                    <label class="form-label" data-i18n="exc_target_label">Target Course</label>
                     <div class="search-wrapper" style="position:relative;">
-                        <input type="text" id="exc-target-search" class="custom-input" placeholder="Start typing course name or code..." autocomplete="off">
+                        <input type="text" id="exc-target-search" class="custom-input" data-i18n-placeholder="ph_search_target" placeholder="Start typing course name or code..." autocomplete="off">
                         <input type="hidden" id="exc-target-code-hidden">
                         <div id="exc-target-suggestions" class="suggestions-list hidden"></div>
                     </div>
-                    <small style="color:#666;">The course you want to register for.</small>
                 </div>
 
                 <div class="form-group hidden" id="alt-course-group">
-                    <label class="form-label">Replacing Course (Optional)</label>
+                    <label class="form-label" data-i18n="exc_alt_label">Replacing Course (Optional)</label>
                     <div class="search-wrapper" style="position:relative;">
-                        <input type="text" id="exc-alt-search" class="custom-input" placeholder="Search replacement course..." autocomplete="off">
+                        <input type="text" id="exc-alt-search" class="custom-input" data-i18n-placeholder="ph_search_alt" placeholder="Search replacement course..." autocomplete="off">
                         <input type="hidden" id="exc-alt-code-hidden">
                         <div id="exc-alt-suggestions" class="suggestions-list hidden"></div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Reason / Justification</label>
-                    <textarea id="exc-reason" class="custom-input" rows="4" placeholder="Explain why you need this exception..."></textarea>
+                    <label class="form-label" data-i18n="exc_reason_label">Reason / Justification</label>
+                    <textarea id="exc-reason" class="custom-input" rows="4" data-i18n-placeholder="ph_reason" placeholder="Explain why you need this exception..."></textarea>
                 </div>
 
-                <button class="enhance-ai-btn" onclick="submitException()">Submit Request</button>
+                <button class="enhance-ai-btn" onclick="submitException()" data-i18n="btn_submit_req">Submit Request</button>
             </div>
         </div>
 
         <div class="right-col">
             <div class="courses-container">
-                <h3 class="courses-title">Request History</h3>
+                <h3 class="courses-title" data-i18n="exc_history_title">Request History</h3>
                 <div id="exception-history-list" class="mini-course-list" style="max-height: 500px;">
-                    <p style="text-align:center; color:#666; padding:20px;">Loading history...</p>
+                    <p style="text-align:center; color:#666; padding:20px;" data-i18n="lbl_loading">Loading...</p>
                 </div>
             </div>
         </div>
