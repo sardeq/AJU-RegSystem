@@ -305,33 +305,28 @@ const pdfElectiveData = {
         { code: "704171", name: "التغذية وصحة المجتمع", cr: 3 },
         { code: "704172", name: "الرياضة والصحة", cr: 3 }
     ],
-    "Major Elective": [
-        { code: "313204", name: "برمجة متقدمة", cr: 3 },
-        { code: "313263", name: "انظمة الوسائط المتعددة", cr: 3 },
-        { code: "313267", name: "المناهج الاساسية", cr: 3 },
-        { code: "313269", name: "إدارة المشاريع البرمجية", cr: 3 },
-        { code: "313360", name: "تصميم مواقع انترنت", cr: 3 },
-        { code: "313366", name: "جودة البرمجيات", cr: 3 },
-        { code: "313367", name: "مواصفات البرمجيات", cr: 3 },
-        { code: "313462", name: "معمارية البرمجيات", cr: 3 },
-        { code: "313463", name: "هندسة البرمجيات الامنة", cr: 3 },
-        { code: "313464", name: "إعادة هندسة البرمجيات", cr: 3 },
-        { code: "313469", name: "موضوعات خاصة", cr: 3 }
+    "Supportive Compulsory": [
+        // Extracted from image_13b202.png
+        { code: "601131", name: "مبادىء الإحصاء", cr: 3 },
+        { code: "601372", name: "التحليل العددي (1)", cr: 3 }
     ],
-    "Free Elective": [
-         // "Required 3 hours outside plan"
-        { code: "FREE01", name: "Any University Course", cr: 3 }
+    "University Compulsory": [
+        // Extracted from image_13b1de.png
+        { code: "704116", name: "المهارات الحياتية", cr: 1 },
+        { code: "704117", name: "مهارات اللغة الانجليزية (1)", cr: 3 },
+        { code: "704118", name: "مهارات اللغة العربية (1)", cr: 3 },
+        { code: "704119", name: "التربية الوطنية", cr: 1 },
+        { code: "704200", name: "العلوم العسكرية", cr: 3 }
     ]
 };
 
-// --- 2. UPDATE PLAN STRUCTURE (Add Elective Nodes) ---
-// I added the 5 University Electives and 1 Free Elective into the structure
+
 const planStructure = [
     // --- LABELS ---
     { id: "lbl_95", x: 20, y: 50, type: 'label-circle', label: "95\nساعه" },
     { id: "lbl_75", x: 1750, y: 50, type: 'label-circle', label: "75\n%" },
 
-    // --- MAIN TREE (Existing) ---
+    // --- MAIN TREE  ---
     { id: "311100", x: 800, y: 50, type: 'course' }, 
     { id: "313160", x: 150, y: 200, type: 'course' },
     { id: "313269", x: 350, y: 200, type: 'course' },
@@ -378,23 +373,49 @@ const planStructure = [
     // Level 7
     { id: "313468", x: 420, y: 950, type: 'course' },
 
-    // --- ELECTIVE NODES (Integrated into Tree) ---
-    // University Electives (15h = 5 Courses). Placing them in a column on the far right.
-    { id: "UE1", x: 1950, y: 200, type: 'elective-node', label: "University\nElective 1", group: "University Elective" },
-    { id: "UE2", x: 1950, y: 350, type: 'elective-node', label: "University\nElective 2", group: "University Elective" },
-    { id: "UE3", x: 1950, y: 500, type: 'elective-node', label: "University\nElective 3", group: "University Elective" },
-    { id: "UE4", x: 1950, y: 650, type: 'elective-node', label: "University\nElective 4", group: "University Elective" },
-    { id: "UE5", x: 1950, y: 800, type: 'elective-node', label: "University\nElective 5", group: "University Elective" },
+   // 1. University Compulsory (12 Hours)
+    { 
+        id: "summ_uni_comp", 
+        x: 2200, y: 200, 
+        type: 'summary-block', 
+        label: "University Requirements\nCompulsory (12 Cr)", 
+        group: "University Compulsory",
+        subtext: "Click to View" 
+    },
 
-    // Free Elective (3h = 1 Course)
-    { id: "FE1", x: 1950, y: 950, type: 'elective-node', label: "Free\nElective", group: "Free Elective" },
+    // 2. University Elective (15 Hours)
+    { 
+        id: "summ_uni_elec", 
+        x: 2200, y: 350, 
+        type: 'summary-block', 
+        label: "University Requirements\nElective (15 Cr)", 
+        group: "University Elective",
+        subtext: "Click to Select"
+    },
 
-    // --- LEGEND & GRADUATION ---
-    { id: "leg_1", x: 1750, y: 600, type: 'label-box', label: "متطلبات جامعة\nاجباري 12\nساعة" },
-    { id: "leg_2", x: 1750, y: 720, type: 'label-box', label: "متطلبات حرة\nخارج الخطة\n3 ساعات" },
-    
-    { id: "proj_grad", x: 1300, y: 1000, type: 'label-box-green', label: "مشروع تخرج\nمشروط بقطع\n110 ساعات نجاح" },
-    { id: "proj_train", x: 1500, y: 1000, type: 'label-box-green', label: "تدريب ميداني\nمشروط بـ90\nساعه نجاح" }
+    // 3. Free Elective (3 Hours)
+    { 
+        id: "summ_free", 
+        x: 2200, y: 500, 
+        type: 'summary-block', 
+        label: "Free Requirements\n(3 Cr)", 
+        group: "Free Elective", // Key used for dynamic fetch
+        subtext: "Any Course Outside Plan"
+    },
+
+    // 4. Supportive Compulsory (6 Hours)
+    { 
+        id: "summ_support", 
+        x: 2200, y: 650, 
+        type: 'summary-block', 
+        label: "Supportive Requirements\nCompulsory (6 Cr)", 
+        group: "Supportive Compulsory",
+        subtext: "Stats & Numerical Analysis"
+    },
+
+    // --- GRADUATION & TRAINING (Bottom) ---
+    { id: "proj_grad", x: 1300, y: 1000, type: 'label-box-green', label: "Graduation Project\nReq: 110 Cr Passed" },
+    { id: "proj_train", x: 1500, y: 1000, type: 'label-box-green', label: "Field Training\nReq: 90 Cr Passed" }
 ];
 
 const planLinks = [
@@ -2070,16 +2091,6 @@ function getCreditLimits() {
     // Default to standard if user not loaded
     if (!currentUser) return { min: 12, max: 18, isGrad: false };
 
-    // Logic: If semester >= 7, consider them 4th year/Graduate
-    // You can also check 'plan_year' vs current year if preferred.
-    // user_metadata or the 'users' table profile data should be used.
-    // We used 'userProfile' in loadDashboardData, let's assume we store it globally or fetch it.
-    
-    // For this implementation, let's fetch strictly from the loaded profile logic
-    // We'll trust 'currentUser.user_metadata' if you sync it, or fetch freshly.
-    // Simple approach: Use the 'current_semester' from the profile we loaded in dashboard.
-    
-    // Let's assume we attach profile to currentUser for easy access, or just fetch:
     const currentSemester = window.userProfile?.current_semester || 1; 
     
     const isGrad = currentSemester >= 7;
@@ -2095,7 +2106,6 @@ function updateCreditUI(totalCredits) {
     const { min, max, isGrad } = getCreditLimits();
     const statusText = isGrad ? "(Graduate/4th Year)" : "(Standard)";
     
-    // Logic for Color & Message
     let color = "#2E7D32"; // Green
     let msg = `Total Hours: ${totalCredits} / ${max}`;
     
@@ -2151,7 +2161,7 @@ window.loadStudentPlan = async function(userId) {
     updatePlanLegend();
 
     try {
-        // Fetch History
+        // 1. Fetch Student History
         const { data: history } = await supabase
             .from('enrollments')
             .select('status, sections(course_code)')
@@ -2167,20 +2177,25 @@ window.loadStudentPlan = async function(userId) {
             else registeredCodes.add(code);
         });
 
-        // Fetch Courses for Names
+        // 2. Fetch All Courses (Updated to include category and populate global data)
         const { data: courses } = await supabase
             .from('courses')
-            .select('course_code, course_name_en, course_name_ar, credit_hours');
+            .select('course_code, course_name_en, course_name_ar, credit_hours, category'); // Added category
             
+        // --- FIX: Populate the global variable so the Drawer can use it ---
+        if (courses) {
+            allCoursesData = courses; 
+        }
+
         const courseMap = {};
         courses?.forEach(c => courseMap[c.course_code] = c);
 
-        // Render using the FIXED Coordinates
+        // 3. Render Tree
         renderPlanTree(passedCodes, registeredCodes, courseMap);
         
         enableDragScroll(); 
         
-        // Ensure the layout dimensions are large enough so it doesn't get cut off
+        // Ensure the layout dimensions
         canvas.style.width = "2200px";
         canvas.style.height = "1200px";
 
@@ -2404,6 +2419,32 @@ window.renderPlanTree = function(passed, registered, rawCourseData) {
             el.innerText = node.label;
         }
 
+        else if (node.type === 'summary-block') {
+    el.className = "node-box"; 
+    // Styling to match the "Blue Blocks" in your reference image
+    el.style.width = "160px";
+    el.style.height = "80px";
+    el.style.background = "#0b4f6c"; // Dark Blue color from image
+    el.style.color = "white";
+    el.style.border = "2px solid #083d56";
+    el.style.borderRadius = "6px";
+    el.style.display = "flex";
+    el.style.flexDirection = "column";
+    el.style.alignItems = "center";
+    el.style.justifyContent = "center";
+    el.style.textAlign = "center";
+    el.style.cursor = "pointer";
+    el.style.boxShadow = "0 4px 6px rgba(0,0,0,0.15)";
+    
+    el.innerHTML = `
+        <div style="font-weight:bold; font-size:12px; margin-bottom:4px; line-height:1.4;">${node.label.replace(/\n/g, '<br>')}</div>
+        <div style="font-size:10px; color:#cfd8dc;">${node.subtext || 'Click to View'}</div>
+    `;
+
+    // Click Action: Open the Drawer with the list from pdfElectiveData
+    el.onclick = () => openPdfDrawer(node.group, node.label.replace(/\n/g, ' '));
+}
+
         container.appendChild(el);
     });
 };
@@ -2417,16 +2458,47 @@ window.openPdfDrawer = function(groupKey, title) {
     titleEl.textContent = title;
     list.innerHTML = ''; 
 
-    // Get list from hardcoded PDF data
-    const courses = pdfElectiveData[groupKey] || [];
+    let courses = [];
 
+    // --- DYNAMIC FETCH FOR FREE ELECTIVES ---
+    if (groupKey === 'Free Elective') {
+        // Filter from the globally loaded database courses
+        if (allCoursesData && allCoursesData.length > 0) {
+            courses = allCoursesData
+                .filter(c => c.category === 'Free Elective')
+                .map(c => ({
+                    code: c.course_code,
+                    name: currentLang === 'ar' ? c.course_name_ar : c.course_name_en,
+                    cr: c.credit_hours
+                }));
+        }
+        
+        // If no specific "Free Elective" category exists in DB, show a generic message
+        if (courses.length === 0) {
+            list.innerHTML = `
+                <div style="padding:20px; text-align:center; color:#555;">
+                    <p><strong>Any University Course</strong></p>
+                    <p style="font-size:0.9em;">You can choose any course offered by the university that is not in your study plan.</p>
+                </div>`;
+            drawer.classList.add('open');
+            overlay.classList.add('open');
+            return;
+        }
+    } else {
+        // --- USE STATIC PDF DATA FOR OTHERS ---
+        courses = pdfElectiveData[groupKey] || [];
+    }
+
+    // Render the list
     if (courses.length === 0) {
-        list.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No courses found in PDF data.</p>';
+        list.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No courses found.</p>';
     } else {
         courses.forEach(c => {
             const item = document.createElement('div');
             item.className = `drawer-node`;
-            item.style.borderLeft = "4px solid #F57C00";
+            // Color code based on type
+            if (groupKey.includes("Compulsory")) item.style.borderLeft = "4px solid #2E7D32"; // Green
+            else item.style.borderLeft = "4px solid #F57C00"; // Orange
             
             item.innerHTML = `
                 <div style="display:flex; justify-content:space-between;">
@@ -2436,6 +2508,14 @@ window.openPdfDrawer = function(groupKey, title) {
                 <div style="font-size:0.9em; color:#555; margin-top:4px;">${c.name}</div>
             `;
             
+            // Allow clicking to see details (if available in DB)
+            item.onclick = () => {
+                closeDrawer();
+                // Try to find full details in DB to show popup
+                const dbCourse = allCoursesData.find(db => db.course_code == c.code);
+                if(dbCourse) showCourseDetails(dbCourse.course_code);
+            };
+
             list.appendChild(item);
         });
     }
