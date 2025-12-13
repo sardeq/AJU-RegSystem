@@ -1525,6 +1525,62 @@ g:hover .node-box {
     background: white; /* Inner white */
 }
 
+.badge-yellow {
+    background-color: #fff8e1;
+    color: #f57c00;
+    border: 1px solid #ffe0b2;
+}
+
+/* Ensure text area matches input styles */
+textarea.custom-input {
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Search Suggestions Dropdown */
+.suggestions-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #2E7D32;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.suggestion-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: #e8f5e9; /* Light Green */
+}
+
+.suggestion-code {
+    font-weight: bold;
+    color: #2E7D32;
+}
+
+.suggestion-name {
+    color: #333;
+    margin-left: 10px;
+    text-align: right;
+}
+
 /* Legend Colors mirroring the categories */
 .l-univ { border-color: #f57c00; }
 .l-coll { border-color: #2E7D32; }

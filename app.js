@@ -668,7 +668,10 @@ window.showSection = function(sectionName) {
     regContainer.classList.add('hidden');
     const sheetContainer = document.getElementById('courses-sheet-container');
     const scheduleContainer = document.getElementById('schedule-container');
-    const planContainer = document.getElementById('plan-container'); // Get Plan Container
+    const planContainer = document.getElementById('plan-container'); 
+
+    const excContainer = document.getElementById('exceptions-container');
+    if(excContainer) excContainer.classList.add('hidden');
     
     if(sheetContainer) sheetContainer.classList.add('hidden');
     if(scheduleContainer) scheduleContainer.classList.add('hidden');
@@ -697,6 +700,11 @@ window.showSection = function(sectionName) {
         // --- FIX: Unhide the container ---
         if(planContainer) planContainer.classList.remove('hidden'); 
         if(currentUser) loadStudentPlan(currentUser.id);
+    } else if (sectionName === 'exceptions') {
+        if(excContainer) excContainer.classList.remove('hidden');
+        if(currentUser) loadExceptionHistory(currentUser.id);
+
+        if(allCoursesData.length === 0) fetchAllCoursesForSearch();
     }
 }
 
@@ -2408,6 +2416,223 @@ async function loadHistoryTable(userId, semesterId) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load history data.</td></tr>';
     }
 }
+
+// --- EXCEPTION REQUESTS LOGIC ---
+
+window.toggleExcFields = function() {
+    const type = document.getElementById('exc-type').value;
+    const desc = document.getElementById('exc-type-desc');
+    const altGroup = document.getElementById('alt-course-group');
+
+    if (type === 'PREREQ') {
+        desc.textContent = "Request to enroll in a course without meeting the prerequisite.";
+        altGroup.classList.add('hidden');
+    } else {
+        desc.textContent = "Request to take a different course in place of a required one (e.g., for graduates).";
+        altGroup.classList.remove('hidden');
+    }
+};
+
+window.submitException = async function() {
+    if (!currentUser) return;
+
+    const type = document.getElementById('exc-type').value;
+    
+    // CHANGED: Read from hidden inputs
+    const courseCode = document.getElementById('exc-target-code-hidden').value; 
+    const altCode = document.getElementById('exc-alt-code-hidden').value;
+    
+    let reason = document.getElementById('exc-reason').value.trim();
+
+    // Validation
+    if (!courseCode) {
+        alert("Please search for and select a Target Course from the list.");
+        return;
+    }
+    if (!reason) {
+        alert("Please provide a reason.");
+        return;
+    }
+
+    // Append alternative info to reason text
+    if (type === 'ALTERNATIVE') {
+        if (!altCode) {
+             // Optional warning if they selected "Alternative" but didn't pick a course
+             if(!confirm("You selected 'Alternative Course' but didn't search for one. Continue?")) return;
+        } else {
+            reason = `[Replacing: ${altCode}] ${reason}`;
+        }
+    }
+
+    try {
+        const { error } = await supabase
+            .from('exception_requests')
+            .insert([{
+                user_id: currentUser.id,
+                course_code: courseCode,
+                type: type,
+                reason: reason,
+                status: 'PENDING',
+                created_at: new Date().toISOString()
+            }]);
+
+        if (error) throw error;
+
+        alert("Request submitted successfully!");
+        
+        // Clear Form (Inputs and Hidden values)
+        document.getElementById('exc-target-search').value = '';
+        document.getElementById('exc-target-code-hidden').value = '';
+        document.getElementById('exc-alt-search').value = '';
+        document.getElementById('exc-alt-code-hidden').value = '';
+        document.getElementById('exc-reason').value = '';
+        
+        // Refresh List
+        loadExceptionHistory(currentUser.id);
+
+    } catch (err) {
+        console.error("Submission Error:", err);
+        alert("Failed to submit: " + err.message);
+    }
+};
+
+async function loadExceptionHistory(userId) {
+    const list = document.getElementById('exception-history-list');
+    list.innerHTML = '<div class="spinner"></div>';
+
+    try {
+        const { data, error } = await supabase
+            .from('exception_requests')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        list.innerHTML = '';
+        if (!data || data.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">No requests found.</p>';
+            return;
+        }
+
+        data.forEach(req => {
+            const date = new Date(req.created_at).toLocaleDateString();
+            
+            let badgeClass = 'badge-gray';
+            if (req.status === 'APPROVED') badgeClass = 'badge-green';
+            if (req.status === 'REJECTED') badgeClass = 'badge-red';
+            if (req.status === 'PENDING') badgeClass = 'badge-yellow';
+
+            const item = document.createElement('div');
+            item.className = 'course-item'; // Reuse existing card style
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:5px;">
+                    <div class="course-name" style="margin:0;">${req.course_code}</div>
+                    <span class="badge ${badgeClass}" style="font-size:0.7em;">${req.status}</span>
+                </div>
+                <div style="font-size:0.85em; color:#555; margin-bottom:5px;">
+                    <strong>Type:</strong> ${req.type === 'PREREQ' ? 'Prerequisite' : 'Alternative'}
+                </div>
+                <div style="font-size:0.85em; color:#666; font-style:italic; background:#f9f9f9; padding:5px; border-radius:4px;">
+                    "${req.reason}"
+                </div>
+                ${req.admin_response ? `
+                    <div style="font-size:0.85em; color:#2E7D32; margin-top:5px; border-top:1px dashed #ddd; padding-top:4px;">
+                        <strong>Admin:</strong> ${req.admin_response}
+                    </div>
+                ` : ''}
+                <div style="font-size:0.75em; color:#999; text-align:right; margin-top:5px;">
+                    ${date}
+                </div>
+            `;
+            list.appendChild(item);
+        });
+
+    } catch (err) {
+        console.error("History Error:", err);
+        list.innerHTML = '<p style="color:red; text-align:center;">Failed to load history.</p>';
+    }
+}
+
+// --- NEW: FETCH COURSES FOR SEARCH ---
+async function fetchAllCoursesForSearch() {
+    try {
+        const { data, error } = await supabase
+            .from('courses')
+            .select('course_code, course_name_en, course_name_ar');
+        
+        if (error) throw error;
+        allCoursesData = data; // Store globally
+        console.log("Courses loaded for search:", data.length);
+    } catch (err) {
+        console.error("Failed to load courses for search:", err);
+    }
+}
+
+// --- SEARCH LOGIC GENERIC FUNCTION ---
+function setupCourseSearch(inputId, hiddenId, listId) {
+    const input = document.getElementById(inputId);
+    const hidden = document.getElementById(hiddenId);
+    const list = document.getElementById(listId);
+
+    if(!input) return;
+
+    input.addEventListener('input', () => {
+        const val = input.value.toLowerCase();
+        list.innerHTML = '';
+        
+        if (val.length < 2) {
+            list.classList.add('hidden');
+            return;
+        }
+
+        // Filter Data
+        const matches = allCoursesData.filter(c => {
+            const code = c.course_code.toString();
+            const en = c.course_name_en.toLowerCase();
+            const ar = c.course_name_ar ? c.course_name_ar.toLowerCase() : "";
+            return code.includes(val) || en.includes(val) || ar.includes(val);
+        }).slice(0, 10); // Limit to 10 results
+
+        if (matches.length === 0) {
+            list.classList.add('hidden');
+            return;
+        }
+
+        matches.forEach(c => {
+            const name = currentLang === 'ar' ? c.course_name_ar : c.course_name_en;
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `
+                <span class="suggestion-code">${c.course_code}</span>
+                <span class="suggestion-name">${name}</span>
+            `;
+            
+            div.onclick = () => {
+                input.value = `${c.course_code} - ${name}`; // Show nicely in text box
+                hidden.value = c.course_code; // Store actual code
+                list.classList.add('hidden');
+            };
+            
+            list.appendChild(div);
+        });
+        
+        list.classList.remove('hidden');
+    });
+
+    // Hide list when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !list.contains(e.target)) {
+            list.classList.add('hidden');
+        }
+    });
+}
+
+// Initialize listeners immediately
+document.addEventListener('DOMContentLoaded', () => {
+    setupCourseSearch('exc-target-search', 'exc-target-code-hidden', 'exc-target-suggestions');
+    setupCourseSearch('exc-alt-search', 'exc-alt-code-hidden', 'exc-alt-suggestions');
+});
 
 if(closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
 if(closeModal) closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
