@@ -533,6 +533,59 @@ function getCategoryClass(category) {
     return 'cat-support';
 }
 
+async function updateStudentStats(userId, planStructure) {
+    try {
+        // 1. Fetch completed enrollments with course credit hours
+        const { data: enrollments, error } = await supabase
+            .from('enrollments')
+            .select(`
+                status,
+                sections (
+                    courses (
+                        credit_hours
+                    )
+                )
+            `)
+            .eq('user_id', userId)
+            .eq('status', 'COMPLETED');
+
+        if (error) throw error;
+
+        // 2. Calculate Total Completed Hours
+        // We use reduce to sum up the credit_hours from the nested object structure
+        const totalHours = enrollments.reduce((sum, item) => {
+            // Safety check to ensure data exists down the chain
+            const credits = item.sections?.courses?.credit_hours || 0;
+            return sum + credits;
+        }, 0);
+
+        // 3. Calculate Percentage (Based on 132 hours total)
+        // We use Math.min to cap it at 100% just in case
+        const percentage = Math.min(100, Math.round((totalHours / 132) * 100));
+
+        console.log(`User Stats: ${totalHours} Hours, ${percentage}%`);
+
+        // 4. Update the planStructure Array
+        // We find the specific nodes by ID and update their labels
+        const hoursNode = planStructure.find(n => n.id === "lbl_95");
+        const percentNode = planStructure.find(n => n.id === "lbl_75");
+
+        if (hoursNode) {
+            hoursNode.label = `${totalHours}\nHours`;
+        }
+        
+        if (percentNode) {
+            percentNode.label = `${percentage}\n%`;
+        }
+
+        return planStructure;
+
+    } catch (err) {
+        console.error('Error fetching student stats:', err);
+        return planStructure; // Return original structure on error
+    }
+}
+
 // 2. Helper to get Status Icon
 function getStatusIcon(status) {
     if (status === 'passed') return '✅';
@@ -2206,11 +2259,11 @@ window.loadStudentPlan = async function(userId) {
             else registeredCodes.add(code);
         });
 
-        // 2. Fetch All Courses (Updated to include category and populate global data)
+        // 2. Fetch All Courses
         const { data: courses } = await supabase
             .from('courses')
             .select('course_code, course_name_en, course_name_ar, credit_hours, category, course_description');            
-        // --- FIX: Populate the global variable so the Drawer can use it ---
+        
         if (courses) {
             allCoursesData = courses; 
         }
@@ -2218,12 +2271,38 @@ window.loadStudentPlan = async function(userId) {
         const courseMap = {};
         courses?.forEach(c => courseMap[c.course_code] = c);
 
-        // 3. Render Tree
+        // --- NEW: CALCULATE DYNAMIC STATS ---
+        let totalCompletedHours = 0;
+        
+        // Sum up credits for every passed course
+        passedCodes.forEach(code => {
+            const course = courseMap[code];
+            if (course && course.credit_hours) {
+                totalCompletedHours += course.credit_hours;
+            }
+        });
+
+        // Calculate Percentage (Goal: 132 Hours)
+        const planTotal = 132;
+        const percentage = Math.min(100, Math.round((totalCompletedHours / planTotal) * 100));
+
+        // Update the Tree Nodes (lbl_95 and lbl_75)
+        const hoursNode = planStructure.find(n => n.id === "lbl_95");
+        if (hoursNode) {
+            hoursNode.label = `${totalCompletedHours}\nHours`;
+        }
+
+        const percentNode = planStructure.find(n => n.id === "lbl_75");
+        if (percentNode) {
+            percentNode.label = `${percentage}\n%`;
+        }
+        // -------------------------------------
+
+        // 3. Render Tree (Now with updated labels)
         renderPlanTree(passedCodes, registeredCodes, courseMap);
         
         enableDragScroll(); 
         
-        // Ensure the layout dimensions
         canvas.style.width = "2200px";
         canvas.style.height = "1200px";
 
@@ -2234,7 +2313,6 @@ window.loadStudentPlan = async function(userId) {
         canvas.innerHTML = '<p style="color:red; text-align:center;">Failed to load plan map.</p>';
     }
 }
-
 // Helper function for Dragging
 function enableDragScroll() {
     const wrapper = document.getElementById('tree-wrapper');
