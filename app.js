@@ -1466,6 +1466,7 @@ async function loadRegistrationData(userId) {
         availableSectionsData = sections;
         renderRegistrationList(sections);
         renderMiniRegisteredList();
+        renderMiniWaitlist();
 
     } catch (err) {
         console.error("Reg Load Error:", err);
@@ -3128,6 +3129,159 @@ function setupCourseSearch(inputId, hiddenId, listId) {
             list.classList.add('hidden');
         }
     });
+}
+
+
+window.handleWaitlist = function(sectionId) {
+    if (!currentUser) return;
+
+    // Find section details to display in modal
+    const section = availableSectionsData.find(s => s.section_id === sectionId);
+    if (!section) return;
+
+    const courseName = currentLang === 'ar' ? section.courses.course_name_ar : section.courses.course_name_en;
+
+    // Populate Modal
+    document.getElementById('wl-modal-course-name').textContent = `${section.courses.course_code} - ${courseName}`;
+    document.getElementById('wl-modal-sec-info').textContent = `Section ${section.section_number} | ${section.schedule_text}`;
+    document.getElementById('wl-target-section-id').value = sectionId;
+
+    // Show Modal
+    document.getElementById('waitlist-modal').classList.remove('hidden');
+};
+
+// 2. Close Modal Helper
+window.closeWaitlistModal = function() {
+    document.getElementById('waitlist-modal').classList.add('hidden');
+};
+
+
+
+// 3. Confirm Action & Calculate Queue Logic
+window.confirmWaitlistJoin = async function() {
+    const sectionId = document.getElementById('wl-target-section-id').value;
+    const btn = document.querySelector('#waitlist-modal button:last-child'); // The confirm button
+    
+    // UI Loading State
+    const originalText = btn.textContent;
+    btn.textContent = "Joining...";
+    btn.disabled = true;
+
+    try {
+        const timestamp = new Date().toISOString();
+
+        // A. Insert into Waiting List
+        const { error } = await supabase
+            .from('waiting_list')
+            .insert([{
+                user_id: currentUser.id,
+                section_id: sectionId,
+                status: 'WAITING',
+                requested_at: timestamp
+            }]);
+
+        if (error) throw error;
+
+        // B. Calculate Position Number
+        const { count, error: countError } = await supabase
+            .from('waiting_list')
+            .select('*', { count: 'exact', head: true })
+            .eq('section_id', sectionId)
+            .eq('status', 'WAITING')
+            .lte('requested_at', timestamp);
+        
+        if (countError) throw countError;
+
+        // C. Update & Show Success Modal (Instead of Alert)
+        closeWaitlistModal(); // Close the first modal
+        
+        document.getElementById('wl-success-pos').textContent = `#${count}`;
+        document.getElementById('waitlist-success-modal').classList.remove('hidden');
+        
+        // D. Refresh Data
+        loadRegistrationData(currentUser.id);
+
+    } catch (err) {
+        console.error("Waitlist Error:", err);
+        alert("Failed to join waitlist: " + err.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+};
+
+// 4. Helper to Close Success Modal
+window.closeWaitlistSuccessModal = function() {
+    document.getElementById('waitlist-success-modal').classList.add('hidden');
+};
+
+window.closeWaitlistSuccessModal = function() {
+    document.getElementById('waitlist-success-modal').classList.add('hidden');
+};
+
+// 4. Render the Side Panel List (Status & Position)
+async function renderMiniWaitlist() {
+    const list = document.getElementById('mini-waitlist-list');
+    list.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>';
+
+    try {
+        // Fetch user's waitlist entries
+        const { data: myWaitlist, error } = await supabase
+            .from('waiting_list')
+            .select(`
+                requested_at,
+                sections (
+                    section_id,
+                    section_number,
+                    course_code,
+                    courses (course_name_en, course_name_ar)
+                )
+            `)
+            .eq('user_id', currentUser.id)
+            .eq('status', 'WAITING');
+
+        if (error) throw error;
+
+        if (!myWaitlist || myWaitlist.length === 0) {
+            list.innerHTML = '<p style="color:#666; font-size:0.9em; padding:10px;">No active waitlists.</p>';
+            return;
+        }
+
+        list.innerHTML = '';
+
+        // For each waitlisted course, we need to calculate the specific position dynamically
+        // Use Promise.all to fetch positions in parallel
+        await Promise.all(myWaitlist.map(async (item) => {
+            const sec = item.sections;
+            
+            // Calculate Position: Count others in same section with earlier timestamps
+            const { count } = await supabase
+                .from('waiting_list')
+                .select('*', { count: 'exact', head: true })
+                .eq('section_id', sec.section_id)
+                .eq('status', 'WAITING')
+                .lte('requested_at', item.requested_at);
+
+            const courseName = currentLang === 'ar' ? sec.courses.course_name_ar : sec.courses.course_name_en;
+
+            const div = document.createElement('div');
+            div.className = 'waitlist-item';
+            div.innerHTML = `
+                <div style="text-align:left;">
+                    <div style="font-weight:bold; color:#E65100; font-size:0.9em;">${sec.course_code}</div>
+                    <div style="font-size:0.8em; color:#555;">Sec ${sec.section_number}</div>
+                </div>
+                <div style="text-align:right;">
+                    <span class="queue-badge">#${count} in Line</span>
+                </div>
+            `;
+            list.appendChild(div);
+        }));
+
+    } catch (err) {
+        console.error("Render Waitlist Error:", err);
+        list.innerHTML = '<p style="color:red; font-size:0.8em;">Error loading status.</p>';
+    }
 }
 
 

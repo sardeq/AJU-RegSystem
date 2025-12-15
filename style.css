@@ -1689,3 +1689,29 @@ textarea.custom-input {
     overflow-y: auto; /* Scroll if description is very long */
     border-left: 3px solid #2E7D32;
 }
+
+
+/* Add to style.css */
+
+.queue-badge {
+    background-color: #F57C00;
+    color: white;
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.waitlist-item {
+    padding: 10px;
+    border-bottom: 1px solid rgba(245, 124, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.waitlist-item:last-child {
+    border-bottom: none;
+}

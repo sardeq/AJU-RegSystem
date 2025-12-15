@@ -166,6 +166,13 @@
                                 <p style="color:#666; font-size:0.9em; margin-top:20px;">No courses registered yet.</p>
                             </div>
                         </div>
+
+                        <div class="registered-courses-box" style="margin-top: 15px; border-color: #F57C00; background-color: #FFF3E0;">
+                            <h4 class="box-title" style="color: #F57C00;">My Waitlist</h4>
+                            <div id="mini-waitlist-list" class="mini-course-list">
+                                <p style="color:#666; font-size:0.9em; margin-top:20px;">No active waitlists.</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="reg-right-panel">
@@ -543,6 +550,57 @@
         <div id="drawer-content" class="drawer-list">
             </div>
     </div>
+
+    <div id="waitlist-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <div class="modal-header" style="justify-content: center; border-bottom: none;">
+            <div style="background: #FFF3E0; padding: 15px; border-radius: 50%; display: inline-flex;">
+                <svg viewBox="0 0 24 24" width="40" height="40" stroke="#F57C00" stroke-width="2" fill="none">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+        </div>
+        
+        <h3 style="margin-top: 15px; color: #333;">Join Waiting List?</h3>
+        <p id="wl-modal-course-name" style="color: #666; margin-bottom: 5px;">Course Name</p>
+        <p id="wl-modal-sec-info" style="font-weight: bold; color: #333; margin-bottom: 20px;">Section 1</p>
+        
+        <p style="font-size: 0.9em; color: #888; margin-bottom: 20px;">
+            This section is full. You will be placed in a queue and notified if a seat becomes available.
+        </p>
+
+        <input type="hidden" id="wl-target-section-id">
+
+        <div style="display: flex; gap: 10px;">
+            <button class="delete-btn" onclick="closeWaitlistModal()" style="flex: 1; border-color: #ccc; color: #666; background: white;">Cancel</button>
+            <button onclick="confirmWaitlistJoin()" style="flex: 1; background-color: #F57C00; color: white; border:none; border-radius:6px; cursor:pointer;">Confirm & Join</button>
+        </div>
+    </div>
+</div>
+
+<div id="waitlist-success-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 350px; text-align: center; padding: 30px;">
+        <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+            <div style="background: #E8F5E9; padding: 15px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="40" height="40" stroke="#2E7D32" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+        </div>
+        
+        <h3 style="margin-top: 15px; color: #2E7D32;">Successfully Joined!</h3>
+        <p style="color: #666; margin-bottom: 25px;">You have been added to the waiting list for this section.</p>
+        
+        <div style="background: #FFF3E0; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px dashed #F57C00;">
+            <p style="margin: 0; font-size: 0.9em; color: #E65100; text-transform: uppercase; letter-spacing: 1px;">Current Position</p>
+            <p id="wl-success-pos" style="margin: 5px 0 0 0; font-size: 2.5em; font-weight: 800; color: #E65100;">#1</p>
+        </div>
+
+        <button onclick="closeWaitlistSuccessModal()" style="width: 100%; background-color: #2E7D32; color: white; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer;">Done</button>
+    </div>
+</div>
 
     <script type="module" src="app.js"></script>
 </body>
