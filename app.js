@@ -322,121 +322,167 @@ const pdfElectiveData = {
 
 
 const planStructure = [
-    // --- LABELS ---
-    { id: "lbl_95", x: 50, y: 50, type: 'label-circle', label: "95\nCr" },
-    { id: "lbl_75", x: 2300, y: 50, type: 'label-circle', label: "75\n%" },
+    // --- TOP STATS ---
+    { id: "lbl_95", x: 50, y: 50, type: 'label-circle', label: "95\nHours" },
+    { id: "lbl_75", x: 2600, y: 50, type: 'label-circle', label: "75\n%" },
 
-    // --- LEVEL 1 (Root) ---
-    { id: "311100", x: 1100, y: 50, type: 'course' }, // Center Top
+    // --- LEVEL 1: ROOT ---
+    { id: "311100", x: 1300, y: 100, type: 'course' }, 
 
-    // --- LEVEL 2 (Direct Children of Root) ---
-    { id: "313160", x: 300, y: 250, type: 'course' },  // Far Left (SE Intro)
-    { id: "313269", x: 600, y: 250, type: 'course' },  // Proj Mgmt
-    // Note: 313204 is connected to 311101, but sits on this visual level to the left
-    { id: "313204", x: 850, y: 250, type: 'course' },  // Advanced Prog (Left of Prog 1)
-    { id: "311101", x: 1100, y: 250, type: 'course' }, // Prog 1 (Center)
-    { id: "311220", x: 1350, y: 250, type: 'course' }, // Digital Logic
-    { id: "311160", x: 1600, y: 250, type: 'course' }, // Comp Ethics
-    { id: "601101", x: 1800, y: 250, type: 'course' }, // Calculus
-    { id: "311240", x: 2050, y: 250, type: 'course' }, // DB
+    // --- LEVEL 2: DIRECT CHILDREN ---
+    // 1. SE Intro (Left)
+    { id: "313160", x: 350, y: 250, type: 'course' },
+    
+    // 2. Proj Mgmt
+    { id: "313269", x: 750, y: 250, type: 'course' },
+    
+    // 3. Prog 1 (Center-Left) - ANCHOR for Multimedia
+    { id: "311101", x: 1150, y: 250, type: 'course' },
+    
+    // 4. Logic (Center-Right)
+    { id: "311220", x: 1600, y: 250, type: 'course' }, 
+    
+    // 5. Ethics (Floating)
+    { id: "311160", x: 1800, y: 250, type: 'course' },
+    
+    // 6. Calculus
+    { id: "601101", x: 2000, y: 250, type: 'course' },
+    
+    // 7. Databases
+    { id: "311240", x: 2350, y: 250, type: 'course' },
 
     // --- LEVEL 3 ---
-    { id: "313466", x: 100, y: 450, type: 'course' },
+    // SE Branch
+    { id: "313466", x: 150, y: 450, type: 'course' },  // Doc
     { id: "313261", x: 350, y: 450, type: 'course' },  // Req Eng
-    { id: "313262", x: 600, y: 450, type: 'course' },  // Components (Below Proj Mgmt)
-    { id: "311202", x: 1100, y: 450, type: 'course' }, // OOP (Below Prog 1)
-    { id: "311321", x: 1350, y: 450, type: 'course' }, // Arch
-    { id: "311330", x: 1550, y: 450, type: 'course' }, // Networks
-    { id: "311210", x: 1800, y: 450, type: 'course' }, // Discrete Math
-    { id: "311340", x: 2000, y: 450, type: 'course' }, // DB Admin
-    { id: "311241", x: 2200, y: 450, type: 'course' }, // Sys Analysis
+    
+    // Proj Mgmt Branch
+    { id: "313262", x: 750, y: 450, type: 'course' },  // Components
+
+    // Prog Branch (Children of 311101)
+    { id: "313204", x: 950, y: 350, type: 'course' },  // Adv Prog (Left Offset)
+    { id: "311202", x: 1150, y: 450, type: 'course' }, // OOP (Directly Below)
+    { id: "313263", x: 1350, y: 450, type: 'course' }, // Multimedia (Right of OOP)
+
+    // Logic Branch
+    { id: "311321", x: 1550, y: 450, type: 'course' }, // Arch
+    { id: "311330", x: 1750, y: 450, type: 'course' }, // Networks
+
+    // Calc Branch
+    { id: "311210", x: 2000, y: 450, type: 'course' }, // Discrete
+
+    // DB Branch
+    { id: "311340", x: 2250, y: 450, type: 'course' }, // DB Admin
+    { id: "311241", x: 2450, y: 450, type: 'course' }, // Sys Analysis
 
     // --- LEVEL 4 ---
-    { id: "313367", x: 100, y: 650, type: 'course' },
-    { id: "313364", x: 350, y: 650, type: 'course' },  // Arch Design
-    { id: "313363", x: 600, y: 650, type: 'course' },  // Software Design
-    { id: "311305", x: 900, y: 650, type: 'course' },  // Visual Prog (Left of Web)
-    { id: "311304", x: 1100, y: 650, type: 'course' }, // Web (Below OOP)
-    { id: "313263", x: 1300, y: 650, type: 'course' }, // Multimedia
-    { id: "311213", x: 1500, y: 650, type: 'course' }, // Data Structures (moved right slightly)
-    { id: "311468", x: 1700, y: 650, type: 'course' }, // Security
+    // Req Eng Children
+    { id: "313367", x: 150, y: 650, type: 'course' },  // Specs
+    { id: "313364", x: 350, y: 650, type: 'course' },  // OO SE
+
+    // Components Child
+    { id: "313363", x: 750, y: 650, type: 'course' },  // Design
+
+    // OOP Children (Clustered under 311202)
+    { id: "311305", x: 1000, y: 650, type: 'course' }, // Visual
+    { id: "311304", x: 1150, y: 650, type: 'course' }, // Web
+    { id: "311213", x: 1350, y: 650, type: 'course' }, // Data Struct (Moved under OOP)
+
+    // Networks Child
+    { id: "311468", x: 1750, y: 650, type: 'course' }, // Security
 
     // --- LEVEL 5 ---
-    { id: "313469", x: 150, y: 850, type: 'course' },
+    // OO SE Children
+    { id: "313469", x: 150, y: 850, type: 'course' },  // Topics
     { id: "313464", x: 350, y: 850, type: 'course' },  // Re-eng
-    { id: "313462", x: 550, y: 850, type: 'course' },
+    { id: "313462", x: 550, y: 850, type: 'course' },  // Soft Arch
+
+    // Design Children
     { id: "313365", x: 750, y: 850, type: 'course' },  // Testing
     { id: "313366", x: 950, y: 850, type: 'course' },  // Quality
-    { id: "311314", x: 1500, y: 850, type: 'course' }, // Algorithms
+
+    // Data Struct Child (Algorithms)
+    { id: "311314", x: 1350, y: 850, type: 'course' }, // Algo (Aligned with Data Struct)
 
     // --- LEVEL 6 ---
+    // Testing Child
     { id: "313468", x: 750, y: 1050, type: 'course' }, // Maintenance
-    { id: "311350", x: 1400, y: 1050, type: 'course' }, // AI
-    { id: "311422", x: 1600, y: 1050, type: 'course' }, // OS
 
-    // --- SUMMARY BLOCKS (Right Side) ---
-    { id: "summ_uni_comp", x: 2450, y: 250, type: 'summary-block', label: "University Requirements\nCompulsory (12 Cr)", group: "University Compulsory", subtext: "Click to View" },
-    { id: "summ_uni_elec", x: 2450, y: 450, type: 'summary-block', label: "University Requirements\nElective (15 Cr)", group: "University Elective", subtext: "Click to Select" },
-    { id: "summ_free", x: 2450, y: 650, type: 'summary-block', label: "Free Requirements\n(3 Cr)", group: "Free Elective", subtext: "Any Course Outside Plan" },
-    { id: "summ_support", x: 2450, y: 850, type: 'summary-block', label: "Supportive Requirements\nCompulsory (6 Cr)", group: "Supportive Compulsory", subtext: "Stats & Numerical Analysis" },
+    // Algo Children
+    { id: "311350", x: 1250, y: 1050, type: 'course' }, // AI
+    { id: "311422", x: 1450, y: 1050, type: 'course' }, // OS
 
-    // --- GRADUATION & TRAINING ---
-    { id: "proj_grad", x: 1900, y: 1050, type: 'label-box-green', label: "Graduation Project\nReq: 110 Cr Passed" },
-    { id: "proj_train", x: 2100, y: 1050, type: 'label-box-green', label: "Field Training\nReq: 90 Cr Passed" }
+    // --- FOOTER ---
+    { id: "proj_grad", x: 2150, y: 1200, type: 'label-box-green', label: "Graduation Project\nReq: 110 Hours" },
+    { id: "proj_train", x: 2350, y: 1200, type: 'label-box-green', label: "Field Training\nReq: 90 Hours" },
+
+    // --- SUMMARY BLOCKS ---
+    { id: "summ_uni_comp", x: 2650, y: 250, type: 'summary-block', label: "University Compulsory\n(12 Cr)", group: "University Compulsory", subtext: "View Courses" },
+    { id: "summ_free", x: 2650, y: 450, type: 'summary-block', label: "Free Requirements\n(3 Cr)", group: "Free Elective", subtext: "Any Course" },
+    { id: "summ_support", x: 2650, y: 650, type: 'summary-block', label: "Supportive Compulsory\n(6 Cr)", group: "Supportive Compulsory", subtext: "Stats & Numerical" },
+    { id: "summ_uni_elec", x: 2650, y: 850, type: 'summary-block', label: "University Elective\n(15 Cr)", group: "University Elective", subtext: "View Options" },
 ];
+
 const planLinks = [
-    // Root Connections
+    // Level 1
     { s: "311100", t: "313160" },
     { s: "311100", t: "313269" },
     { s: "311100", t: "311101" },
-    { s: "311100", t: "311160" },
     { s: "311100", t: "311220" },
+    { s: "311100", t: "311160" },
     { s: "311100", t: "601101" },
     { s: "311100", t: "311240" },
 
-    // Left Branch
-    { s: "313160", t: "313261" },
+    // SE Branch
     { s: "313160", t: "313466" },
-    { s: "313261", t: "313364" },
+    { s: "313160", t: "313261" },
     { s: "313261", t: "313367" },
+    { s: "313261", t: "313364" },
+
+    // OO SE Split
+    { s: "313364", t: "313469" },
     { s: "313364", t: "313464" },
     { s: "313364", t: "313462" },
-    { s: "313364", t: "313469" },
-    
-    // Center-Left Branch
-    { s: "311101", t: "313204" },
-    { s: "311101", t: "311202" },
-    { s: "311202", t: "311305" },
-    { s: "311202", t: "311304" },
-    { s: "311202", t: "313263" },
-    
-    // Cross-Branch Connections
+
+    // Proj Mgmt Branch
+    { s: "313160", t: "313269" },
     { s: "313269", t: "313262" },
-    { s: "311101", t: "313262" }, // From image, seems connected to Prog 1 too
     { s: "313262", t: "313363" },
-    { s: "313462", t: "313363" },
     { s: "313363", t: "313365" },
     { s: "313363", t: "313366" },
     { s: "313365", t: "313468" },
 
-    // Center-Right Branch
-    { s: "311220", t: "311321" },
-    { s: "311220", t: "311330" },
-    { s: "311330", t: "311468" },
+    // Prog Branch (311101 Children)
+    { s: "311101", t: "313204" }, // -> Adv Prog
+    { s: "311101", t: "311202" }, // -> OOP
+    { s: "311101", t: "313263" }, // -> Multimedia (UPDATED)
 
-    // Math/Data Branch
-    { s: "601101", t: "311210" },
+    // OOP Children
+    { s: "311202", t: "311305" }, // -> Visual
+    { s: "311202", t: "311304" }, // -> Web
+    { s: "311202", t: "311213" }, // -> Data Struct (UPDATED)
+
+    // Hardware Branch
+    { s: "311220", t: "311321" }, // Logic -> Arch
+    { s: "311220", t: "311330" }, // Logic -> Net
+    { s: "311330", t: "311468" }, // Net -> Sec
+
+    // Math Branch
+    { s: "601101", t: "311210" }, // Calc -> Discrete
+    
+    // Algorithms Branch (From Data Struct)
+    { s: "311213", t: "311314" }, // Data Struct -> Algo
+    { s: "311314", t: "311350" }, // Algo -> AI
+    { s: "311314", t: "311422" }, // Algo -> OS
+
+    // DB Branch
     { s: "311240", t: "311340" },
     { s: "311240", t: "311241" },
-    { s: "311210", t: "311213" },
-    { s: "311321", t: "311213" }, // From image
-    { s: "311213", t: "311314" },
-    { s: "311314", t: "311350" },
-    { s: "311314", t: "311422" },
-
-    // Bottom Connection
+    
+    // Footer
     { s: "proj_train", t: "proj_grad" }
 ];
+
 let allCoursesData = [];
 let userHistoryMap = {}; // Maps course_code -> { status, grade }
 
