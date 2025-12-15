@@ -322,96 +322,67 @@ const pdfElectiveData = {
 
 
 const planStructure = [
-    // --- LABELS (Moved slightly to fit new scale) ---
+    // --- LABELS ---
     { id: "lbl_95", x: 50, y: 50, type: 'label-circle', label: "95\nCr" },
-    { id: "lbl_75", x: 2100, y: 50, type: 'label-circle', label: "75\n%" },
+    { id: "lbl_75", x: 2300, y: 50, type: 'label-circle', label: "75\n%" },
 
-    // --- LEVEL 1 (Y=50) ---
-    { id: "311100", x: 950, y: 50, type: 'course' }, 
+    // --- LEVEL 1 (Root) ---
+    { id: "311100", x: 1100, y: 50, type: 'course' }, // Center Top
 
-    // --- LEVEL 2 (Y=220) ---
-    { id: "313160", x: 200, y: 220, type: 'course' },
-    { id: "313269", x: 450, y: 220, type: 'course' },
-    { id: "311101", x: 800, y: 220, type: 'course' },
-    { id: "311160", x: 1200, y: 220, type: 'course' },
-    { id: "311220", x: 1450, y: 220, type: 'course' },
-    { id: "601101", x: 1700, y: 220, type: 'course' },
-    { id: "311240", x: 1950, y: 220, type: 'course' },
+    // --- LEVEL 2 (Direct Children of Root) ---
+    { id: "313160", x: 300, y: 250, type: 'course' },  // Far Left (SE Intro)
+    { id: "313269", x: 600, y: 250, type: 'course' },  // Proj Mgmt
+    // Note: 313204 is connected to 311101, but sits on this visual level to the left
+    { id: "313204", x: 850, y: 250, type: 'course' },  // Advanced Prog (Left of Prog 1)
+    { id: "311101", x: 1100, y: 250, type: 'course' }, // Prog 1 (Center)
+    { id: "311220", x: 1350, y: 250, type: 'course' }, // Digital Logic
+    { id: "311160", x: 1600, y: 250, type: 'course' }, // Comp Ethics
+    { id: "601101", x: 1800, y: 250, type: 'course' }, // Calculus
+    { id: "311240", x: 2050, y: 250, type: 'course' }, // DB
 
-    // --- LEVEL 3 (Y=400) ---
-    { id: "313466", x: 50, y: 400, type: 'course' },
-    { id: "313261", x: 250, y: 400, type: 'course' },
-    { id: "313204", x: 700, y: 400, type: 'course' },
-    { id: "311202", x: 950, y: 400, type: 'course' },
-    { id: "311321", x: 1350, y: 400, type: 'course' },
-    { id: "311330", x: 1550, y: 400, type: 'course' },
-    { id: "311210", x: 1750, y: 400, type: 'course' },
-    { id: "311340", x: 1950, y: 400, type: 'course' },
-    { id: "311241", x: 2150, y: 400, type: 'course' },
+    // --- LEVEL 3 ---
+    { id: "313466", x: 100, y: 450, type: 'course' },
+    { id: "313261", x: 350, y: 450, type: 'course' },  // Req Eng
+    { id: "313262", x: 600, y: 450, type: 'course' },  // Components (Below Proj Mgmt)
+    { id: "311202", x: 1100, y: 450, type: 'course' }, // OOP (Below Prog 1)
+    { id: "311321", x: 1350, y: 450, type: 'course' }, // Arch
+    { id: "311330", x: 1550, y: 450, type: 'course' }, // Networks
+    { id: "311210", x: 1800, y: 450, type: 'course' }, // Discrete Math
+    { id: "311340", x: 2000, y: 450, type: 'course' }, // DB Admin
+    { id: "311241", x: 2200, y: 450, type: 'course' }, // Sys Analysis
 
-    // --- LEVEL 4 (Y=580) ---
-    { id: "313367", x: 50, y: 580, type: 'course' },
-    { id: "313364", x: 250, y: 580, type: 'course' },
-    { id: "313262", x: 450, y: 580, type: 'course' },
-    { id: "311305", x: 750, y: 580, type: 'course' },
-    { id: "311304", x: 950, y: 580, type: 'course' },
-    { id: "313263", x: 1150, y: 580, type: 'course' },
-    { id: "311213", x: 1350, y: 580, type: 'course' },
-    { id: "311468", x: 1550, y: 580, type: 'course' },
+    // --- LEVEL 4 ---
+    { id: "313367", x: 100, y: 650, type: 'course' },
+    { id: "313364", x: 350, y: 650, type: 'course' },  // Arch Design
+    { id: "313363", x: 600, y: 650, type: 'course' },  // Software Design
+    { id: "311305", x: 900, y: 650, type: 'course' },  // Visual Prog (Left of Web)
+    { id: "311304", x: 1100, y: 650, type: 'course' }, // Web (Below OOP)
+    { id: "313263", x: 1300, y: 650, type: 'course' }, // Multimedia
+    { id: "311213", x: 1500, y: 650, type: 'course' }, // Data Structures (moved right slightly)
+    { id: "311468", x: 1700, y: 650, type: 'course' }, // Security
 
-    // --- LEVEL 5 (Y=760) ---
-    { id: "313469", x: 50, y: 760, type: 'course' },
-    { id: "313464", x: 200, y: 760, type: 'course' },
-    { id: "313462", x: 350, y: 760, type: 'course' },
-    { id: "313363", x: 500, y: 760, type: 'course' },
-    { id: "311314", x: 1350, y: 760, type: 'course' },
+    // --- LEVEL 5 ---
+    { id: "313469", x: 150, y: 850, type: 'course' },
+    { id: "313464", x: 350, y: 850, type: 'course' },  // Re-eng
+    { id: "313462", x: 550, y: 850, type: 'course' },
+    { id: "313365", x: 750, y: 850, type: 'course' },  // Testing
+    { id: "313366", x: 950, y: 850, type: 'course' },  // Quality
+    { id: "311314", x: 1500, y: 850, type: 'course' }, // Algorithms
 
-    // --- LEVEL 6 (Y=940) ---
-    { id: "313365", x: 400, y: 940, type: 'course' },
-    { id: "313366", x: 600, y: 940, type: 'course' },
-    { id: "311350", x: 1250, y: 940, type: 'course' },
-    { id: "311422", x: 1450, y: 940, type: 'course' },
+    // --- LEVEL 6 ---
+    { id: "313468", x: 750, y: 1050, type: 'course' }, // Maintenance
+    { id: "311350", x: 1400, y: 1050, type: 'course' }, // AI
+    { id: "311422", x: 1600, y: 1050, type: 'course' }, // OS
 
-    // --- LEVEL 7 (Y=1120) ---
-    { id: "313468", x: 500, y: 1120, type: 'course' },
+    // --- SUMMARY BLOCKS (Right Side) ---
+    { id: "summ_uni_comp", x: 2450, y: 250, type: 'summary-block', label: "University Requirements\nCompulsory (12 Cr)", group: "University Compulsory", subtext: "Click to View" },
+    { id: "summ_uni_elec", x: 2450, y: 450, type: 'summary-block', label: "University Requirements\nElective (15 Cr)", group: "University Elective", subtext: "Click to Select" },
+    { id: "summ_free", x: 2450, y: 650, type: 'summary-block', label: "Free Requirements\n(3 Cr)", group: "Free Elective", subtext: "Any Course Outside Plan" },
+    { id: "summ_support", x: 2450, y: 850, type: 'summary-block', label: "Supportive Requirements\nCompulsory (6 Cr)", group: "Supportive Compulsory", subtext: "Stats & Numerical Analysis" },
 
-    // --- RIGHT SIDE SUMMARY BLOCKS (Adjusted X to 2400) ---
-    { 
-        id: "summ_uni_comp", 
-        x: 2400, y: 220, 
-        type: 'summary-block', 
-        label: "University Requirements\nCompulsory (12 Cr)", 
-        group: "University Compulsory",
-        subtext: "Click to View" 
-    },
-    { 
-        id: "summ_uni_elec", 
-        x: 2400, y: 400, 
-        type: 'summary-block', 
-        label: "University Requirements\nElective (15 Cr)", 
-        group: "University Elective",
-        subtext: "Click to Select" 
-    },
-    { 
-        id: "summ_free", 
-        x: 2400, y: 580, 
-        type: 'summary-block', 
-        label: "Free Requirements\n(3 Cr)", 
-        group: "Free Elective", 
-        subtext: "Any Course Outside Plan"
-    },
-    { 
-        id: "summ_support", 
-        x: 2400, y: 760, 
-        type: 'summary-block', 
-        label: "Supportive Requirements\nCompulsory (6 Cr)", 
-        group: "Supportive Compulsory",
-        subtext: "Stats & Numerical Analysis"
-    },
-
-    // --- GRADUATION & TRAINING (Bottom Right) ---
-    { id: "proj_grad", x: 1500, y: 1120, type: 'label-box-green', label: "Graduation Project\nReq: 110 Cr Passed" },
-    { id: "proj_train", x: 1700, y: 1120, type: 'label-box-green', label: "Field Training\nReq: 90 Cr Passed" }
+    // --- GRADUATION & TRAINING ---
+    { id: "proj_grad", x: 1900, y: 1050, type: 'label-box-green', label: "Graduation Project\nReq: 110 Cr Passed" },
+    { id: "proj_train", x: 2100, y: 1050, type: 'label-box-green', label: "Field Training\nReq: 90 Cr Passed" }
 ];
 const planLinks = [
     // Root Connections
@@ -2175,8 +2146,7 @@ window.loadStudentPlan = async function(userId) {
         // 2. Fetch All Courses (Updated to include category and populate global data)
         const { data: courses } = await supabase
             .from('courses')
-            .select('course_code, course_name_en, course_name_ar, credit_hours, category'); // Added category
-            
+            .select('course_code, course_name_en, course_name_ar, credit_hours, category, course_description');            
         // --- FIX: Populate the global variable so the Drawer can use it ---
         if (courses) {
             allCoursesData = courses; 
@@ -2602,6 +2572,7 @@ window.showCoursePopup = function(code, details, statusClass, statusKey, targetE
     // 3. Populate & Show Detail Popup
     const title = document.getElementById('popup-title');
     const desc = document.getElementById('popup-desc');
+    const longDesc = document.getElementById('popup-long-desc');
     const credits = document.getElementById('popup-credits');
     const statusBadge = document.getElementById('popup-status');
 
@@ -2609,6 +2580,16 @@ window.showCoursePopup = function(code, details, statusClass, statusKey, targetE
         const fullName = currentLang === 'ar' ? details.course_name_ar : details.course_name_en;
         title.textContent = `${code}`;
         desc.textContent = fullName;
+        
+        // Populate Description
+        if (details.course_description) {
+            longDesc.textContent = details.course_description;
+            longDesc.classList.remove('hidden');
+        } else {
+            longDesc.textContent = "";
+            longDesc.classList.add('hidden');
+        }
+
         credits.textContent = `${details.credit_hours} ${translations[currentLang].lbl_credits || 'Cr'}`;
     }
 

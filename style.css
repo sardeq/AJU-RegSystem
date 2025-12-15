@@ -1676,3 +1676,16 @@ textarea.custom-input {
     transition: transform 0.2s;
 }
 .drawer-node:hover { transform: translateX(5px); background: #f1f8e9; }
+
+.popup-description {
+    font-size: 0.85em;
+    color: #444;
+    background-color: #f1f8e9; /* Very light green background */
+    padding: 10px;
+    border-radius: 6px;
+    margin: 10px 0;
+    line-height: 1.4;
+    max-height: 150px;
+    overflow-y: auto; /* Scroll if description is very long */
+    border-left: 3px solid #2E7D32;
+}
