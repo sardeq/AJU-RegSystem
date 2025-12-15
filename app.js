@@ -160,7 +160,26 @@ const translations = {
         exc_desc_alt: "Request to take a different course in place of a required one.",
         
         // Tooltip for the new button
-        btn_req_override: "Request Prerequisite Override"
+        btn_req_override: "Request Prerequisite Override",
+
+        lbl_my_waitlist: "My Waitlist",
+        msg_no_waitlist: "No active waitlists.",
+        
+        // Confirmation Modal
+        wl_modal_title: "Join Waiting List?",
+        wl_modal_desc: "This section is full. You will be placed in a queue and notified if a seat becomes available.",
+        btn_cancel: "Cancel",
+        btn_confirm_join: "Confirm & Join",
+        btn_joining: "Joining...", // Button state while loading
+
+        // Success Modal
+        wl_success_title: "Successfully Joined!",
+        wl_success_desc: "You have been added to the waiting list for this section.",
+        lbl_current_pos: "Current Position",
+        btn_done: "Done",
+
+        // Sidebar Badge
+        lbl_in_line: "in Line"
     },
     ar: {
         nav_home: "الرئيسية",
@@ -278,7 +297,26 @@ const translations = {
         exc_desc_alt: "طلب دراسة مادة مختلفة بدلاً من مادة إجبارية في الخطة.",
 
         // Tooltip for the new button
-        btn_req_override: "طلب تجاوز المتطلب السابق"
+        btn_req_override: "طلب تجاوز المتطلب السابق",
+
+        lbl_my_waitlist: "قائمة الانتظار",
+        msg_no_waitlist: "لا يوجد قوائم انتظار نشطة.",
+
+        // Confirmation Modal
+        wl_modal_title: "الانضمام لقائمة الانتظار؟",
+        wl_modal_desc: "هذه الشعبة ممتلئة. سيتم وضعك في طابور الانتظار وسيتم إشعارك فور توفر مقعد.",
+        btn_cancel: "إلغاء",
+        btn_confirm_join: "تأكيد وانضمام",
+        btn_joining: "جاري الانضمام...",
+
+        // Success Modal
+        wl_success_title: "تم الانضمام بنجاح!",
+        wl_success_desc: "تمت إضافتك إلى قائمة الانتظار لهذه الشعبة.",
+        lbl_current_pos: "الترتيب الحالي",
+        btn_done: "تم",
+
+        // Sidebar Badge
+        lbl_in_line: "في الانتظار"
 
     }
 };
