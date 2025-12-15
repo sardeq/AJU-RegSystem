@@ -384,7 +384,7 @@ const planStructure = [
     { id: "313363", x: 750, y: 650, type: 'course' },  // Design
 
     // OOP Children (Clustered under 311202)
-    { id: "311305", x: 1000, y: 650, type: 'course' }, // Visual
+    { id: "311305", x: 950, y: 650, type: 'course' },  // Visual (Updated X for spacing)
     { id: "311304", x: 1150, y: 650, type: 'course' }, // Web
     { id: "311213", x: 1350, y: 650, type: 'course' }, // Data Struct (Moved under OOP)
 
@@ -444,9 +444,9 @@ const planLinks = [
     { s: "313364", t: "313464" },
     { s: "313364", t: "313462" },
 
-    // Proj Mgmt Branch
+    // Proj Mgmt Branch (Updated Connections)
     { s: "313160", t: "313269" },
-    { s: "313269", t: "313262" },
+    { s: "313160", t: "313262" }, // Connects directly to 313160 now
     { s: "313262", t: "313363" },
     { s: "313363", t: "313365" },
     { s: "313363", t: "313366" },
