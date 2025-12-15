@@ -1387,6 +1387,9 @@ function renderRegistrationList(sections) {
     const showClosed = document.getElementById('reg-check-closed').checked;
     const hideConflicts = document.getElementById('reg-check-conflicts').checked;
     
+    // NEW: Get the Hide Completed Checkbox state
+    const hideCompleted = document.getElementById('reg-check-completed').checked;
+    
     const grouped = {};
     
     sections.forEach(sec => {
@@ -1396,6 +1399,14 @@ function renderRegistrationList(sections) {
         // --- FILTERING ---
         const nameEn = course.course_name_en.toLowerCase();
         const nameAr = course.course_name_ar ? course.course_name_ar.toLowerCase() : "";
+        
+        // 1. Completed Check
+        // We use window.passedCourses which was populated in loadRegistrationData
+        const isPassed = window.passedCourses && window.passedCourses.includes(code);
+
+        // If "Hide Completed" is ON and the user has passed this course, skip it entirely
+        if (hideCompleted && isPassed) return;
+
         if (!code.toLowerCase().includes(searchText) && !nameEn.includes(searchText) && !nameAr.includes(searchText)) return;
         if (filterYear !== 'all' && code.length >= 3 && code[2] !== filterYear) return;
         if (filterCat !== 'all' && course.category !== filterCat) return;
@@ -1413,7 +1424,8 @@ function renderRegistrationList(sections) {
         if (!grouped[code]) {
             grouped[code] = {
                 course: sec.courses,
-                sections: []
+                sections: [],
+                isPassed: isPassed // Store passed status for the group
             };
         }
         grouped[code].sections.push(sec);
@@ -1429,31 +1441,29 @@ function renderRegistrationList(sections) {
         const course = group.course;
         const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
         
-        // CHECK 1: Already Registered for this Course?
         const alreadyHasCourse = window.enrolledCourseCodes && window.enrolledCourseCodes.includes(course.course_code);
         
-        // CHECK 2: PREREQUISITES MET?
         const reqs = course.prerequisites || [];
         const missingPrereqs = reqs.filter(req => !window.passedCourses.includes(req.prereq_code));
         const hasPrereqs = missingPrereqs.length === 0;
 
-        // --- NEW WRAPPER STRUCTURE ---
-        // Creates a row: [ Accordion (Flexible Width) ] [ Button (Fixed Width) ]
         const wrapper = document.createElement('div');
         wrapper.style.display = 'flex';
-        wrapper.style.alignItems = 'flex-start'; // Keep button at top even if accordion expands
+        wrapper.style.alignItems = 'flex-start'; 
         wrapper.style.gap = '10px';
         wrapper.style.marginBottom = '15px';
 
-        // 1. Create Accordion Element
         const accordion = document.createElement('div');
         accordion.className = 'course-accordion collapsed';
-        accordion.style.flex = '1'; // Take all available space
-        accordion.style.marginBottom = '0'; // Wrapper handles margin
+        accordion.style.flex = '1'; 
+        accordion.style.marginBottom = '0'; 
         
         // Internal Badges
         let badgeHtml = '';
-        if (!hasPrereqs) {
+        if (group.isPassed) {
+             // NEW: Badge for Passed Courses (if shown)
+             badgeHtml = `<span class="badge badge-green" style="font-size:0.7em; margin-left:10px;">Passed ✅</span>`;
+        } else if (!hasPrereqs) {
             badgeHtml = `<span class="badge badge-red" style="font-size:0.7em; margin-left:10px;">Missing Prereq</span>`;
         } else if (alreadyHasCourse) {
             badgeHtml = '<span class="status-text success" style="margin-left:10px; font-size:0.7em;">Enrolled</span>';
@@ -1474,21 +1484,20 @@ function renderRegistrationList(sections) {
             <div class="accordion-content hidden"></div>
         `;
 
-        // 2. Create External Button (if needed)
+        // Only show override button if NOT passed and Prereqs Missing
         let externalButton = null;
-        if (!hasPrereqs) {
+        if (!group.isPassed && !hasPrereqs) {
              const safeName = courseName.replace(/'/g, "\\'"); 
              const tooltip = translations[currentLang].btn_req_override;
              
              externalButton = document.createElement('button');
              externalButton.className = 'circle-btn time-btn';
-             // Styling to make it look nice outside
              externalButton.style.cssText = `
                 background-color: #f57c00; 
                 width: 45px; 
                 height: 45px; 
                 flex-shrink: 0; 
-                margin-top: 5px; /* Aligns visually with the header center */
+                margin-top: 5px; 
                 box-shadow: 0 2px 5px rgba(0,0,0,0.15);
                 display: flex; 
                 align-items: center; 
@@ -1500,7 +1509,6 @@ function renderRegistrationList(sections) {
              externalButton.onclick = () => requestPrereqOverride(course.course_code, safeName);
         }
 
-        // 3. Fill Accordion Content (Sections)
         const contentDiv = accordion.querySelector('.accordion-content');
         let visibleSectionsCount = 0;
 
@@ -1525,17 +1533,20 @@ function renderRegistrationList(sections) {
             const isRegisteredThisSection = currentEnrollments.includes(sec.section_id);
             const isWaitlisted = currentWaitlist.includes(sec.section_id);
 
-            // Buttons inside the drawer
             let actionButtons = '';
             let rowOpacity = '1';
 
-            if (isRegisteredThisSection) {
+            // --- BUTTON LOGIC UPDATE ---
+            if (group.isPassed) {
+                // If passed, show Disabled text
+                actionButtons = `<span class="status-text success">Completed ✅</span>`;
+                rowOpacity = '0.5';
+            } else if (isRegisteredThisSection) {
                 actionButtons = `<span class="status-text success">Registered ✅</span>`;
             } else if (alreadyHasCourse) {
                 actionButtons = `<span class="status-text" style="color:#666; background:#eee; font-size:0.75em;">Course Enrolled</span>`;
                 rowOpacity = '0.6';
             } else if (!hasPrereqs) {
-                // Just text inside
                 const missingText = missingPrereqs.map(p => p.prereq_code).join(', ');
                 actionButtons = `<span class="status-text" style="color:#c62828; background:#ffebee; border:1px solid #c62828; font-size:0.75em;" title="Missing: ${missingText}">Prereq Missing 🔒</span>`;
                 rowOpacity = '0.5';
@@ -1826,6 +1837,12 @@ window.handleRegister = async function(sectionId) {
     const section = availableSectionsData.find(s => s.section_id === sectionId);
     if (!section) return;
 
+    const code = section.courses.course_code.toString();
+    if (window.passedCourses && window.passedCourses.includes(code)) {
+        alert("⛔ Error: You have already successfully completed this course.");
+        return;
+    }
+
     const newCredits = section.courses.credit_hours || 3;
     const currentTotal = window.currentTotalCredits || 0;
     const { max, isGrad } = getCreditLimits();
@@ -2041,7 +2058,7 @@ if (generateBtn) generateBtn.addEventListener('click', async () => {
     }
 });
 
-const filterIds = ['reg-search-input', 'reg-filter-year', 'reg-filter-category', 'reg-filter-credits', 'reg-check-closed'];
+const filterIds = ['reg-search-input', 'reg-filter-year', 'reg-filter-category', 'reg-filter-credits', 'reg-check-closed', 'reg-check-completed'];
 filterIds.forEach(id => {
     const el = document.getElementById(id);
     if(el) {
