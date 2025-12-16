@@ -1024,20 +1024,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Best practice: Add onclick="showSection('schedule')" directly to the button in HTML
 });
 
-// --- COURSES SHEET LOGIC ---
 
 async function loadCoursesSheetData(userId) {
-    const tbody = document.getElementById('courses-table-body');
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading data...</td></tr>';
+    // 1. Target the NEW grid container, not the old table body
+    const grid = document.getElementById('courses-sheet-grid');
+    if(grid) grid.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // 1. Fetch User History (To determine Status: Completed/Failed/None)
+        // 2. Fetch User History (To determine Status: Completed/Failed/None)
         const { data: history, error: historyError } = await supabase
             .from('enrollments')
             .select(`status, grade_value, sections(course_code)`)
             .eq('user_id', userId);
             
         if (!historyError && history) {
+            userHistoryMap = {}; // Reset map
             history.forEach(h => {
                 if(h.sections && h.sections.course_code) {
                     userHistoryMap[h.sections.course_code] = { 
@@ -1048,7 +1049,7 @@ async function loadCoursesSheetData(userId) {
             });
         }
 
-        // 2. Fetch All Courses + Prerequisites
+        // 3. Fetch All Courses + Prerequisites
         const { data: courses, error: coursesError } = await supabase
             .from('courses')
             .select(`
@@ -1062,112 +1063,131 @@ async function loadCoursesSheetData(userId) {
         if (coursesError) throw coursesError;
 
         allCoursesData = courses;
-        renderCoursesTable(); // Initial Render
+        renderCoursesTable(); // Call the render function
 
     } catch (err) {
         console.error("Sheet Error:", err);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Error loading data.</td></tr>';
+        if(grid) grid.innerHTML = '<div style="text-align:center; color:#ff5252; padding:30px;">Failed to load course data.</div>';
     }
 }
 
-function renderCoursesTable() {
-    const tbody = document.getElementById('courses-table-body');
-    if (!tbody) return; // Safety check
-    tbody.innerHTML = '';
+function renderCoursesTable() { 
+    const grid = document.getElementById('courses-sheet-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
 
-    // 1. Get Filter Values from the HTML inputs
-    const searchInput = document.getElementById('sheet-search');
-    const yearSelect = document.getElementById('filter-year');
-    const catSelect = document.getElementById('filter-category');
-    const credSelect = document.getElementById('filter-credits');
-    const checkCompleted = document.getElementById('check-completed');
-    const checkFailed = document.getElementById('check-failed');
+    // 1. GET INPUTS
+    const searchText = document.getElementById('sheet-search')?.value.toLowerCase() || '';
+    const filterYear = document.getElementById('filter-year')?.value || 'all';
+    const filterCat = document.getElementById('filter-category')?.value || 'all';
+    const showPassed = document.getElementById('check-completed')?.checked;
+    const showRemaining = document.getElementById('check-failed')?.checked;
 
-    // Safety check: if elements are missing, stop to prevent errors
-    if (!searchInput || !yearSelect || !catSelect || !credSelect) return;
+    // 2. STATISTICS CALCULATORS
+    let totalCourses = 0;
+    let completedCourses = 0;
+    let totalCreditsEarned = 0;
+    let gradeSum = 0;
+    let gradeCount = 0;
 
-    const searchText = searchInput.value.toLowerCase();
-    const filterYear = yearSelect.value;
-    const filterCat = catSelect.value;
-    const filterCred = credSelect.value;
-    const showCompleted = checkCompleted.checked;
-    const showFailed = checkFailed.checked; // Also includes "Not Taken"
-
-    // 2. Filter the global 'allCoursesData' array
+    // 3. FILTERING
     const filtered = allCoursesData.filter(course => {
         const code = course.course_code.toString();
-        // Get user status for this course (Completed, Failed, Registered, or None)
-        const userState = userHistoryMap[code] || { status: 'NONE' };
+        const userState = userHistoryMap[code] || { status: 'NONE', grade: null };
         const isCompleted = userState.status === 'COMPLETED';
         
-        // A. Check Toggles (Show Completed / Show Failed)
-        if (isCompleted && !showCompleted) return false;
-        if (!isCompleted && !showFailed) return false;
+        // Stats Calculation (Before visual filtering)
+        if(isCompleted) {
+            completedCourses++;
+            totalCreditsEarned += course.credit_hours;
+            if(userState.grade && !isNaN(userState.grade)) {
+                gradeSum += parseFloat(userState.grade);
+                gradeCount++;
+            }
+        }
+        totalCourses++;
 
-        // B. Check Text Search (Code, English Name, or Arabic Name)
+        // Visual Filters
+        if (isCompleted && !showPassed) return false;
+        if (!isCompleted && !showRemaining) return false;
+
         const nameEn = course.course_name_en.toLowerCase();
         const nameAr = course.course_name_ar ? course.course_name_ar.toLowerCase() : "";
-        if (!code.includes(searchText) && !nameEn.includes(searchText) && !nameAr.includes(searchText)) {
-            return false;
-        }
-
-        // C. Year Filter 
-        // Logic: Checks the 3rd digit of the course code (e.g., 311100 -> Year 1)
-        if (filterYear !== 'all') {
-            if (code.length >= 3 && code[2] !== filterYear) return false;
-        }
-
-        // D. Category Filter
+        
+        if (!code.includes(searchText) && !nameEn.includes(searchText) && !nameAr.includes(searchText)) return false;
+        if (filterYear !== 'all' && code.length >= 3 && code[2] !== filterYear) return false;
         if (filterCat !== 'all' && course.category !== filterCat) return false;
-
-        // E. Credits Filter
-        if (filterCred !== 'all' && course.credit_hours != filterCred) return false;
 
         return true;
     });
 
-    // 3. Handle Empty Results
+    // 4. UPDATE STATS UI
+    // Update these IDs in your HTML if they don't match
+    const progressPercent = Math.round((totalCreditsEarned / 132) * 100); 
+    const avgGrade = gradeCount > 0 ? (gradeSum / gradeCount).toFixed(2) : "--";
+
+    const progVal = document.getElementById('sheet-progress-val');
+    const progBar = document.getElementById('sheet-progress-bar');
+    const compVal = document.getElementById('sheet-completed-val');
+    const gpaVal = document.getElementById('sheet-gpa-val');
+
+    if(progVal) progVal.textContent = `${progressPercent}%`;
+    if(progBar) progBar.style.width = `${progressPercent}%`;
+    if(compVal) compVal.textContent = totalCreditsEarned;
+    if(gpaVal) gpaVal.textContent = avgGrade;
+
+    // 5. RENDER CARDS
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">No courses match filters.</td></tr>`;
+        grid.innerHTML = `<div style="text-align:center; padding:50px; color:#666;">No courses found matching filters.</div>`;
         return;
     }
 
-    // 4. Render Rows
     filtered.forEach(course => {
-        const tr = document.createElement('tr');
-        
-        // Select name based on current language
         const name = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
-        
-        // Format Prerequisites (join with comma if multiple)
-        const prereqs = course.prerequisites 
+        const prereqs = course.prerequisites && course.prerequisites.length > 0 
             ? course.prerequisites.map(p => p.prereq_code).join(', ') 
-            : '-';
-
-        // Create Status Badge
-        let statusBadge = `<span class="badge badge-gray">${translations[currentLang].status_none || 'Not Taken'}</span>`;
-        const userState = userHistoryMap[course.course_code];
+            : 'None';
+            
+        const userState = userHistoryMap[course.course_code] || { status: 'NONE' };
         
-        if (userState) {
-            if (userState.status === 'COMPLETED') {
-                statusBadge = `<span class="badge badge-green">${translations[currentLang].status_completed || 'Completed'} (${userState.grade})</span>`;
-            } else if (userState.status === 'FAILED') {
-                statusBadge = `<span class="badge badge-red">${translations[currentLang].status_failed || 'Failed'}</span>`;
-            } else if (userState.status === 'REGISTERED') {
-                 statusBadge = `<span class="badge badge-blue">Registered</span>`;
-            }
+        // Determine Style Class & Badge
+        let rowClass = 'pending';
+        let gradeHtml = '<div class="grade-pill gp-gray">•</div>';
+        
+        if (userState.status === 'COMPLETED') {
+            rowClass = 'passed';
+            gradeHtml = `<div class="grade-pill gp-green">${userState.grade || 'P'}</div>`;
+        } else if (userState.status === 'FAILED') {
+            rowClass = 'failed';
+            gradeHtml = `<div class="grade-pill gp-red">F</div>`;
+        } else if (userState.status === 'REGISTERED' || userState.status === 'ENROLLED') {
+            rowClass = 'registered';
+            gradeHtml = `<div class="grade-pill gp-gray" style="font-size:0.8rem; color:#2979ff;">IP</div>`; // In Progress
         }
 
-        tr.innerHTML = `
-            <td><strong>${course.course_code}</strong></td>
-            <td>${name}</td>
-            <td>${course.credit_hours}</td>
-            <td>${course.category || '-'}</td>
-            <td>${prereqs}</td>
-            <td>${course.lecture_hours} / ${course.lab_hours}</td>
-            <td>${statusBadge}</td>
+        const div = document.createElement('div');
+        div.className = `sheet-row-card ${rowClass}`;
+        div.innerHTML = `
+            <div class="src-code">${course.course_code}</div>
+            <div class="src-main">
+                <span class="src-title">${name}</span>
+                <span class="src-cat">${course.category || 'General'}</span>
+            </div>
+            <div class="src-credits">
+                <span style="display:flex; align-items:center; gap:5px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    ${course.credit_hours} Cr
+                </span>
+            </div>
+            <div class="src-prereq">
+                ${prereqs !== 'None' ? `<span style="color:#888;">Pre: ${prereqs}</span>` : '<span style="opacity:0.3">No Prereq</span>'}
+            </div>
+            <div class="src-grade-box">
+                ${gradeHtml}
+            </div>
         `;
-        tbody.appendChild(tr);
+        grid.appendChild(div);
     });
 }
 

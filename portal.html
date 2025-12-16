@@ -262,69 +262,86 @@
 </div>
 
 
-            <div id="courses-sheet-container" class="dashboard-view hidden">
-                <h2 class="section-title" data-i18n="nav_sheet">Courses Sheet</h2>
-                
-                <div class="filter-panel">
-                    <div class="search-row">
-                        <input type="text" id="sheet-search" class="custom-search" placeholder="Search by Code or Name..." data-i18n-placeholder="ph_search_courses">
-                    </div>
-                    
-                    <div class="filters-row">
-                        <select id="filter-year" class="filter-select">
-                            <option value="all" data-i18n="filter_year_all">All Years</option>
-                            <option value="1">Year 1</option>
-                            <option value="2">Year 2</option>
-                            <option value="3">Year 3</option>
-                            <option value="4">Year 4</option>
-                            <option value="5">Year 5</option>
-                        </select>
-
-                        <select id="filter-category" class="filter-select">
-                            <option value="all" data-i18n="filter_cat_all">All Categories</option>
-                            <option value="University Requirement">University Requirement</option>
-                            <option value="College Compulsory">College Compulsory</option>
-                            <option value="Major Compulsory">Major Compulsory</option>
-                            <option value="Major Elective">Major Elective</option>
-                        </select>
-
-                        <select id="filter-credits" class="filter-select">
-                            <option value="all" data-i18n="filter_credits_all">All Credits</option>
-                            <option value="1">1 Hour</option>
-                            <option value="3">3 Hours</option>
-                        </select>
-                    </div>
-
-                    <div class="toggles-row">
-                        <label class="toggle-label">
-                            <input type="checkbox" id="check-completed" checked> 
-                            <span data-i18n="filter_show_completed">Show Completed</span>
-                        </label>
-                        <label class="toggle-label">
-                            <input type="checkbox" id="check-failed" checked> 
-                            <span data-i18n="filter_show_failed">Show Failed/Not Taken</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="courses-table">
-                        <thead>
-                            <tr>
-                                <th data-i18n="tbl_code">Code</th>
-                                <th data-i18n="tbl_name">Course Name</th>
-                                <th data-i18n="tbl_credits">Cr.</th>
-                                <th data-i18n="tbl_category">Category</th>
-                                <th data-i18n="tbl_prereq">Prerequisites</th>
-                                <th data-i18n="tbl_hours">Lec/Lab</th>
-                                <th data-i18n="tbl_status">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="courses-table-body">
-                            </tbody>
-                    </table>
+<div id="courses-sheet-container" class="dashboard-view hidden">
+    
+    <div class="sheet-stats-row">
+        <div class="sheet-stat-card green-glow">
+            <div class="ss-icon">📊</div>
+            <div class="ss-info">
+                <span class="ss-label" data-i18n="lbl_total_progress">Progress</span>
+                <span class="ss-value" id="sheet-progress-val">0%</span>
+                <div class="ss-progress-track">
+                    <div class="ss-progress-bar" id="sheet-progress-bar" style="width: 0%"></div>
                 </div>
             </div>
+        </div>
+
+        <div class="sheet-stat-card purple-glow">
+            <div class="ss-icon">🎓</div>
+            <div class="ss-info">
+                <span class="ss-label" data-i18n="lbl_completed_hrs">Completed Hours</span>
+                <span class="ss-value"><span id="sheet-completed-val">0</span> <small>/ 132</small></span>
+            </div>
+        </div>
+
+        <div class="sheet-stat-card blue-glow">
+            <div class="ss-icon">⭐</div>
+            <div class="ss-info">
+                <span class="ss-label" data-i18n="lbl_avg_grade">Avg Grade</span>
+                <span class="ss-value" id="sheet-gpa-val">--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sheet-controls-bar">
+        <div class="sheet-search-wrapper">
+            <div class="search-icon-absolute">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <input type="text" id="sheet-search" placeholder="Search history..." data-i18n-placeholder="ph_search_courses">
+        </div>
+
+        <div class="sheet-filter-group">
+            <select id="filter-year" class="sheet-select">
+                <option value="all" data-i18n="filter_year_all">All Years</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
+            </select>
+
+            <select id="filter-category" class="sheet-select">
+                <option value="all" data-i18n="filter_cat_all">All Categories</option>
+                <option value="University Requirement">Uni Req</option>
+                <option value="College Compulsory">College Comp</option>
+                <option value="Major Compulsory">Major Comp</option>
+                <option value="Major Elective">Major Elec</option>
+            </select>
+            
+            <div class="sheet-toggles">
+                <label class="pill-checkbox">
+                    <input type="checkbox" id="check-completed" checked>
+                    <span>Passed</span>
+                </label>
+                <label class="pill-checkbox">
+                    <input type="checkbox" id="check-failed" checked>
+                    <span>Remaining</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="sheet-list-header">
+        <div style="width:80px">Code</div>
+        <div style="flex:1">Course Detail</div>
+        <div style="width:100px">Credits</div>
+        <div style="width:120px">Prereq</div>
+        <div style="width:100px; text-align:right;">Grade</div>
+    </div>
+    
+    <div id="courses-sheet-grid" class="sheet-grid-container">
+        </div>
+</div>
 
             <div id="schedule-container" class="dashboard-view hidden">
                 <div class="schedule-header">
