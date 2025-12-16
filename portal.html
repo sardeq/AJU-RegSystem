@@ -196,66 +196,57 @@
                 </div>
             </div>
 
-            <div id="registration-container" class="dashboard-view hidden">
-    <div class="registration-layout">
-        
-        <div class="reg-left-panel">
-            <button class="enhance-ai-btn" id="ai-enhance-btn" style="background: linear-gradient(135deg, #00C853, #00E676); color: black;">
-                <span>✨ AI Advisor</span>
-            </button>
-            
-            <div class="widget-card">
-                <div class="widget-header">
-                    <span class="widget-title" data-i18n="lbl_registered_courses">Registered</span>
-                    <span class="badge badge-green" id="mini-reg-count">0</span>
-                </div>
-                <div id="mini-registered-list" class="mini-course-list">
-                    </div>
-            </div>
-
-            <div class="widget-card" style="border-top: 3px solid var(--accent-orange);">
-                <div class="widget-header">
-                    <span class="widget-title" style="color:var(--accent-orange)" data-i18n="lbl_my_waitlist">Waitlist</span>
-                    <span class="badge badge-yellow" id="mini-wait-count">0</span>
-                </div>
-                <div id="mini-waitlist-list" class="mini-course-list">
-                    </div>
-            </div>
+<div id="registration-container" class="dashboard-view hidden">
+    
+    <div class="reg-controls-bar">
+        <div class="filter-pills">
+            <button class="filter-pill active" onclick="filterGrid('all')">All Courses</button>
+            <button class="filter-pill" onclick="filterGrid('available')">Available</button>
+            <button class="filter-pill" onclick="filterGrid('waitlist')">Waitlist Status</button>
         </div>
 
-        <div class="reg-right-panel">
+        <div class="reg-search-group">
+            <div class="reg-search-wrapper">
+                <div class="search-icon-absolute">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <input type="text" id="reg-search-input" placeholder="Search courses..." data-i18n-placeholder="ph_search_courses">
+            </div>
             
-            <div class="reg-glass-header">
-                <div class="search-icon-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                </div>
-                <div style="flex:1;">
-                    <input type="text" id="reg-search-input" placeholder="Search courses..." data-i18n-placeholder="ph_search_courses">
-                </div>
-                
-                <div id="reg-credit-status" class="credit-status-box" style="background:rgba(0,0,0,0.4);">0/18 Hr</div>
-                
-                <button class="filter-btn" onclick="toggleFilters()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                </button>
-            </div>
+            <button class="filter-btn-glass" onclick="toggleFilters()" title="Toggle Filters">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            </button>
+        </div>
 
-            <div id="reg-filter-panel" class="filter-panel hidden" style="margin-bottom:20px;">
-                <div class="filters-row">
-                    <select id="reg-filter-year" class="filter-select"><option value="all">All Years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option></select>
-                    <select id="reg-filter-category" class="filter-select"><option value="all">All Categories</option><option value="Major Compulsory">Major</option><option value="University Requirement">Uni Req</option></select>
-                </div>
-                <div class="toggles-row">
-                    <label class="toggle-label"><input type="checkbox" id="reg-check-completed" checked> Hide Completed</label>
-                    <label class="toggle-label"><input type="checkbox" id="reg-check-closed" checked> Show Full</label>
-                    <label class="toggle-label"><input type="checkbox" id="reg-check-conflicts"> Hide Conflicts</label>
-                </div>
-            </div>
+        <button class="ai-header-btn" id="ai-enhance-btn-reg">
+            <span>✨ AI Advisor</span>
+        </button>
+    </div>
 
-            <div id="registration-courses-container">
-                </div>
+    <div id="reg-filter-panel" class="filter-panel hidden" style="margin-bottom: 25px;">
+        <div class="filters-row">
+            <select id="reg-filter-year" class="filter-select">
+                <option value="all">All Years</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
+            </select>
+            <select id="reg-filter-category" class="filter-select">
+                <option value="all">All Categories</option>
+                <option value="University Requirement">University Requirement</option>
+                <option value="College Compulsory">College Compulsory</option>
+                <option value="Major Compulsory">Major Compulsory</option>
+                <option value="Major Elective">Major Elective</option>
+            </select>
         </div>
     </div>
+
+    <div id="reg-credit-status" style="text-align:center; margin-bottom: 20px; font-size: 0.9rem; color: #666;"></div>
+
+    <div id="registration-courses-grid" class="reg-grid">
+        </div>
+
 </div>
 
             <div id="courses-sheet-container" class="dashboard-view hidden">
