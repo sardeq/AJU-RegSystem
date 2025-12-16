@@ -950,8 +950,8 @@ window.showSection = function(sectionName) {
     } else if (sectionName === 'schedule') {
         if(scheduleContainer) scheduleContainer.classList.remove('hidden');
         if(currentUser) {
-            loadFullSchedule(currentUser.id); // Existing weekly schedule
-            initHistory(currentUser.id);      // NEW: Load history filters
+            loadFullSchedule(currentUser.id);
+            loadHistoryTimeline(currentUser.id);
         }
     } else if (sectionName === 'plan') {
         // --- FIX: Unhide the container ---
@@ -965,17 +965,207 @@ window.showSection = function(sectionName) {
     }
 }
 
-// --- FULL SCHEDULE LOGIC ---
-
-async function loadFullSchedule(userId) {
-    const tbody = document.getElementById('full-schedule-body');
-    const cardGrid = document.getElementById('schedule-card-grid');
+async function loadHistoryTimeline(userId) {
+    const container = document.getElementById('history-timeline-container');
+    if (!container) return;
     
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
-    cardGrid.innerHTML = '<p style="text-align:center;">Loading...</p>';
+    container.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // CHANGED: Added 'enrollment_id' to the select query
+        // 1. Fetch History AND Active Courses
+        // We include 'REGISTERED' and 'ENROLLED' to show the current semester
+        const { data, error } = await supabase
+            .from('enrollments')
+            .select(`
+                status, 
+                grade_value,
+                sections (
+                    semester_id,
+                    semesters (name),
+                    courses (
+                        course_code, 
+                        course_name_en, 
+                        course_name_ar, 
+                        credit_hours
+                    )
+                )
+            `)
+            .eq('user_id', userId)
+            .in('status', ['COMPLETED', 'FAILED', 'REGISTERED', 'ENROLLED']) 
+            .order('sections(semester_id)', { ascending: true }); // Oldest first
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding:30px; color:#666;">No academic history found.</p>';
+            return;
+        }
+
+        renderTimeline(data, container);
+
+    } catch (err) {
+        console.error("History Timeline Error:", err);
+        container.innerHTML = '<p style="text-align:center; color:red;">Failed to load history.</p>';
+    }
+}
+
+function renderTimeline(enrollments, container) {
+    container.innerHTML = ''; // Clear spinner
+
+    // 1. Group Data by Semester
+    const semesterMap = new Map();
+
+    enrollments.forEach(item => {
+        const sec = item.sections;
+        if (!sec || !sec.semesters) return;
+
+        const semId = sec.semester_id;
+        const semName = sec.semesters.name; // e.g., "First Semester 2023/2024"
+
+        if (!semesterMap.has(semId)) {
+            semesterMap.set(semId, {
+                id: semId,
+                name: semName,
+                courses: [],
+                isActive: false // Flag to track if this contains active courses
+            });
+        }
+        
+        const semObj = semesterMap.get(semId);
+
+        // Check if this course makes the semester "Active"
+        if (item.status === 'REGISTERED' || item.status === 'ENROLLED') {
+            semObj.isActive = true;
+        }
+
+        semObj.courses.push({
+            code: sec.courses.course_code,
+            name_en: sec.courses.course_name_en,
+            name_ar: sec.courses.course_name_ar,
+            credits: sec.courses.credit_hours,
+            grade: item.grade_value,
+            status: item.status
+        });
+    });
+
+    // 2. Group Semesters into Years (Year 1, Year 2...)
+    // Logic: We detect a change in the Academic Year string (e.g. "2023/2024") to increment the Year counter.
+    
+    const sortedSemesters = Array.from(semesterMap.values());
+    
+    let yearCounter = 0;
+    let currentAcademicYearStr = "";
+    
+    const timelineStructure = [];
+    let currentYearBlock = null;
+
+    sortedSemesters.forEach(sem => {
+        // Extract "20XX/20XX" from semester name
+        const yearMatch = sem.name.match(/(\d{4}\/\d{4})/);
+        const semYearStr = yearMatch ? yearMatch[0] : "Unknown";
+
+        if (semYearStr !== currentAcademicYearStr) {
+            yearCounter++;
+            currentAcademicYearStr = semYearStr;
+            
+            currentYearBlock = {
+                label: `Year ${yearCounter}`,
+                academicYear: semYearStr,
+                semesters: []
+            };
+            timelineStructure.push(currentYearBlock);
+        }
+
+        currentYearBlock.semesters.push(sem);
+    });
+
+    // 3. Render HTML
+    timelineStructure.forEach(yearBlock => {
+        // Year Container
+        const yearDiv = document.createElement('div');
+        yearDiv.className = 'timeline-year-block';
+        
+        // Year Header
+        yearDiv.innerHTML = `
+            <div class="timeline-year-header">
+                <div class="t-year-dot"></div>
+                <div class="t-year-title">${yearBlock.label}</div>
+                <span style="color:#666; font-size:0.9rem; font-weight:600;">${yearBlock.academicYear}</span>
+            </div>
+        `;
+
+        // Loop Semesters
+        yearBlock.semesters.forEach(sem => {
+            const semDiv = document.createElement('div');
+            // Add class if active for special styling
+            semDiv.className = `timeline-semester-block ${sem.isActive ? 'active-sem' : ''}`;
+            
+            // Semester Title
+            semDiv.innerHTML = `
+                <div class="t-sem-title">
+                    ${sem.name}
+                    ${sem.isActive ? '<span class="t-sem-badge">Current</span>' : ''}
+                </div>
+            `;
+            
+            // Grid
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'history-grid';
+
+            sem.courses.forEach(c => {
+                const name = currentLang === 'ar' ? c.name_ar : c.name_en;
+                
+                // Determine styling classes
+                let cardClass = 'h-card';
+                let gradeDisplay = c.grade || '-';
+                let statusLabel = 'Passed';
+
+                if (c.status === 'COMPLETED') {
+                    cardClass += ' pass';
+                } else if (c.status === 'FAILED') {
+                    cardClass += ' fail';
+                    statusLabel = 'Failed';
+                } else {
+                    cardClass += ' active';
+                    statusLabel = 'In Progress';
+                    gradeDisplay = 'IP';
+                }
+
+                const card = document.createElement('div');
+                card.className = cardClass;
+                card.innerHTML = `
+                    <div class="hc-top">
+                        <span class="hc-code">${c.code}</span>
+                        <span class="hc-grade">${gradeDisplay}</span>
+                    </div>
+                    <div class="hc-name" title="${name}">${name}</div>
+                    <div class="hc-bot">
+                        <span>${c.credits} Cr</span>
+                        <span>${statusLabel}</span>
+                    </div>
+                `;
+                gridDiv.appendChild(card);
+            });
+
+            semDiv.appendChild(gridDiv);
+            yearDiv.appendChild(semDiv);
+        });
+
+        container.appendChild(yearDiv);
+    });
+}
+
+
+
+async function loadFullSchedule(userId) {
+    const grid = document.getElementById('schedule-modern-grid');
+    if(grid) grid.innerHTML = '<div class="spinner"></div>';
+    
+    // Remove old table references
+    // const tbody = document.getElementById('full-schedule-body'); 
+    // const cardGrid = document.getElementById('schedule-card-grid');
+
+    try {
         const { data: schedule, error } = await supabase
             .from('enrollments')
             .select(`
@@ -990,7 +1180,8 @@ async function loadFullSchedule(userId) {
                         course_code,
                         course_name_en,
                         course_name_ar,
-                        credit_hours
+                        credit_hours,
+                        category
                     )
                 )
             `)
@@ -999,20 +1190,15 @@ async function loadFullSchedule(userId) {
 
         if (error) throw error;
 
-        if(!window.userProfile) {
-         const { data: p } = await supabase.from('users').select('*').eq('id', userId).single();
-         if(p) window.userProfile = p;
-    }
+        // Calculate Total
+        const totalCredits = schedule.reduce((sum, item) => sum + (item.sections?.courses?.credit_hours || 0), 0);
+        updateCreditUI(totalCredits);
 
-    // Calculate Total
-    const totalCredits = schedule.reduce((sum, item) => sum + (item.sections?.courses?.credit_hours || 0), 0);
-    updateCreditUI(totalCredits);
-
-        renderScheduleTable(schedule);
+        renderScheduleTable(schedule); // Uses new renderer
 
     } catch (err) {
         console.error("Schedule Error:", err);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load schedule.</td></tr>';
+        if(grid) grid.innerHTML = `<p style="text-align:center; color:red;">Failed to load schedule.</p>`;
     }
 }
 
@@ -1192,26 +1378,20 @@ function renderCoursesTable() {
 }
 
 function renderScheduleTable(scheduleData) {
-    const tbody = document.getElementById('full-schedule-body');
-    const cardGrid = document.getElementById('schedule-card-grid');
-    const tableHeadRow = document.querySelector('.schedule-table thead tr');
-
-    // Ensure Action Header exists (if not already there)
-    if (tableHeadRow && !tableHeadRow.querySelector('.th-action')) {
-        const th = document.createElement('th');
-        th.className = 'th-action';
-        th.setAttribute('data-i18n', 'tbl_action');
-        th.textContent = translations[currentLang].tbl_action || "Action";
-        tableHeadRow.appendChild(th);
-    }
-    
-    tbody.innerHTML = '';
-    cardGrid.innerHTML = '';
+    const grid = document.getElementById('schedule-modern-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
 
     if (!scheduleData || scheduleData.length === 0) {
-        const msg = translations[currentLang].msg_no_schedule;
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">${msg}</td></tr>`;
-        cardGrid.innerHTML = `<div class="empty-state">${msg}</div>`;
+        const msg = translations[currentLang].msg_no_schedule || "No active courses.";
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #666; border: 1px dashed #333; border-radius: 20px;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">📅</div>
+                <p>${msg}</p>
+                <button class="enhance-ai-btn" style="width: auto; margin: 20px auto;" onclick="showSection('registration')">
+                    Register Now
+                </button>
+            </div>`;
         return;
     }
 
@@ -1220,48 +1400,56 @@ function renderScheduleTable(scheduleData) {
         const course = sec.courses;
         const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
 
-        // 1. Render Table Row (Desktop)
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>
-                <strong>${courseName}</strong><br>
-                <small style="color:#666;">${course.course_code} - Sec ${sec.section_number}</small>
-            </td>
-            <td>${sec.schedule_text || 'TBA'}</td>
-            <td>${sec.room_number || 'TBA'}</td>
-            <td>${sec.instructor_name || 'Staff'}</td>
-            <td>${course.credit_hours}</td>
-            <td>
-                <button class="delete-btn" onclick="dropCourse(${item.enrollment_id})">
-                    ${translations[currentLang].btn_drop}
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-
-        // 2. Render Card (Mobile)
         const card = document.createElement('div');
-        card.className = 'schedule-item-card';
+        card.className = 'sch-card-modern';
+        
+        // Extract time for the side box
+        // Assumes format like "Mon Wed 08:00 - 09:30"
+        const timeMatch = (sec.schedule_text || "").match(/\d{1,2}:\d{2}/);
+        const startTime = timeMatch ? timeMatch[0] : "TBA";
+        
+        // Extract Days
+        let daysDisplay = "Online";
+        if((sec.schedule_text || "").toLowerCase().includes("mon")) daysDisplay = "MW";
+        if((sec.schedule_text || "").toLowerCase().includes("sun")) daysDisplay = "STT";
+
         card.innerHTML = `
-            <div class="sch-card-header">
-                <span class="sch-course-name">${courseName}</span>
-                <span class="sch-credits">${course.credit_hours} Cr.</span>
+            <div class="sch-time-box">
+                <span class="stb-start">${startTime}</span>
+                <span class="stb-days">${daysDisplay}</span>
             </div>
-            <div class="sch-card-body">
-                <div class="sch-detail"><span>🕒</span> ${sec.schedule_text || 'TBA'}</div>
-                <div class="sch-detail"><span>📍</span> ${sec.room_number || 'TBA'}</div>
-                <div class="sch-detail"><span>👨‍🏫</span> ${sec.instructor_name || 'Staff'}</div>
+            
+            <div class="sch-main-info">
+                <div class="sch-tags">
+                    <span class="sch-tag code">${course.course_code}</span>
+                    <span class="sch-tag credits">${course.credit_hours} Cr</span>
+                </div>
+                <h3 class="sch-title">${courseName}</h3>
+                <div class="sch-meta-grid">
+                     <div class="sch-meta-item">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        ${sec.schedule_text || 'TBA'}
+                     </div>
+                     <div class="sch-meta-item">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        ${sec.room_number || 'Room TBA'}
+                     </div>
+                     <div class="sch-meta-item">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        ${sec.instructor_name || 'Staff'}
+                     </div>
+                </div>
             </div>
-            <div class="sch-card-footer">
-                <button class="delete-btn full-width" onclick="dropCourse(${item.enrollment_id})">
-                     ${translations[currentLang].btn_drop}
+
+            <div class="sch-actions">
+                <button class="sch-drop-btn" onclick="dropCourse(${item.enrollment_id})" title="${translations[currentLang].btn_drop}">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </button>
             </div>
         `;
-        cardGrid.appendChild(card);
+        grid.appendChild(card);
     });
 }
-
 // --- NEW FUNCTION: DROP COURSE ---
 window.dropCourse = async function(enrollmentId) {
     const confirmMsg = translations[currentLang].msg_confirm_drop || "Are you sure?";
@@ -2091,7 +2279,6 @@ window.toggleFilters = function() {
     }
 };
 
-// --- HOOK INTO NAVIGATION ---
 // Update the showSection logic to load data when Registration is clicked
 const originalShowSection = window.showSection;
 window.showSection = function(sectionName) {
