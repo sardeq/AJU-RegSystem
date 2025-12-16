@@ -769,66 +769,7 @@ function renderBentoSchedule(enrollments) {
     });
 }
 
-function renderTodaySchedule(enrollments) {
-    const listContainer = document.getElementById('today-schedule-list');
-    listContainer.innerHTML = ''; 
 
-    const validEnrollments = enrollments ? enrollments.filter(e => e.sections) : [];
-
-    if (validEnrollments.length === 0) {
-        listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:#666;">No registered courses found.</div>`;
-        return;
-    }
-
-    // Determine "Today"
-    const dayIndex = new Date().getDay(); // 0=Sun
-    const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const currentDayStr = daysMap[dayIndex];
-    
-    // Filter for today
-    const todayCourses = validEnrollments.filter(item => {
-        const section = item.sections;
-        if (!section || !section.schedule_text) return false;
-        return section.schedule_text.toLowerCase().includes(currentDayStr.toLowerCase());
-    });
-
-    if (todayCourses.length === 0) {
-        listContainer.innerHTML = `
-            <div style="text-align:center; padding:30px; color:#666;">
-                <div style="font-size:2rem; margin-bottom:10px;">🎉</div>
-                No classes today!
-            </div>`;
-        return;
-    }
-
-    todayCourses.forEach(item => {
-        const sec = item.sections;
-        const course = sec.courses;
-        const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
-        
-        // Extract just the time range (e.g., "08:00 - 09:30") from schedule text
-        // Assuming format "Mon Wed 08:00 - 09:30"
-        const timeMatch = sec.schedule_text.match(/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/);
-        const timeDisplay = timeMatch ? timeMatch[0] : sec.schedule_text;
-
-        const div = document.createElement('div');
-        div.className = 'course-item-modern';
-        div.innerHTML = `
-            <div class="cim-info">
-                <h4>${courseName}</h4>
-                <div class="cim-meta">
-                    <span>📍 ${sec.room_number || 'TBA'}</span>
-                    <span>🕒 ${timeDisplay}</span>
-                </div>
-            </div>
-            <div class="cim-status">
-                Active
-            </div>
-        `;
-        listContainer.appendChild(div);
-    });
-}
-// Apply language on load
 applyLanguage(currentLang);
 
 // --- AUTH FUNCTIONS ---
@@ -1750,7 +1691,17 @@ async function loadRegistrationData(userId) {
         // Fetch Sections
         const { data: sections, error } = await supabase
             .from('sections')
-            .select(`*, courses (course_code, course_name_en, course_name_ar, credit_hours, category)`)
+            .select(`
+                *, 
+                courses (
+                    course_code, 
+                    course_name_en, 
+                    course_name_ar, 
+                    credit_hours, 
+                    category,
+                    prerequisites!prerequisites_course_code_fkey (prereq_code)
+                )
+            `)
             .eq('semester_id', activeSem.semester_id)
             .order('course_code', { ascending: true });
 
@@ -1759,8 +1710,6 @@ async function loadRegistrationData(userId) {
 
         // Render
         filterGrid('all');
-        renderMiniRegisteredList(); // This is now safe
-        renderMiniWaitlist();
 
     } catch (err) {
         console.error("Reg Load Error:", err);
@@ -1789,6 +1738,8 @@ window.filterGrid = function(filterType) {
     // 2. Re-render the list
     renderRegistrationList(availableSectionsData);
 };
+
+window.renderRegistrationList = renderRegistrationList;
 
 function renderRegistrationList(sections) {
     const grid = document.getElementById('registration-courses-grid');
@@ -1866,6 +1817,11 @@ function renderRegistrationList(sections) {
         const enrolled = sec.enrolled_count || 0;
         const isFull = enrolled >= capacity;
 
+        // --- PREREQUISITE CHECK LOGIC ---
+        const prereqs = course.prerequisites || [];
+        const missingPrereqs = prereqs.filter(p => !window.passedCourses.includes(p.prereq_code));
+        const hasPrereqIssue = missingPrereqs.length > 0;
+
         // UI Logic
         let statusBadge = `<span class="rc-status">Open Seat</span>`;
         let actionBtn = `<button class="rc-action-btn" onclick="handleRegister(${sec.section_id})">Register</button>`;
@@ -1878,7 +1834,17 @@ function renderRegistrationList(sections) {
             statusBadge = `<span class="rc-status" style="background:rgba(0, 230, 118, 0.15); color:#00e676;">Registered</span>`;
             borderClass = 'border-color: rgba(0,230,118,0.3);';
             actionBtn = `<button class="rc-action-btn registered" disabled>Enrolled</button>`;
-        } else if (isWaitlisted) {
+        } 
+        // --- NEW: MISSING PREREQUISITE CASE ---
+        else if (hasPrereqIssue) {
+            const missingStr = missingPrereqs.map(p => p.prereq_code).join(', ');
+            statusBadge = `<span class="rc-status full" style="background:rgba(255, 82, 82, 0.15); color:#ff5252;">Missing: ${missingStr}</span>`;
+            
+            // Escape quotes in course name to prevent JS errors in the onclick
+            const safeName = courseName.replace(/'/g, "\\'");
+            actionBtn = `<button class="rc-action-btn outline" style="border-color:#ff5252; color:#ff5252;" onclick="requestPrereqOverride('${course.course_code}', '${safeName}')">Request Override</button>`;
+        }
+        else if (isWaitlisted) {
             statusBadge = `<span class="rc-status waitlist">On Waitlist</span>`;
             actionBtn = `<button class="rc-action-btn outline" onclick="dropWaitlist(${sec.section_id})">Leave Queue</button>`;
         } else if (isFull) {
@@ -2119,27 +2085,35 @@ window.closeDrawer = function() {
 window.requestPrereqOverride = function(courseCode, courseName) {
     // 1. Navigate to Exception Section
     showSection('exceptions');
+    
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    const navEl = document.getElementById('nav-exceptions');
+    if(navEl) navEl.classList.add('active');
 
-    // 2. Set Type to Prerequisite
+    // 3. Set Type to Prerequisite
     const typeSelect = document.getElementById('exc-type');
-    typeSelect.value = 'PREREQ';
-    toggleExcFields(); // Update description text
+    if(typeSelect) {
+        typeSelect.value = 'PREREQ';
+        toggleExcFields(); 
+    }
 
-    // 3. Pre-fill Course Data
-    // We set the hidden ID (used for submission) and the visual Input
-    document.getElementById('exc-target-code-hidden').value = courseCode;
-    document.getElementById('exc-target-search').value = `${courseCode} - ${courseName}`;
+    // 4. Pre-fill Course Data
+    const codeInput = document.getElementById('exc-target-code-hidden');
+    const searchInput = document.getElementById('exc-target-search');
+    
+    if(codeInput) codeInput.value = courseCode;
+    if(searchInput) searchInput.value = `${courseCode} - ${courseName}`;
 
-    // 4. Clear other fields
-    document.getElementById('exc-reason').value = '';
-    document.getElementById('exc-alt-code-hidden').value = '';
-    document.getElementById('exc-alt-search').value = '';
-
-    // 5. Scroll to top/focus to ensure user sees it
-    document.getElementById('exceptions-container').scrollIntoView({ behavior: 'smooth' });
-    document.getElementById('exc-reason').focus();
+    // 5. Scroll and Focus
+    const container = document.getElementById('exceptions-container');
+    const reasonInput = document.getElementById('exc-reason');
+    
+    if(container) container.scrollIntoView({ behavior: 'smooth' });
+    if(reasonInput) {
+        reasonInput.value = ''; // Clear previous reason
+        reasonInput.focus();
+    }
 };
-
 window.toggleAccordion = function(header) {
     const acc = header.parentElement;
     const content = header.nextElementSibling;
@@ -2228,42 +2202,6 @@ window.handleWaitlist = async function(sectionId) {
     }
 };
 
-function renderMiniRegisteredList() {
-    const list = document.getElementById('mini-registered-list');
-    
-    // SAFETY CHECK: If element doesn't exist, stop immediately
-    if (!list) return; 
-
-    const badge = document.getElementById('mini-reg-count');
-    
-    list.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>';
-
-    supabase.from('enrollments')
-        .select('sections(course_code, section_number, courses(course_name_en, course_name_ar))')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'REGISTERED')
-        .then(({ data }) => {
-            list.innerHTML = '';
-            if (badge) badge.textContent = data ? data.length : 0;
-
-            if (!data || data.length === 0) {
-                list.innerHTML = '<p style="color:#666; font-size:0.85em; text-align:center;">No active courses.</p>';
-                return;
-            }
-            data.forEach(item => {
-                const sec = item.sections;
-                const name = currentLang === 'ar' ? sec.courses.course_name_ar : sec.courses.course_name_en;
-                
-                const div = document.createElement('div');
-                div.className = 'mini-course-item';
-                div.innerHTML = `
-                    <span class="mini-course-code">${sec.course_code}</span>
-                    <span class="mini-course-name">${name}</span>
-                `;
-                list.appendChild(div);
-            });
-        });
-}
 
 // 8. Event Listener for Search
 document.getElementById('reg-search-input').addEventListener('input', () => {
@@ -3482,58 +3420,6 @@ window.closeWaitlistSuccessModal = function() {
     document.getElementById('waitlist-success-modal').classList.add('hidden');
 };
 
-// Updated Mini Waitlist (Sidebar)
-async function renderMiniWaitlist() {
-    const list = document.getElementById('mini-waitlist-list');
-    const badge = document.getElementById('mini-wait-count'); // New badge
-    
-    list.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>';
-
-    try {
-        const { data: myWaitlist } = await supabase
-            .from('waiting_list')
-            .select(`
-                requested_at,
-                sections (
-                    section_id,
-                    section_number,
-                    course_code,
-                    courses (course_name_en, course_name_ar)
-                )
-            `)
-            .eq('user_id', currentUser.id)
-            .eq('status', 'WAITING');
-
-        list.innerHTML = '';
-        if (badge) badge.textContent = myWaitlist ? myWaitlist.length : 0;
-
-        if (!myWaitlist || myWaitlist.length === 0) {
-            list.innerHTML = '<p style="color:#666; font-size:0.85em; text-align:center;">Empty.</p>';
-            return;
-        }
-
-        // We skip the Position calculation here for speed in the sidebar, 
-        // or you can keep the Promise.all logic from before if needed.
-        // Simplified view:
-        myWaitlist.forEach(item => {
-            const sec = item.sections;
-            const name = currentLang === 'ar' ? sec.courses.course_name_ar : sec.courses.course_name_en;
-            
-            const div = document.createElement('div');
-            div.className = 'mini-course-item';
-            div.style.borderLeftColor = 'var(--accent-orange)';
-            div.innerHTML = `
-                <span class="mini-course-code" style="color:var(--accent-orange)">${sec.course_code}</span>
-                <span class="mini-course-name">${name}</span>
-            `;
-            list.appendChild(div);
-        });
-
-    } catch (err) {
-        console.error(err);
-        list.innerHTML = '<p style="color:red; font-size:0.8em;">Error.</p>';
-    }
-}
 
 
 // Initialize listeners immediately
