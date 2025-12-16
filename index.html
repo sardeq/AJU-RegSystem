@@ -1,583 +1,148 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Portal</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        .hidden { display: none !important; }
-        body { margin: 0; background-color: #050505; color: white; font-family: sans-serif; }
-    </style>
+    <title>Ajloun National University</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
 </head>
 <body>
 
-    <header class="header">
-        <div class="header-left">
-            <button class="menu-btn">☰</button>
-        </div>
-        <div class="header-center">
-            <img src="Images/enhanced.png" alt="Logo" class="logo">
-        </div>
-        <div class="header-right">
-            <button class="icon-btn settings-btn">⚙️</button>
-            <button class="icon-btn lang-btn">🌐</button>
+    <header class="navbar">
+        <div class="container nav-container">
+            <div class="brand">
+                <div class="logo-box">
+                    <img src="Images/enhanced.png" alt="Logo">
+                </div>
+                <div class="brand-text">
+                    <h1>جامعة عجلون الوطنية</h1>
+                    <span>Ajloun National University</span>
+                </div>
+            </div>
+
+            <nav class="nav-links">
+                <a href="#" class="active">الرئيسية</a>
+                <a href="#">عن الجامعة</a>
+                <a href="#">الكليات والتخصصات</a>
+                <a href="#">بوابة الطالب</a>
+                <a href="#">البحث العلمي</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="search-btn">🔍</button>
+                <a href="portal.html" class="btn btn-outline">تسجيل الدخول</a>
+                <a href="portal.html" class="btn btn-primary">سجل الآن</a>
+            </div>
         </div>
     </header>
 
-    <div class="main-container">
-        <nav class="sidebar" id="sidebar">
-    <ul class="nav-links">
-        <li class="nav-item active" id="nav-home">
-            <a href="#" class="nav-link" onclick="showSection('home')">
-                <span class="nav-icon">🏠</span> <span data-i18n="nav_home">Home</span>
-            </a>
-        </li>
-        <li class="nav-item" id="nav-reg">
-            <a href="#" class="nav-link" onclick="showSection('registration')">
-                <span class="nav-icon">📝</span> <span data-i18n="nav_reg">Registration</span>
-            </a>
-        </li>
-        <li class="nav-item" id="nav-sheet">
-            <a href="#" class="nav-link" onclick="showSection('sheet')">
-                <span class="nav-icon">📄</span> <span data-i18n="nav_sheet">Courses Sheet</span>
-            </a>
-        </li>
-        <li class="nav-item" id="nav-schedule">
-            <a href="#" class="nav-link" onclick="showSection('schedule')">
-                <span class="nav-icon">🕒</span> <span data-i18n="lbl_my_schedule">My Schedule</span>
-            </a>
-        </li>
-        <li class="nav-item" id="nav-plan">
-            <a href="#" class="nav-link" onclick="showSection('plan')">
-                <span class="nav-icon">📅</span> <span data-i18n="nav_plan">Student Plan</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link" onclick="showSection('exceptions')">
-                <span class="nav-icon">⚠️</span> <span data-i18n="nav_exceptions">Exceptions</span>
-            </a>
-        </li>
-    </ul>
-
-    <div class="sidebar-footer">
-        <div class="user-profile-compact">
-            <div class="sidebar-avatar">👤</div>
-            <div class="sidebar-user-details">
-                <span id="sidebar-user-name" class="s-name">Student</span>
-                <span id="sidebar-user-major" class="s-major">Major</span>
-            </div>
-        </div>
-        <button id="sidebar-logout-btn" class="sidebar-logout-btn" title="Log Out">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-        </button>
-    </div>
-</nav>
-
-        <div class="content-area">
-            
-            <div class="container" id="auth-container">
-                <h2 id="form-title" data-i18n="auth_login_title">Login</h2>
-                <div id="error-msg" style="color: red; margin-bottom: 10px; font-size: 0.9em;"></div>
-                
-                <input type="text" id="full-name" data-i18n-placeholder="ph_fullname" placeholder="Full Name" class="auth-extra hidden">
-                <input type="email" id="email" data-i18n-placeholder="ph_email" placeholder="Email" required>
-                <input type="password" id="password" data-i18n-placeholder="ph_password" placeholder="Password" required>
-                <input type="password" id="confirm-password" data-i18n-placeholder="ph_confirm_pass" placeholder="Confirm Password" class="auth-extra hidden">
-                
-                <button id="auth-action-btn" data-i18n="btn_login">Log In</button>
-                
-                <p style="margin-top: 15px; text-align: center; font-size: 0.9rem; color: #666;">
-                    <span id="toggle-text" data-i18n="auth_no_account">Don't have an account? </span>
-                    <a href="#" id="toggle-auth-mode" style="color: #4CAF50; text-decoration: none; font-weight: bold;" data-i18n="btn_signup">Sign Up</a>
-                </p>
-            </div>
-
-            <div id="home-container" class="dashboard-view hidden">
-    <div class="hero-row">
-        <div class="hero-card hero-green" onclick="showSection('plan')">
-            <div class="hero-content">
-                <h2 data-i18n="nav_plan">Interactive Study Plan</h2>
-                <p>Track your academic path visually</p>
-            </div>
-            <div class="hero-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            </div>
-        </div>
-
-        <div class="hero-card hero-purple" onclick="document.getElementById('ai-pref-modal').classList.remove('hidden')">
-            <div class="hero-content">
-                <h2 data-i18n="btn_ai_enhance">AI Schedule Assistant</h2>
-                <p>Let AI optimize your perfect schedule</p>
-            </div>
-            <div class="hero-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            </div>
-        </div>
-    </div>
-
-    <div class="stats-grid-modern">
-        <div class="modern-stat-card">
-            <div class="ms-icon-bg blue-bg"><span class="icon">💳</span></div>
-            <div class="ms-content">
-                <span class="ms-label" data-i18n="lbl_balance">Balance</span>
-                <span class="ms-value" id="stat-balance">0.00</span>
-                <span class="ms-sub">JOD</span>
-            </div>
-        </div>
-
-        <div class="modern-stat-card">
-            <div class="ms-icon-bg orange-bg"><span class="icon">📅</span></div>
-            <div class="ms-content">
-                <span class="ms-label" data-i18n="lbl_registered_courses">Registered</span>
-                <span class="ms-value" id="stat-registered-count">0</span>
-                <span class="ms-sub" id="stat-current-sem-label">Current Semester</span>
-            </div>
-        </div>
-
-        <div class="modern-stat-card">
-            <div class="ms-icon-bg green-bg"><span class="icon">📖</span></div>
-            <div class="ms-content wide">
-                <div class="flex-between">
-                    <span class="ms-label">Completed Hours</span>
-                    <span class="ms-value-sm" id="stat-hours-text">0</span>
-                </div>
-                <div class="ms-progress-track">
-                    <div class="ms-progress-fill" id="stat-hours-bar" style="width: 0%"></div>
-                </div>
-                <span class="ms-sub" id="stat-hours-sub">Out of 132 Hours</span>
-            </div>
-        </div>
-
-        <div class="modern-stat-card filled-green">
-            <div class="ms-content center">
-                <span class="ms-label-light" data-i18n="lbl_gpa">GPA</span>
-                <span class="ms-value-large" id="stat-gpa">--</span>
-                <span class="ms-sub-light" id="stat-rank">Rank: --</span>
-            </div>
-            <div class="ms-floating-icon">🎓</div>
-        </div>
-    </div>
-
-    <div class="dashboard-bottom-grid">
-        <div class="today-schedule-panel" style="width: 100%;">
-            <div class="flex-between header-row">
-                <h3 class="section-title-sm" data-i18n="lbl_today_courses">Today's Schedule</h3>
-                <button onclick="showSection('schedule')" class="text-btn" data-i18n="lbl_view_full">View Full</button>
-            </div>
-            
-            <div class="course-list-modern" id="today-schedule-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
-                <p style="text-align:center; color:#666; padding:20px; grid-column: 1/-1;">Loading...</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-            <div id="registration-container" class="dashboard-view hidden">
-    <div class="registration-layout">
-        
-        <div class="reg-left-panel">
-            <button class="enhance-ai-btn" id="ai-enhance-btn" style="background: linear-gradient(135deg, #00C853, #00E676); color: black;">
-                <span>✨ AI Advisor</span>
-            </button>
-            
-            <div class="widget-card">
-                <div class="widget-header">
-                    <span class="widget-title" data-i18n="lbl_registered_courses">Registered</span>
-                    <span class="badge badge-green" id="mini-reg-count">0</span>
-                </div>
-                <div id="mini-registered-list" class="mini-course-list">
-                    </div>
-            </div>
-
-            <div class="widget-card" style="border-top: 3px solid var(--accent-orange);">
-                <div class="widget-header">
-                    <span class="widget-title" style="color:var(--accent-orange)" data-i18n="lbl_my_waitlist">Waitlist</span>
-                    <span class="badge badge-yellow" id="mini-wait-count">0</span>
-                </div>
-                <div id="mini-waitlist-list" class="mini-course-list">
-                    </div>
-            </div>
-        </div>
-
-        <div class="reg-right-panel">
-            
-            <div class="reg-glass-header">
-                <div class="search-icon-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                </div>
-                <div style="flex:1;">
-                    <input type="text" id="reg-search-input" placeholder="Search courses..." data-i18n-placeholder="ph_search_courses">
-                </div>
-                
-                <div id="reg-credit-status" class="credit-status-box" style="background:rgba(0,0,0,0.4);">0/18 Hr</div>
-                
-                <button class="filter-btn" onclick="toggleFilters()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                </button>
-            </div>
-
-            <div id="reg-filter-panel" class="filter-panel hidden" style="margin-bottom:20px;">
-                <div class="filters-row">
-                    <select id="reg-filter-year" class="filter-select"><option value="all">All Years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option></select>
-                    <select id="reg-filter-category" class="filter-select"><option value="all">All Categories</option><option value="Major Compulsory">Major</option><option value="University Requirement">Uni Req</option></select>
-                </div>
-                <div class="toggles-row">
-                    <label class="toggle-label"><input type="checkbox" id="reg-check-completed" checked> Hide Completed</label>
-                    <label class="toggle-label"><input type="checkbox" id="reg-check-closed" checked> Show Full</label>
-                    <label class="toggle-label"><input type="checkbox" id="reg-check-conflicts"> Hide Conflicts</label>
-                </div>
-            </div>
-
-            <div id="registration-courses-container">
-                </div>
-        </div>
-    </div>
-</div>
-
-            <div id="courses-sheet-container" class="dashboard-view hidden">
-                <h2 class="section-title" data-i18n="nav_sheet">Courses Sheet</h2>
-                
-                <div class="filter-panel">
-                    <div class="search-row">
-                        <input type="text" id="sheet-search" class="custom-search" placeholder="Search by Code or Name..." data-i18n-placeholder="ph_search_courses">
-                    </div>
-                    
-                    <div class="filters-row">
-                        <select id="filter-year" class="filter-select">
-                            <option value="all" data-i18n="filter_year_all">All Years</option>
-                            <option value="1">Year 1</option>
-                            <option value="2">Year 2</option>
-                            <option value="3">Year 3</option>
-                            <option value="4">Year 4</option>
-                            <option value="5">Year 5</option>
-                        </select>
-
-                        <select id="filter-category" class="filter-select">
-                            <option value="all" data-i18n="filter_cat_all">All Categories</option>
-                            <option value="University Requirement">University Requirement</option>
-                            <option value="College Compulsory">College Compulsory</option>
-                            <option value="Major Compulsory">Major Compulsory</option>
-                            <option value="Major Elective">Major Elective</option>
-                        </select>
-
-                        <select id="filter-credits" class="filter-select">
-                            <option value="all" data-i18n="filter_credits_all">All Credits</option>
-                            <option value="1">1 Hour</option>
-                            <option value="3">3 Hours</option>
-                        </select>
-                    </div>
-
-                    <div class="toggles-row">
-                        <label class="toggle-label">
-                            <input type="checkbox" id="check-completed" checked> 
-                            <span data-i18n="filter_show_completed">Show Completed</span>
-                        </label>
-                        <label class="toggle-label">
-                            <input type="checkbox" id="check-failed" checked> 
-                            <span data-i18n="filter_show_failed">Show Failed/Not Taken</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="courses-table">
-                        <thead>
-                            <tr>
-                                <th data-i18n="tbl_code">Code</th>
-                                <th data-i18n="tbl_name">Course Name</th>
-                                <th data-i18n="tbl_credits">Cr.</th>
-                                <th data-i18n="tbl_category">Category</th>
-                                <th data-i18n="tbl_prereq">Prerequisites</th>
-                                <th data-i18n="tbl_hours">Lec/Lab</th>
-                                <th data-i18n="tbl_status">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="courses-table-body">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="schedule-container" class="dashboard-view hidden">
-                <div class="schedule-header">
-                    <h2 class="section-title" data-i18n="lbl_my_schedule">My Weekly Schedule</h2>
-                    </div>
-
-                <div class="schedule-grid" id="schedule-card-grid"></div>
-                <div class="schedule-table-wrapper">
-                    <table class="schedule-table">
-                        <tbody id="full-schedule-body"></tbody>
-                    </table>
-                </div>
-
-                <hr style="margin: 40px 0; border: 0; border-top: 1px solid #333;">
-
-                <div class="schedule-header">
-                    <h2 class="section-title" data-i18n="lbl_history">Academic History</h2>
-                    <div class="filter-wrapper">
-                        <select id="history-sem-filter" class="custom-select" style="min-width: 250px; padding: 8px;">
-                            <option value="" data-i18n="lbl_loading">Loading semesters...</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="schedule-table-wrapper">
-                    <table class="schedule-table" id="history-table">
-                        <thead>
-                            <tr>
-                                <th data-i18n="tbl_code">Code</th>
-                                <th data-i18n="tbl_course">Course Name</th>
-                                <th data-i18n="tbl_credits">Cr.</th>
-                                <th data-i18n="tbl_grade">Grade</th>
-                                <th data-i18n="tbl_status">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-table-body">
-                            <tr><td colspan="5" style="text-align:center; padding: 20px; color: #666;">Select a semester to view history</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-            </div>
-
-            <div id="plan-container" class="dashboard-view hidden">
-                <div class="plan-header">
-                    <h2 class="section-title" data-i18n="nav_plan">Student Plan Map</h2>
-
-                    
-                    <div class="plan-controls">
-                        <button class="zoom-btn" onclick="changeZoom(0.1)" title="Zoom In">+</button>
-                        <button class="zoom-btn" onclick="changeZoom(-0.1)" title="Zoom Out">-</button>
-                        <button class="zoom-btn" onclick="fitToScreen()" title="Fit to Screen" style="width: auto; padding: 0 10px; font-size: 0.9em;">Fit ⛶</button>
-                    </div>
-                </div>
-
-                <div class="tree-container" id="plan-tree-container"></div>
-    
-                <div class="tree-scroll-wrapper" id="tree-wrapper">
-                        <div id="plan-tree-canvas">
-                        </div>
-                    </div>
-            </div>
-
-            <div id="exceptions-container" class="dashboard-view hidden">
-                <h2 class="section-title" data-i18n="exc_title">Exception Requests</h2>
-            
-                <div class="home-layout">
-                    <div class="left-col">
-                        <div class="filter-panel" style="padding: 25px;">
-                            <h3 style="margin-top:0; color:#2E7D32;" data-i18n="exc_new_req">New Request</h3>
-                            
-                            <div class="form-group">
-                                <label class="form-label" data-i18n="exc_type_label">Request Type</label>
-                                <select id="exc-type" class="custom-select" onchange="toggleExcFields()">
-                                    <option value="PREREQ" data-i18n="opt_prereq">Prerequisite Override</option>
-                                    <option value="ALTERNATIVE" data-i18n="opt_alt">Alternative Course</option>
-                                </select>
-                                <small id="exc-type-desc" style="color:#666; display:block; margin-top:5px;"></small>
-                            </div>
-            
-                            <div class="form-group">
-                                <label class="form-label" data-i18n="exc_target_label">Target Course</label>
-                                <div class="search-wrapper" style="position:relative;">
-                                    <input type="text" id="exc-target-search" class="custom-input" data-i18n-placeholder="ph_search_target" placeholder="Start typing course name or code..." autocomplete="off">
-                                    <input type="hidden" id="exc-target-code-hidden">
-                                    <div id="exc-target-suggestions" class="suggestions-list hidden"></div>
-                                </div>
-                            </div>
-            
-                            <div class="form-group hidden" id="alt-course-group">
-                                <label class="form-label" data-i18n="exc_alt_label">Replacing Course (Optional)</label>
-                                <div class="search-wrapper" style="position:relative;">
-                                    <input type="text" id="exc-alt-search" class="custom-input" data-i18n-placeholder="ph_search_alt" placeholder="Search replacement course..." autocomplete="off">
-                                    <input type="hidden" id="exc-alt-code-hidden">
-                                    <div id="exc-alt-suggestions" class="suggestions-list hidden"></div>
-                                </div>
-                            </div>
-            
-                            <div class="form-group">
-                                <label class="form-label" data-i18n="exc_reason_label">Reason / Justification</label>
-                                <textarea id="exc-reason" class="custom-input" rows="4" data-i18n-placeholder="ph_reason" placeholder="Explain why you need this exception..."></textarea>
-                            </div>
-            
-                            <button class="enhance-ai-btn" onclick="submitException()" data-i18n="btn_submit_req">Submit Request</button>
-                        </div>
-                    </div>
-            
-                    <div class="right-col">
-                        <div class="courses-container">
-                            <h3 class="courses-title" data-i18n="exc_history_title">Request History</h3>
-                            <div id="exception-history-list" class="mini-course-list" style="max-height: 500px;">
-                                <p style="text-align:center; color:#666; padding:20px;" data-i18n="lbl_loading">Loading...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    
-        </div>
-    </div>
-
-    <div id="node-highlight-container" class="hidden"></div>
-    <div id="plan-overlay" class="hidden" onclick="closePlanPopup()"></div>
-
-    <div id="course-popup" class="hidden">
-        <button class="close-popup" onclick="closePlanPopup()">×</button>
-        <h3 id="popup-title">Course Name</h3>
-        <p id="popup-desc">Full Course Name...</p>
-        <p id="popup-long-desc" class="popup-description"></p> 
-        <div class="popup-meta">
-            <span id="popup-credits" class="badge badge-gray">3 Cr</span>
-            <span id="popup-status" class="badge">Status</span>
-        </div>
-    </div>
-
-    <div id="ai-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>🤖 AI Academic Advisor</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div id="ai-loading" class="hidden">
-                <div class="spinner"></div>
-                <p>Analyzing your transcript and generating schedules...</p>
-            </div>
-            <div id="ai-results" class="results-grid"></div>
-        </div>
-    </div>
-
-<div id="ai-pref-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 500px; padding: 30px;">
-        <div class="modal-header" style="border:none;">
-            <div>
-                <h2 data-i18n="ai_pref_title" style="margin-bottom:5px;">AI Advisor</h2>
-                <p style="color:#666; font-size:0.9rem; margin:0;">Customize your schedule preferences</p>
-            </div>
-            <button class="close-modal" id="close-pref-btn">&times;</button>
-        </div>
-        
-        <div class="pref-form">
-            
-            <div class="ai-control-box">
-                <div class="ai-box-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
-                    Study Intensity
-                </div>
-                <div class="box-grid-3">
-                    <label class="radio-card">
-                        <input type="radio" name="intensity" value="Relaxed">
-                        <span class="emoji">☕</span>
-                        <span>Relaxed</span>
-                    </label>
-                    <label class="radio-card">
-                        <input type="radio" name="intensity" value="Balanced" checked>
-                        <span class="emoji">⚖️</span>
-                        <span>Balanced</span>
-                    </label>
-                    <label class="radio-card">
-                        <input type="radio" name="intensity" value="Intense">
-                        <span class="emoji">🔥</span>
-                        <span>Intense</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="ai-control-box">
-                <div class="ai-box-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    Preferred Days
-                </div>
-                <div class="box-grid-3">
-                    <label class="radio-card" style="padding:10px;">
-                        <input type="checkbox" name="days" value="Sat"> Sat
-                    </label>
-                    <label class="radio-card" style="padding:10px;">
-                        <input type="checkbox" name="days" value="Mon/Wed" checked> Mon/Wed
-                    </label>
-                    <label class="radio-card" style="padding:10px;">
-                        <input type="checkbox" name="days" value="Sun/Tue"> Sun/Tue
-                    </label>
-                </div>
-            </div>
-
-            <div class="ai-control-box">
-                <div class="ai-box-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    Time Preference
-                </div>
-                <select id="time-pref">
-                    <option value="Any">Any Time</option>
-                    <option value="Morning Only">Morning (8:00 - 12:00)</option>
-                    <option value="No Early Classes">Late Start (10:00+)</option>
-                    <option value="Afternoon">Afternoon (12:00+)</option>
-                </select>
-            </div>
-
-            <div class="box-grid-2">
-                <div class="ai-control-box">
-                    <div class="ai-box-label">Target Credits</div>
-                    <input type="number" id="credits-pref" placeholder="15" min="3" max="18" value="15" style="font-size:1.2rem; font-weight:bold; text-align:center;">
-                </div>
-
-                <div class="ai-control-box">
-                    <div class="ai-box-label">Specific Goal</div>
-                    <input type="text" id="focus-pref" placeholder="e.g. Focus on coding...">
-                </div>
-            </div>
-
-            <button id="generate-schedule-btn" class="enhance-ai-btn" data-i18n="btn_generate">Generate Recommendations ✨</button>
-        </div>
-    </div>
-</div>
-
-    <div id="elective-drawer-overlay" class="side-drawer-overlay" onclick="closeDrawer()"></div>
-    <div id="elective-drawer" class="side-drawer">
-        <div class="drawer-header">
-            <h3 id="drawer-title" style="margin:0; color:#2E7D32;">Electives</h3>
-            <button onclick="closeDrawer()" style="background:none; border:none; font-size:1.5em; cursor:pointer; color:white;">&times;</button>
-        </div>
-        <div id="drawer-content" class="drawer-list"></div>
-    </div>
-
-    <div id="waitlist-modal" class="modal hidden">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <div class="modal-header" style="justify-content: center; border-bottom: none;">
-                <div style="background: rgba(245, 124, 0, 0.1); padding: 15px; border-radius: 50%; display: inline-flex;">
-                    <svg viewBox="0 0 24 24" width="40" height="40" stroke="#F57C00" stroke-width="2" fill="none">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                </div>
-            </div>
-            <h3 style="margin-top: 15px; color: white;">Join Waiting List?</h3>
-            <p id="wl-modal-course-name" style="color: #bbb; margin-bottom: 5px;">Course Name</p>
-            <p id="wl-modal-sec-info" style="font-weight: bold; color: white; margin-bottom: 20px;">Section 1</p>
-            <p style="font-size: 0.9em; color: #888; margin-bottom: 20px;">
-                This section is full. You will be placed in a queue.
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1 class="hero-title">نصنع المستقبل <br> <span class="highlight">بتميز وإبداع</span></h1>
+            <p class="hero-subtitle">
+                جامعة عجلون الوطنية، صرح علمي متميز يجمع بين الأصالة والحداثة في بيئة تعليمية محفزة.
             </p>
-            <input type="hidden" id="wl-target-section-id">
-            <div style="display: flex; gap: 10px;">
-                <button class="delete-btn" onclick="closeWaitlistModal()" style="flex: 1;">Cancel</button>
-                <button onclick="confirmWaitlistJoin()" style="flex: 1; background-color: #F57C00; color: white; border:none; border-radius:24px; cursor:pointer;">Confirm</button>
+            <div class="hero-buttons">
+                <a href="#" class="btn btn-warning">طلب التحاق إلكتروني ←</a>
+                <a href="#" class="btn btn-outline-light">تصفح التخصصات</a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div id="waitlist-success-modal" class="modal hidden">
-        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 30px;">
-            <h3 style="margin-top: 15px; color: #2E7D32;">Successfully Joined!</h3>
-            <div style="background: rgba(245, 124, 0, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px dashed #F57C00;">
-                <p style="margin: 0; font-size: 0.9em; color: #E65100;">Current Position</p>
-                <p id="wl-success-pos" style="margin: 5px 0 0 0; font-size: 2.5em; font-weight: 800; color: #E65100;">#1</p>
+    <section class="info-cards-section">
+        <div class="container cards-grid">
+            <div class="info-card">
+                <div class="icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                </div>
+                <h3>البرامج الأكاديمية</h3>
+                <p>تصفح برامج البكالوريوس والماجستير المتاحة</p>
             </div>
-            <button onclick="closeWaitlistSuccessModal()" style="width: 100%; background-color: #2E7D32; color: white; padding: 12px; border-radius: 24px; font-weight: bold; border: none; cursor: pointer;">Done</button>
-        </div>
-    </div>
 
-    <script type="module" src="app.js"></script>
+            <div class="info-card">
+                <div class="icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <h3>القبول والتسجيل</h3>
+                <p>تعرف على شروط القبول والرسوم الدراسية</p>
+            </div>
+
+            <div class="info-card">
+                <div class="icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <h3>التقويم الجامعي</h3>
+                <p>مواعيد التسجيل وبدء الدراسة والامتحانات</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="vision-section">
+        <div class="container vision-grid">
+            
+            <div class="vision-image">
+                <img src="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1000&auto=format&fit=crop" alt="University Building">
+            </div>
+
+            <div class="vision-text">
+                <span class="tag">عن الجامعة</span>
+                <h2>رؤيتنا نحو التميز <br> الأكاديمي</h2>
+                <p>
+                    تسعى جامعة عجلون الوطنية لتكون منارة علمية متميزة محلياً وإقليمياً، من خلال توفير بيئة تعليمية وبحثية محفزة للإبداع والابتكار، وإعداد كوادر مؤهلة قادرة على المنافسة في سوق العمل والمساهمة في التنمية المستدامة.
+                </p>
+                <ul class="vision-features">
+                    <li>بيئة جامعية عصرية وآمنة</li>
+                    <li>كادر تدريسي متميز ذو خبرة عالية</li>
+                    <li>مختبرات ومرافق حديثة ومتطورة</li>
+                    <li>شراكات أكاديمية محلية ودولية</li>
+                </ul>
+                <button class="btn btn-primary">اقرأ المزيد</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            
+            <div class="footer-col">
+                <h3>جامعة عجلون الوطنية</h3>
+                <p>جامعة أردنية خاصة معتمدة اعتماداً عاماً وخاصاً، تسعى للتميز في التعليم والبحث العلمي وخدمة المجتمع.</p>
+            </div>
+
+            <div class="footer-col">
+                <h3>روابط سريعة</h3>
+                <ul>
+                    <li><a href="#">القبول والتسجيل</a></li>
+                    <li><a href="#">الكليات</a></li>
+                    <li><a href="#">المكتبة</a></li>
+                    <li><a href="#">التعليم الإلكتروني</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>تواصل معنا</h3>
+                <ul>
+                    <li>📍 عجلون - الأردن</li>
+                    <li>📞 6466616 02</li>
+                    <li>✉️ info@anu.edu.jo</li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>النشرة البريدية</h3>
+                <div class="newsletter">
+                    <input type="email" placeholder="البريد الإلكتروني">
+                    <button>اشتراك</button>
+                </div>
+            </div>
+
+        </div>
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة © جامعة عجلون الوطنية 2025</p>
+        </div>
+    </footer>
+
 </body>
 </html>

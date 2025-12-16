@@ -1631,7 +1631,7 @@ function renderRegistrationList(sections) {
                     </div>
                 </div>
                 ${statusBadge}
-                <div style="color:#666; font-size:1.5rem;">›</div>
+                <div class="chevron" style="color:#666; font-size:1.5rem; transition: transform 0.2s;">›</div>
             </div>
         `;
 
@@ -1886,25 +1886,23 @@ window.requestPrereqOverride = function(courseCode, courseName) {
     document.getElementById('exc-reason').focus();
 };
 
-// 4. Accordion Toggle
 window.toggleAccordion = function(header) {
     const acc = header.parentElement;
     const content = header.nextElementSibling;
-    const chevron = header.querySelector('.chevron');
+    const chevron = header.querySelector('.chevron'); // This was failing before
 
     if (acc.classList.contains('collapsed')) {
         acc.classList.remove('collapsed');
         acc.classList.add('expanded');
         content.classList.remove('hidden');
-        chevron.style.transform = "rotate(90deg)"; // Animate chevron
+        if(chevron) chevron.style.transform = "rotate(90deg)"; // Safe check
     } else {
         acc.classList.add('collapsed');
         acc.classList.remove('expanded');
         content.classList.add('hidden');
-        chevron.style.transform = "rotate(0deg)";
+        if(chevron) chevron.style.transform = "rotate(0deg)"; // Safe check
     }
 };
-
 // 5. Action: Register
 window.handleRegister = async function(sectionId) {
     if (!currentUser) return;
