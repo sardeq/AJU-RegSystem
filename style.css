@@ -1,1717 +1,1375 @@
-/* style.css */
-body {
-    font-family: sans-serif;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+/* style.css - v3.1 FIXED & ROBUST */
+
+:root {
+    /* --- COLOR PALETTE --- */
+    --bg-body: #050505;       /* Deepest Black */
+    --bg-card: #121212;       /* Standard Card */
+    --bg-card-hover: #1c1c1c; /* Lighter Hover */
+    --bg-input: #0a0a0a;      /* Input Fields */
+    
+    --primary: #00e676;       /* Neon Emerald */
+    --primary-dim: #00c853;   /* Darker Green */
+    --primary-glow: rgba(0, 230, 118, 0.15);
+    
+    --accent-orange: #ff9100; /* Waitlist */
+    --accent-red: #ff5252;    /* Danger/Errors */
+    --accent-blue: #2979ff;   /* Info */
+    
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --border-color: rgba(255,255,255,0.08);
+    
+    /* --- DIMENSIONS --- */
+    --radius-xl: 24px;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    
+    --sidebar-width: 280px;
+    --sidebar-collapsed: 80px;
+    --header-height: 80px;
 }
 
-/* Header Styles */
+/* --- RESET --- */
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Cairo', sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* --- SCROLLBARS --- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* --- HEADER --- */
 .header {
+    height: var(--header-height);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background-color: #fff;
-    border-bottom: 1px solid #ccc;
+    padding: 0 40px;
+    background: rgba(5, 5, 5, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    z-index: 50;
 }
 
-.header-left, .header-right {
-    display: flex;
-    align-items: center;
-}
+.logo { height: 45px; object-fit: contain; }
 
 .menu-btn, .icon-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.05);
+    color: white;
+    width: 45px; height: 45px;
+    border-radius: 50%;
     cursor: pointer;
-    color: #333;
+    font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
 }
 
-.header-center .logo {
-    height: 50px;
+.menu-btn:hover, .icon-btn:hover {
+    background: var(--primary);
+    color: black;
+    border-color: var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow);
+    transform: scale(1.05);
 }
 
-.header-right .icon-btn {
-    margin-left: 15px;
-}
+.header-right { display: flex; gap: 15px; }
 
-/* Main Layout Styles */
-.main-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden; /* Prevents double scrollbars */
-}
-
-/* --- Sidebar Retract/Expand Animations --- */
+/* --- SIDEBAR --- */
+.main-container { display: flex; flex: 1; overflow: hidden; }
 
 .sidebar {
-    width: 250px;
-    transition: width 0.3s ease;
-    overflow: hidden; /* Hides text as it shrinks */
-    white-space: nowrap; /* Prevents text from wrapping awkwardly */
-    background-color: #1f9d6e;
-}
-
-/* The 'Mini' State */
-.sidebar.collapsed {
-    width: 70px; /* Width of the retracted sidebar */
-}
-
-/* Center the Avatar when collapsed */
-.sidebar.collapsed .user-profile {
-    padding: 20px 0;
-    justify-content: center;
-}
-
-.sidebar.collapsed .user-avatar {
-    margin-right: 0; /* Remove margin so it centers perfectly */
-}
-
-/* Hide the user name/ID details */
-.sidebar.collapsed .user-info {
-    display: none;
-    opacity: 0; /* Optional smooth fade if you add transition */
-}
-
-/* Center Nav Items and Hide Text */
-.sidebar.collapsed .nav-link {
-    justify-content: center;
-    padding: 15px 0;
-    font-size: 0; /* Trick to hide the text node "Home", "Registration" etc */
-}
-
-.sidebar.collapsed .nav-icon {
-    margin-right: 0;
-    font-size: 24px; /* Ensure icon stays visible and sized correctly */
-}
-
-/* Helper to hide elements */
-.hidden {
-    display: none !important;
-}
-
-.user-profile {
+    width: var(--sidebar-width);
+    background: var(--bg-body);
+    border-right: 1px solid var(--border-color);
     display: flex;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    flex-direction: column;
+    padding: 30px 20px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 40;
 }
 
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #fff;
-    color: #2E7D32;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    margin-right: 10px;
-}
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
 
-.user-info .user-name {
-    font-weight: bold;
-}
-
-.user-info .user-id {
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #24b47e;
-    border-radius: 50%;
-    margin-right: 5px;
-}
-
-.nav-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.nav-item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+.nav-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 
 .nav-link {
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    color: rgba(255, 255, 255, 0.8);
+    display: flex; align-items: center; gap: 15px;
+    padding: 14px 18px;
     text-decoration: none;
-    transition: background-color 0.2s;
+    color: var(--text-muted);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid transparent;
 }
 
-.nav-link:hover, .nav-item.active .nav-link {
-    background-color: rgba(255, 255, 255, 0.1);
+.nav-link:hover {
+    background: rgba(255,255,255,0.03);
     color: white;
+    transform: translateX(5px);
 }
 
-.nav-icon {
-    margin-right: 10px;
-    font-size: 1.2em;
+.nav-item.active .nav-link {
+    background: linear-gradient(135deg, var(--primary-dim), var(--primary));
+    color: #000;
+    box-shadow: 0 4px 15px var(--primary-glow);
+    border: none;
 }
 
-/* Content Area Styles */
+.sidebar.collapsed .nav-link span:last-child { display: none; }
+.sidebar.collapsed .nav-link { justify-content: center; padding: 14px 0; }
+
+/* --- CONTENT AREA --- */
 .content-area {
     flex: 1;
-    padding: 20px;
-    display: flex;
-    justify-content: center; /* Centers the Login Card */
-    align-items: flex-start;
-    background-color: #f4f4f4;
-    overflow-y: auto; /* Scrollable content */
+    overflow-y: auto;
+    padding: 30px 40px;
+    position: relative;
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(0, 230, 118, 0.03), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(41, 121, 255, 0.03), transparent 25%);
 }
 
-/* Login Container (The small card) */
-.container {
-    width: 300px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: white;
-    margin-top: 50px;
+.dashboard-view { max-width: 1600px; margin: 0 auto; animation: slideUp 0.4s ease-out; }
+
+@keyframes slideUp { 
+    from { opacity: 0; transform: translateY(20px); } 
+    to { opacity: 1; transform: translateY(0); } 
 }
 
-/* Dashboard View (The full home page) */
-.dashboard-view {
-    width: 100%;
-    max-width: 1000px;
-    text-align: left;
-}
-
-/* Example Dashboard Widgets */
-.dashboard-cards {
-    display: flex;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.dashboard-cards .card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex: 1;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    cursor: pointer;
-    background-color: #24b47e;
-    color: white;
-    border: none;
-    border-radius: 4px;
-}
-
-button:hover {
-    background-color: #1f9d6e;
-}
-
-#error-msg {
-    color: red;
-    font-size: 0.9em;
-    margin-bottom: 10px;
-}
-
-
-/* --- New Dashboard Styles --- */
+/* --- GRID LAYOUTS --- */
 
 .home-layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 350px;
     gap: 30px;
-    width: 100%;
-    margin-top: 10px;
-    flex-wrap: wrap;
+    align-items: start;
 }
 
-.left-col {
-    flex: 2;
-    min-width: 400px;
+/* Registration: Right panel gets more space */
+.registration-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr; 
+    gap: 30px;
+    align-items: start;
 }
 
-.right-col {
-    flex: 1;
-    min-width: 300px;
+.left-col, .reg-right-panel, .reg-left-panel, .right-col {
+    display: flex; flex-direction: column; gap: 25px;
 }
 
-/* Titles */
-.welcome-title {
-    color: #2E7D32;
-    font-size: 24px;
-    margin-bottom: 10px;
+.reg-left-panel { position: sticky; top: 0; }
+
+/* --- CARDS & PANELS --- */
+.courses-container, .registered-courses-box, .stat-item, .schedule-item-card, .filter-panel, .table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 25px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
 }
 
-.section-label {
-    color: #2E7D32;
-    font-size: 14px;
-    margin-bottom: 15px;
-    font-weight: bold;
+.section-title, .welcome-title {
+    margin-top: 0; margin-bottom: 20px;
+    font-weight: 700; font-size: 1.5rem;
 }
+.welcome-title span:last-child { color: var(--primary); }
 
-/* Stats Row */
+/* --- STATS (Home) --- */
 .stats-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 40px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
 }
+.stat-item { padding: 20px 15px; transition: transform 0.2s; }
+.stat-item:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); }
+.stat-value { font-size: 2rem; font-weight: 800; color: white; margin: 10px 0; }
+.stat-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
-.stat-item {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
+/* --- REGISTRATION LIST --- */
+.course-accordion {
+    margin-bottom: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    transition: 0.2s;
+}
+.accordion-header {
+    padding: 18px 25px;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+    border-left: 4px solid var(--primary);
+    background: linear-gradient(90deg, rgba(0,230,118,0.05), transparent);
+}
+.accordion-content { background: #080808; border-top: 1px solid var(--border-color); }
+
+.course-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1.5fr 1fr 100px; /* Section | Instructor | Bar | Button */
     align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--border-color);
+    gap: 15px;
 }
+.course-row:hover { background: rgba(255,255,255,0.02); }
 
-.stat-icon {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 5px;
-    color: #2E7D32;
-}
+.c-section { color: var(--primary); font-weight: bold; font-size: 1.1em; }
+.c-time { color: var(--text-muted); font-size: 0.9em; margin-top: 4px; }
+.c-instructor { color: white; }
 
-.stat-icon svg {
-    width: 100%;
-    height: 100%;
-    stroke-width: 1.5;
-}
+.progress-bar-container { height: 8px; background: #222; border-radius: 4px; width: 100%; position: relative; }
+.progress-fill { height: 100%; background: var(--primary); border-radius: 4px; box-shadow: 0 0 10px var(--primary-glow); }
+.progress-fill.red { background: var(--accent-red); box-shadow: none; }
+.progress-fill.yellow { background: var(--accent-orange); box-shadow: none; }
 
-.text-green {
-    color: #2E7D32;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.stat-label {
-    color: #666;
-    font-size: 0.9em;
-}
-
-/* Student Info Section */
-.student-info-header {
-    color: #2E7D32;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.icon-user {
-    margin-right: 8px;
-    font-size: 1.2em;
-}
-
-.info-grid {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 40px;
-}
-
-.info-col p {
-    margin: 8px 0;
-    font-size: 0.95em;
-    color: #333;
-}
-
-/* Action Buttons (Registration/Schedule) */
-.action-buttons-row {
-    display: flex;
-    gap: 20px;
+/* --- BUTTONS --- */
+.enhance-ai-btn {
+    width: 100%; padding: 18px;
+    background: linear-gradient(135deg, var(--primary-dim), var(--primary));
+    color: #000; border: none;
+    border-radius: 50px;
+    font-weight: 800; font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 5px 20px var(--primary-glow);
+    transition: 0.3s;
+    display: flex; justify-content: center; align-items: center; gap: 10px;
     margin-bottom: 20px;
 }
+.enhance-ai-btn:hover { transform: translateY(-3px) scale(1.02); }
 
-.action-card-btn {
-    background-color: white;
-    border: 1px solid #2E7D32;
-    color: #2E7D32;
-    font-weight: bold;
-    padding: 20px;
-    border-radius: 8px;
-    font-size: 1em;
-    transition: all 0.2s;
-    height: 100px; /* Taller buttons as per image */
+.circle-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s;
+}
+.add-btn { background: var(--primary); color: black; font-size: 1.4rem; font-weight: bold; }
+.time-btn { background: #333; color: white; }
+.delete-btn {
+    background: rgba(255, 82, 82, 0.1); color: var(--accent-red);
+    border: 1px solid var(--accent-red); padding: 8px 16px; border-radius: 20px; cursor: pointer;
+}
+.delete-btn:hover { background: var(--accent-red); color: white; }
+
+/* --- INPUTS --- */
+.search-header { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+.search-input-wrapper { flex: 1; position: relative; }
+
+input, select, textarea {
+    width: 100%; padding: 14px 20px;
+    background: var(--bg-input);
+    border: 1px solid #333;
+    border-radius: var(--radius-lg);
+    color: white; font-family: inherit; font-size: 0.95rem;
+    outline: none; transition: 0.2s;
+}
+input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,230,118,0.1); }
+
+/* Suggestions */
+.suggestions-list {
+    position: absolute; top: 110%; left: 0; right: 0;
+    background: #1a1a1a; border: 1px solid #333;
+    border-radius: var(--radius-md);
+    z-index: 100; max-height: 250px; overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.suggestion-item {
+    padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #222;
+    display: flex; flex-direction: column;
+}
+.suggestion-item:hover { background: var(--primary); color: black; }
+.suggestion-code { font-weight: bold; font-size: 0.9em; }
+
+/* --- PLAN TREE & DRAWERS --- */
+#plan-tree-canvas { transform-origin: top left; transition: transform 0.1s linear; }
+
+.tree-scroll-wrapper {
+    width: 100%; height: 700px;
+    background: #080808;
+    border: 1px solid #333;
+    border-radius: var(--radius-xl);
+    overflow: hidden; 
+    position: relative;
+    cursor: grab;
+    background-image: radial-gradient(#222 1px, transparent 1px);
+    background-size: 30px 30px;
 }
 
-.action-card-btn:hover {
-    background-color: #2E7D32;
-    color: white;
-}
-
-/* Right Sidebar (Courses) */
-.courses-container {
-    border: 1px solid #2E7D32;
+/* Nodes Styling (Important for Tree) */
+.node-box {
+    background: var(--bg-card); color: white;
     border-radius: 12px;
-    padding: 20px;
-    background-color: white;
-    height: 100%; /* Fill height */
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
-.courses-title {
-    color: #2E7D32;
-    margin-top: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center;
-    font-size: 1.2em;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+    transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-.course-item {
-    border: 1px solid #2E7D32;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 15px;
-    background: #fff;
+/* Side Drawers */
+.side-drawer {
+    position: fixed; top: 0; right: 0;
+    width: 400px; height: 100vh;
+    background: #161616;
+    z-index: 2000;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 1px solid #333;
+    box-shadow: -10px 0 50px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+}
+.side-drawer.open { transform: translateX(0); }
+
+.side-drawer-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+    z-index: 1999;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+}
+.side-drawer-overlay.open { opacity: 1; pointer-events: auto; }
+.drawer-list { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.drawer-node {
+    background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; transition: 0.2s;
+}
+.drawer-node:hover { background: #222; border-color: var(--primary); }
+
+/* --- MODALS --- */
+.modal {
+    position: fixed; inset: 0; z-index: 3000;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+}
+.modal.hidden { display: none !important; }
+
+.modal-content {
+    background: var(--bg-card);
+    width: 100%; max-width: 600px;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: zoomIn 0.3s;
+    position: relative;
+}
+@keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+.close-modal, .close-popup { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+/* AI Prefs */
+.intensity-selector { display: flex; gap: 15px; margin-top: 10px; }
+.radio-card {
+    flex: 1; background: #000; border: 1px solid #333;
+    border-radius: 12px; padding: 15px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.radio-card:has(input:checked) { border-color: var(--primary); background: rgba(0, 230, 118, 0.05); color: var(--primary); }
+.radio-card input { display: none; }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1100px) {
+    .home-layout, .registration-layout { grid-template-columns: 1fr; }
+    .sidebar { position: absolute; height: 100%; left: -100%; }
+    .sidebar.collapsed { left: 0; width: 280px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+}
+@media (max-width: 768px) {
+    .course-row { grid-template-columns: 1fr 50px; gap: 10px; }
+    .c-instructor, .c-capacity, .progress-bar-container { display: none; }
+    .header { padding: 0 15px; }
+    .content-area { padding: 15px; }
 }
 
-.course-name {
-    font-weight: bold;
-    color: #2E7D32;
-    margin-bottom: 8px;
-    font-size: 0.95em;
+
+
+/* --- NEW DASHBOARD LAYOUT (Image Match) --- */
+
+.hero-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
 }
 
-.course-meta {
+.hero-card {
+    border-radius: var(--radius-lg);
+    padding: 25px;
     display: flex;
     justify-content: space-between;
-    font-size: 0.85em;
-    color: #444;
-    margin-bottom: 4px;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
 }
+.hero-card:hover { transform: translateY(-3px); }
 
-.room-code {
-    font-weight: bold;
-    color: #000;
-    text-decoration: underline;
-    text-decoration-color: #2E7D32;
-}
+/* Gradients matching image */
+.hero-green { background: linear-gradient(135deg, #2e7d32, #66bb6a); color: white; }
+.hero-purple { background: linear-gradient(135deg, #651fff, #b388ff); color: white; }
 
-.view-schedule-link {
-    display: block;
-    text-align: center;
-    margin-top: auto; /* Push to bottom */
-    color: #2E7D32;
-    font-weight: bold;
-    text-decoration: none;
-    padding-top: 10px;
-}
+.hero-content h2 { margin: 0 0 5px 0; font-size: 1.4rem; }
+.hero-content p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+.hero-icon svg { width: 40px; height: 40px; opacity: 0.8; }
 
-/* Helper for the logout button to make it less intrusive */
-.logout-link {
-    background: none;
-    border: none;
-    color: #d93025;
-    text-decoration: underline;
-    width: auto;
-    padding: 0;
-    margin-top: 10px;
-    font-size: 0.9em;
-}
-
-.logout-link:hover {
-    background: none;
-    color: #b71c1c;
-}
-
-
-/* --- REGISTRATION PAGE STYLES --- */
-
-.registration-layout {
-    display: flex;
+/* Stats Grid */
+.stats-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    margin-top: 20px;
-    align-items: flex-start;
+    margin-bottom: 25px;
+}
+
+.modern-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    align-items: center; /* Vertically center */
+    gap: 15px;
+    position: relative;
+    height: 140px; /* Fixed height for uniformity */
+}
+
+/* Icon Backgrounds (Square rounded) */
+.ms-icon-bg {
+    width: 50px; 
+    height: 50px; 
+    border-radius: 12px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+.blue-bg { background: rgba(41, 121, 255, 0.1); color: #2979ff; }
+.orange-bg { background: rgba(255, 145, 0, 0.1); color: #ff9100; }
+.green-bg { background: rgba(0, 230, 118, 0.1); color: #00e676; }
+
+.ms-content { display: flex; flex-direction: column; justify-content: center; width: 100%; }
+.ms-content.wide { width: 100%; }
+
+.ms-label { color: #888; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+.ms-value { font-size: 1.8rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 5px; }
+.ms-sub { font-size: 0.75rem; color: #666; }
+
+/* Progress Bar */
+.ms-progress-track {
+    width: 100%; height: 6px; background: #222; border-radius: 3px; margin: 10px 0;
+}
+.ms-progress-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+.flex-between { display: flex; justify-content: space-between; align-items: end; }
+.ms-value-sm { font-size: 1.2rem; font-weight: bold; color: white; }
+
+/* Filled Green Card (GPA) */
+.filled-green { background: var(--primary-dim); border: none; overflow: hidden; }
+.ms-content.center { align-items: center; text-align: center; width: 100%; z-index: 2; }
+.ms-label-light { color: rgba(255,255,255,0.8); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+.ms-value-large { font-size: 3rem; font-weight: 900; color: white; margin: 10px 0; }
+.ms-sub-light { color: rgba(255,255,255,0.9); font-weight: 600; background: rgba(0,0,0,0.1); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+.ms-floating-icon { position: absolute; right: -10px; bottom: -10px; font-size: 5rem; opacity: 0.2; transform: rotate(-15deg); }
+
+/* Bottom Section */
+.dashboard-bottom-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 25px;
+    flex: 1; /* Take remaining height */
+    overflow: hidden; /* Prevent double scroll */
+}
+
+/* Quick Services */
+.quick-services-panel { display: flex; flex-direction: column; gap: 20px; }
+.section-title-sm { margin: 0 0 15px 0; color: #aaa; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;}
+
+.qs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.qs-btn {
+    border: none;
+    border-radius: 16px;
+    padding: 20px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+    text-align: left;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    height: 100px;
+    position: relative;
+    overflow: hidden;
+}
+.qs-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+.qs-btn::after { content: ''; position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; border-radius: 50%; opacity: 0.5; }
+
+.qs-btn.blue { background: #e3f2fd; color: #1565c0; } .qs-btn.blue::after { background: #1565c0; }
+.qs-btn.purple { background: #ede7f6; color: #651fff; } .qs-btn.purple::after { background: #651fff; }
+.qs-btn.orange { background: #fff3e0; color: #ef6c00; } .qs-btn.orange::after { background: #ef6c00; }
+.qs-btn.green { background: #e8f5e9; color: #2e7d32; } .qs-btn.green::after { background: #2e7d32; }
+
+/* Mini Student Card */
+.student-mini-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 15px;
+    display: flex; align-items: center; gap: 15px;
+    margin-top: auto; /* Push to bottom of col */
+}
+.mini-avatar { width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+/* Today's Schedule Panel */
+.today-schedule-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 25px;
+    display: flex; flex-direction: column;
+}
+
+.text-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; text-decoration: underline; }
+.text-btn:hover { color: var(--primary); }
+
+.course-list-modern {
+    display: flex; flex-direction: column; gap: 10px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Modern Course Item (Matches image style) */
+.course-item-modern {
+    background: #1a1a1a;
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: 0.2s;
+}
+.course-item-modern:hover { background: #222; transform: translateX(5px); }
+
+.cim-info h4 { margin: 0 0 5px 0; color: white; font-size: 1rem; }
+.cim-meta { display: flex; gap: 15px; font-size: 0.85rem; color: #888; }
+.cim-status { 
+    background: rgba(0, 230, 118, 0.1); 
+    color: var(--primary); 
+    padding: 5px 12px; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    font-weight: bold; 
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    .stats-grid-modern { grid-template-columns: 1fr 1fr; }
+    .dashboard-bottom-grid { grid-template-columns: 1fr; }
+    .hero-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+    .stats-grid-modern { grid-template-columns: 1fr; }
+    .qs-grid { grid-template-columns: 1fr; }
+}
+
+/* --- REGISTRATION PAGE OVERHAUL --- */
+
+/* 1. Layout Adjustments */
+.registration-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr; /* Wider sidebar */
+    gap: 30px;
+    height: calc(100vh - 120px); /* Fill remaining height */
+    overflow: hidden;
 }
 
 .reg-left-panel {
-    width: 280px;
-    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 5px; /* Space for scrollbar */
 }
 
 .reg-right-panel {
-    flex: 1;
-}
-
-/* AI Button */
-.enhance-ai-btn {
-    background-color: #2E7D32; /* Match theme green */
-    color: white;
-    font-weight: bold;
-    padding: 15px;
-    border-radius: 20px; /* Highly rounded */
-    border: none;
-    width: 100%;
-    margin-bottom: 15px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* Registered List Box */
-.registered-courses-box {
-    border: 2px dashed #88d4ab; /* Light green dashed border */
-    background-color: #e8f5e9;
-    border-radius: 20px;
-    height: 400px; /* Fixed height as per image */
-    padding: 20px;
-    text-align: center;
-}
-
-.box-title {
-    color: #2E7D32;
-    margin-top: 0;
-    font-weight: normal;
-}
-
-/* Search Header */
-.search-header {
     display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+    overflow: hidden; /* Internal scrolling */
+}
+
+/* 2. Left Panel Cards */
+.reg-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.reg-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mini-course-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.mini-course-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.mini-course-item:hover { background: rgba(255, 255, 255, 0.06); }
+.mini-course-code { font-weight: bold; color: white; display: block; }
+.mini-course-name { font-size: 0.8em; color: #888; }
+
+/* 3. Search & Header Area */
+.search-header {
+    background: var(--bg-card);
+    padding: 15px 20px;
+    border-radius: 50px; /* Pill shape */
+    display: flex;
+    align-items: center;
     gap: 15px;
-    margin-bottom: 20px;
-}
-
-.filter-btn {
-    width: 50px;
-    background: none;
-    border: none;
-    color: #2E7D32;
-    padding: 0;
-}
-.filter-btn svg { width: 30px; height: 30px; }
-
-.search-input-wrapper {
-    flex: 1;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    flex-shrink: 0;
 }
 
 .custom-search {
-    background-color: #e0e0e0;
-    border: 1px solid #2E7D32;
-    border-radius: 10px;
-    padding: 12px 20px;
-    font-size: 1rem;
-    color: #333;
-    outline: none;
-    text-align: center; /* Centered text as per image */
-}
-
-/* --- REGISTRATION ACCORDION STYLES --- */
-
-/* Fix Accordion transitions */
-.course-accordion {
-    margin-bottom: 15px;
-    border: 1px solid #ddd; /* Light border */
-    border-radius: 8px;     /* Rounded corners */
-    overflow: hidden;
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.accordion-header {
-    background-color: #f8f9fa; /* Light grey background */
-    padding: 15px 20px;        /* Comfortable padding */
-    cursor: pointer;           /* Hand cursor on hover */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 5px solid #2E7D32; /* Green accent on left */
-    transition: background-color 0.2s ease;
-}
-
-.accordion-header:hover {
-    background-color: #e8f5e9; /* Light green hover effect */
-}
-
-.accordion-header .chevron {
-    transition: transform 0.3s ease;
-    display: inline-block;
-    width: 20px;
-    text-align: center;
-}
-
-.cat-title {
-    font-size: 1.05em;
-    color: #333;
-}
-
-.accordion-meta {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* Chevron Rotation */
-.chevron {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #2E7D32;
-    transition: transform 0.3s ease;
-    display: inline-block;
-    width: 20px;
-    text-align: center;
-}
-
-/* 2. Filter Button Styling */
-.filter-btn {
-    background: white;
-    border: 1px solid #2E7D32;
-    color: #2E7D32;
-    width: 46px; /* Match height of search input roughly */
-    height: 46px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-btn:hover {
-    background-color: #2E7D32;
+    background: transparent;
+    border: none;
     color: white;
-}
-
-/* 3. Filter Panel specific spacing */
-#reg-filter-panel {
-    border: 1px solid #eee;
-    padding: 15px;
-    background: #fff;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-
-/* Progress Bars Colors */
-.progress-fill {
-    transition: width 0.5s ease;
-    background-color: #4CAF50; /* Default Green */
-}
-
-.progress-fill.yellow {
-    background-color: #FFC107; /* Warning Yellow */
-}
-
-.progress-fill.red {
-    background-color: #F44336; /* Danger Red */
-}
-
-/* Button Styles */
-.circle-btn.time-btn {
-    background-color: #FF9800; /* Orange for Waitlist */
-}
-
-.circle-btn.time-btn:hover {
-    background-color: #F57C00;
-}
-
-/* Status Text (When already registered/waitlisted) */
-.status-text {
-    font-size: 0.8em;
-    font-weight: bold;
-    padding: 5px 8px;
-    border-radius: 12px;
-}
-
-.status-text.success {
-    color: #2E7D32;
-    background-color: #e8f5e9;
-    border: 1px solid #2E7D32;
-}
-
-.status-text.warning {
-    color: #F57C00;
-    background-color: #FFF3E0;
-    border: 1px solid #F57C00;
-}
-
-/* Spinner for loading */
-.spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #2E7D32;
-    border-radius: 50%;
-    width: 30px; height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-}
-
-/* Mini List in Sidebar */
-.mini-course-list {
-    text-align: left;
-    max-height: 320px;
-    overflow-y: auto;
-}
-
-/* Course Rows */
-.course-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: transparent;
-    padding: 10px 0;
-    border-bottom: 1px solid #999;
-}
-
-.course-row:last-child {
-    border-bottom: none;
-}
-
-.c-info {
-    font-size: 0.9em;
-    color: #2E7D32;
-    width: 120px;
-}
-.c-section { font-weight: bold; }
-.c-time { color: #555; font-size: 0.85em; }
-
-.c-instructor {
-    color: #555;
-    font-weight: bold;
-    width: 100px;
-}
-
-/* Progress Bars */
-.c-capacity {
-    width: 140px;
-}
-
-.progress-bar-container {
-    background-color: white;
-    border-radius: 12px;
-    height: 20px;
-    position: relative;
-    overflow: hidden;
+    font-size: 1rem;
+    padding: 5px;
     width: 100%;
 }
+.custom-search:focus { box-shadow: none; border: none; outline: none; }
 
+.filter-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
+}
+.filter-btn:hover { background: var(--primary); color: black; }
+
+/* Credit Status Pill */
+.credit-status-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* 4. Filters Panel (Dropdowns) */
+.filter-panel {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+.filters-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;}
+.filter-select {
+    flex: 1;
+    min-width: 150px;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.toggles-row { display: flex; gap: 20px; flex-wrap: wrap; }
+.toggle-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.9rem; color: #bbb; cursor: pointer;
+    user-select: none;
+}
+.toggle-label input { width: auto; margin: 0; accent-color: var(--primary); }
+
+/* 5. Course List Container */
+#registration-courses-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* 6. Accordions (The Course Cards) */
+.course-accordion {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+.course-accordion:hover { border-color: rgba(255,255,255,0.2); }
+
+.accordion-header {
+    padding: 18px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+}
+.accordion-header:hover { background: rgba(255,255,255,0.04); }
+
+.cat-title { font-size: 1.1rem; color: white; margin-left: 10px; }
+.accordion-meta { display: flex; align-items: center; gap: 10px; }
+
+/* The Section Table inside Accordion */
+.accordion-content {
+    background: #0a0a0a;
+    border-top: 1px solid #333;
+    max-height: 500px; /* Limit height if many sections */
+    overflow-y: auto;
+}
+
+.course-row {
+    display: grid;
+    /* Updated grid: Section | Time | Instructor | Capacity Bar | Action Button */
+    grid-template-columns: 80px 1.5fr 1fr 1.2fr 60px; 
+    gap: 15px;
+    padding: 15px 25px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.course-row:last-child { border-bottom: none; }
+
+.c-info { display: flex; flex-direction: column; }
+.c-section { color: var(--primary); font-weight: 700; font-size: 1rem; }
+.c-time { color: #888; font-size: 0.85rem; margin-top: 2px; }
+.c-instructor { color: white; font-size: 0.95rem; }
+
+/* Capacity Bar */
+.progress-bar-container {
+    height: 6px;
+    background: #222;
+    border-radius: 3px;
+    width: 100%;
+    position: relative;
+    margin-top: 5px;
+}
 .progress-fill {
     height: 100%;
-    border-radius: 12px 0 0 12px;
+    border-radius: 3px;
+    transition: width 0.3s ease;
 }
-
-.progress-fill.yellow { background-color: #ffeb3b; }
-.progress-fill.red { background-color: red; }
-
-/* Special styling for the full red bar */
-.progress-bar-container.full-red {
-    background-color: red;
-}
-.progress-bar-container.full-red .progress-text {
-    color: white;
-}
-
 .progress-text {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.75em;
-    font-weight: bold;
-    color: black;
-    z-index: 2;
+    top: -18px;
+    right: 0;
+    font-size: 0.75rem;
+    color: #888;
+    font-weight: 600;
 }
 
-/* Action Buttons */
-.c-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.circle-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-    background-color: #2E7D32;
-    color: white;
-}
-
-.circle-btn.add-btn {
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-
-
-/* --- AI MODAL STYLES --- */
-.modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
+/* 7. Enhanced Modal Styles (AI & Waitlist) */
 .modal-content {
-    background-color: #f9f9f9;
-    width: 90%;
-    max-width: 900px;
-    max-height: 85vh;
-    border-radius: 15px;
-    padding: 25px;
-    overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    background: #141414;
+    border: 1px solid #333;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #2E7D32;
-    padding-bottom: 10px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 15px;
     margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center;
 }
+.modal-header h2 { margin: 0; font-size: 1.4rem; }
 
-.modal-header h2 { margin: 0; color: #2E7D32; }
-.close-modal {
-    background: none; border: none;
-    font-size: 2rem; cursor: pointer; color: #666;
-}
-
-/* AI Loading Spinner */
-#ai-loading {
-    text-align: center;
-    padding: 40px;
-}
-.spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #2E7D32;
+/* The X Close Button */
+.close-modal, .close-popup, .close-pref-btn {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    line-height: 1;
 }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.close-modal:hover { background: var(--accent-red); border-color: var(--accent-red); transform: rotate(90deg); }
 
-/* Schedule Cards */
-.results-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
+/* --- AI FORM FIXES --- */
 
-.schedule-card {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
+/* 1. Modal Container & Layout */
+.pref-form {
     display: flex;
     flex-direction: column;
+    gap: 15px;
+    width: 100%; /* Ensure form takes full width */
 }
 
-.schedule-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    border-color: #2E7D32;
+.pref-form .form-group {
+    margin-bottom: 5px;
+    width: 100%;
 }
 
-.card-tag {
-    background-color: #e8f5e9;
-    color: #2E7D32;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    display: inline-block;
-    margin-bottom: 10px;
-}
-
-.card-reasoning {
-    font-size: 0.9rem;
-    color: #555;
-    margin-bottom: 15px;
-    font-style: italic;
-    min-height: 40px;
-}
-
-.card-courses {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 15px 0;
-    flex-grow: 1;
-}
-
-.card-courses li {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9rem;
-    display: flex;
-    justify-content: space-between;
-}
-.card-courses li span { font-weight: bold; color: #333; }
-.card-courses li small { color: #888; }
-
-.accept-btn {
-    background-color: #2E7D32;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: auto;
-}
-.accept-btn:hover { background-color: #1b5e20; }
-
-
-
-/* --- AI PREFERENCES FORM STYLES --- */
-.pref-form {
-    padding: 10px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-label {
-    display: block;
-    font-weight: bold;
-    color: #2E7D32;
-    margin-bottom: 8px;
-    font-size: 0.95rem;
-}
-
-/* Intensity Radio Cards */
+/* 2. Intensity Selector (3 items in a row) */
 .intensity-selector {
     display: flex;
     gap: 10px;
+    width: 100%;
 }
-
 .radio-card {
-    flex: 1;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 15px 5px;
-    text-align: center;
+    flex: 1; /* Stretch to fill width evenly */
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 15px 10px;
     cursor: pointer;
+    text-align: center;
     transition: all 0.2s;
-    background: white;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
-
-.radio-card input {
-    display: none; /* Hide default radio */
-}
-
-.radio-card:hover {
-    background-color: #f1f8e9;
-    border-color: #2E7D32;
-}
-
+.radio-card:hover { border-color: #555; background: #111; }
 .radio-card:has(input:checked) {
-    background-color: #e8f5e9;
-    border: 2px solid #2E7D32;
-    color: #2E7D32;
-    font-weight: bold;
+    background: rgba(0, 230, 118, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
 }
+.emoji { font-size: 1.8rem; margin-bottom: 5px; display: block; }
 
-.radio-card .emoji {
-    font-size: 1.5rem;
-    margin-bottom: 5px;
-}
-
-/* Inputs & Selects */
-.custom-select, .custom-input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    background-color: white;
-}
-
+/* 3. Preferred Days (Fixing the "messy" look) */
 .checkbox-group {
-    display: flex;
-    gap: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 Equal columns */
+    gap: 10px;
+    width: 100%;
 }
 
 .checkbox-group label {
     display: flex;
+    flex-direction: column; /* Stack checkbox and text for cleaner look */
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    background: #0a0a0a;
+    padding: 12px 5px;
+    border-radius: 12px;
+    border: 1px solid #333;
     cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+    text-align: center;
+    height: 100%;
+    color: #ccc;
 }
 
+.checkbox-group label:hover { border-color: #666; background: #111; }
+.checkbox-group label:has(input:checked) {
+    border-color: var(--primary);
+    background: rgba(0, 230, 118, 0.05);
+    color: var(--primary);
+    font-weight: bold;
+}
+/* Hide default checkbox, style the container instead */
 .checkbox-group input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #2E7D32;
+    display: none; 
 }
 
-/* --- COURSES SHEET STYLES --- */
-
-.section-title {
-    color: #2E7D32;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-/* Filter Panel */
-.filter-panel {
-    background-color: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    margin-bottom: 25px;
-}
-
-.search-row {
-    margin-bottom: 15px;
-}
-
-.filters-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-}
-
-.filter-select {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    flex: 1;
-    min-width: 150px;
-    color: #333;
-}
-
-.toggles-row {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-.toggle-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 0.95em;
-    color: #444;
-}
-
-.toggle-label input {
-    width: 18px;
-    height: 18px;
-    accent-color: #2E7D32;
-    margin: 0;
-}
-
-/* Data Table */
-.table-container {
-    background-color: white;
-    border-radius: 12px;
-    overflow: hidden; /* For rounded corners */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    overflow-x: auto; /* Responsive horizontal scroll */
-}
-
-.courses-table {
+/* 4. Inputs & Selects (Dark Mode Fixes) */
+.pref-form input[type="text"], 
+.pref-form input[type="number"], 
+.pref-form select {
     width: 100%;
-    border-collapse: collapse;
-    min-width: 800px; /* Ensure it doesn't squish too much */
-}
-
-.courses-table th {
-    background-color: #2E7D32;
-    color: white;
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-}
-
-.courses-table td {
+    background-color: #0a0a0a !important; /* Force Dark Background */
+    border: 1px solid #333 !important;
+    color: white !important;
     padding: 12px 15px;
-    border-bottom: 1px solid #eee;
-    color: #333;
-    font-size: 0.95em;
-}
-
-.courses-table tr:last-child td {
-    border-bottom: none;
-}
-
-.courses-table tr:hover {
-    background-color: #f9f9f9;
-}
-
-/* Status Badges */
-.badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.8em;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.badge-gray {
-    background-color: #eee;
-    color: #777;
-}
-
-.badge-green {
-    background-color: #e8f5e9;
-    color: #2E7D32;
-}
-
-.badge-red {
-    background-color: #ffebee;
-    color: #c62828;
-}
-
-.badge-blue {
-    background-color: #e3f2fd;
-    color: #1565c0;
-}
-
-/* --- SCHEDULE PAGE STYLES --- */
-
-.schedule-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.print-btn {
-    background-color: #f0f0f0;
-    color: #333;
-    border: 1px solid #ccc;
-    width: auto;
-    padding: 8px 15px;
-    border-radius: 6px;
-    font-size: 0.9em;
-}
-
-.print-btn:hover {
-    background-color: #e0e0e0;
-}
-
-/* Table Wrapper */
-.schedule-table-wrapper {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    overflow: hidden;
-    overflow-x: auto;
-}
-
-.schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
-}
-
-.schedule-table th {
-    background-color: #2E7D32;
-    color: white;
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-}
-
-.schedule-table td {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    color: #333;
-    vertical-align: middle;
-}
-
-.schedule-table tr:last-child td {
-    border-bottom: none;
-}
-
-.schedule-table tr:hover {
-    background-color: #f9f9f9;
-}
-
-/* Mobile Card Grid (Hidden on Desktop by default) */
-.schedule-grid {
-    display: none; /* Default hidden, shown via media query */
-    gap: 15px;
-}
-
-.schedule-item-card {
-    background: white;
-    border-left: 5px solid #2E7D32;
     border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    box-shadow: none;
+}
+
+.pref-form input:focus, 
+.pref-form select:focus {
+    border-color: var(--primary) !important;
+}
+
+/* 5. Remove the ugly white "Up/Down" arrows on Number Input */
+.pref-form input[type=number]::-webkit-inner-spin-button, 
+.pref-form input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+.pref-form input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* 6. Generate Button Spacing */
+#generate-schedule-btn {
+    margin-top: 15px;
+    width: 100%;
+}
+
+/* Badges & Tags */
+.badge { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.badge-gray { background: #333; color: #ccc; }
+.badge-green { background: rgba(0, 230, 118, 0.2); color: var(--primary); }
+.badge-red { background: rgba(255, 82, 82, 0.2); color: var(--accent-red); }
+.badge-blue { background: rgba(41, 121, 255, 0.2); color: var(--accent-blue); }
+.badge-yellow { background: rgba(255, 145, 0, 0.2); color: var(--accent-orange); }
+
+/* Status Text */
+.status-text { font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-block;}
+.status-text.success { color: var(--primary); background: rgba(0,230,118,0.1); }
+.status-text.warning { color: var(--accent-orange); background: rgba(255,145,0,0.1); }
+
+/* Responsive Registration */
+@media (max-width: 900px) {
+    .registration-layout { grid-template-columns: 1fr; overflow-y: auto; height: auto; }
+    .reg-left-panel { flex-direction: row; flex-wrap: wrap; height: auto; overflow: visible; }
+    .reg-card { flex: 1; min-width: 250px; }
+    .enhance-ai-btn { width: 100%; }
+    .reg-right-panel { height: auto; overflow: visible; }
+    .course-row { grid-template-columns: 1fr 50px; gap: 10px; position: relative; }
+    .c-instructor, .progress-bar-container { display: none; }
+    .c-time { font-size: 0.8rem; }
+}
+
+
+/* --- REGISTRATION DESIGN 2.0 (Reference Inspired) --- */
+
+/* 1. Glassy Search Header */
+.reg-glass-header {
+    background: rgba(20, 20, 20, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
     padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.sch-card-header {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.reg-glass-header:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 10px 30px rgba(0, 230, 118, 0.1);
+}
+
+.search-icon-box {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: #666;
+    font-size: 1.2rem;
+}
+
+#reg-search-input {
+    background: transparent !important;
+    border: none !important;
+    font-size: 1.1rem;
+    padding: 0;
+    height: 100%;
+}
+
+/* 2. Modern Course Card (Accordion) */
+.course-card-modern {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+}
+
+.course-card-modern:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+}
+
+/* The header looks like the reference screenshot card */
+.cc-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+}
+
+/* Course Code Bubble (e.g., CS101) */
+.cc-code-bubble {
+    background: rgba(0, 230, 118, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(0, 230, 118, 0.2);
+    padding: 10px 15px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 1rem;
+    min-width: 90px;
+    text-align: center;
+}
+.cc-code-bubble.passed { background: rgba(255,255,255,0.05); color: #888; border-color: #333; }
+
+.cc-info { flex: 1; }
+.cc-title { font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 5px; display: block; }
+.cc-meta { font-size: 0.85rem; color: #888; display: flex; gap: 15px; }
+
+/* Status Badge Top Right */
+.cc-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
     font-weight: bold;
-    color: #2E7D32;
+    text-transform: uppercase;
+    background: #222;
+    color: #aaa;
+}
+.cc-status-badge.open { background: var(--primary); color: black; box-shadow: 0 0 10px var(--primary-glow); }
+.cc-status-badge.waitlist { background: rgba(255, 145, 0, 0.2); color: var(--accent-orange); }
+
+/* 3. Section Rows (Inside Card) */
+.cc-sections {
+    background: #080808;
+    border-top: 1px solid var(--border-color);
+    padding: 10px;
 }
 
-.sch-credits {
-    background: #e8f5e9;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.8em;
-    color: #1b5e20;
+.cc-sec-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 80px 60px;
+    align-items: center;
+    padding: 15px;
+    margin: 5px 0;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: 0.2s;
+}
+.cc-sec-row:hover { background: #111; border-color: #333; }
+
+/* --- AI FORM REDESIGN (The Container Fix) --- */
+
+/* The Wrapper for each question */
+.ai-control-box {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    transition: 0.2s;
+    position: relative;
+    overflow: hidden;
 }
 
-.sch-detail {
-    margin-bottom: 5px;
-    color: #555;
-    font-size: 0.95em;
+.ai-control-box:hover {
+    border-color: #444;
+    background: #141414;
+}
+
+/* The Label is now a structured header inside the box */
+.ai-box-label {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.ai-box-label svg { width: 16px; height: 16px; opacity: 0.7; }
+
+/* Active State for Inputs inside */
+.ai-control-box:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.1);
+}
+.ai-control-box:focus-within .ai-box-label { color: var(--primary); }
+
+/* Customizing the inputs to fit the box */
+.ai-control-box input[type="text"],
+.ai-control-box input[type="number"], 
+.ai-control-box select {
+    background: black !important;
+    border: 1px solid #333 !important;
+    width: 100%;
 }
 
-/* RESPONSIVE: Show Cards on Mobile, Table on Desktop */
-@media (max-width: 768px) {
-    .schedule-table-wrapper {
-        display: none;
-    }
-    .schedule-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
+/* Specific Tweak for Radio/Checkbox Grids inside the box */
+.box-grid-3 {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+}
+.box-grid-2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 }
 
-/* --- DROP BUTTON STYLES --- */
-
-.delete-btn {
-    background-color: #ffebee;
-    color: #c62828;
-    border: 1px solid #c62828;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: bold;
-    transition: all 0.2s;
-    width: auto; /* Override default button width if needed */
-}
-
-.delete-btn:hover {
-    background-color: #c62828;
-    color: white;
-}
-
-/* Specific style for mobile card footer */
-.sch-card-footer {
-    margin-top: 15px;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-}
-
-.delete-btn.full-width {
-    width: 100%; /* Full width on mobile cards */
-    padding: 10px;
-}
-
-/* --- IMPROVED STUDENT PLAN STYLES --- */
-
-#plan-container {
-    width: 98% !important; /* Force it to use full width */
-    max-width: none !important; /* Remove the 1000px limit */
-    height: calc(100vh - 100px); /* Fill remaining vertical height */
-    display: flex;
-    flex-direction: column;
-}
-
-.plan-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background: white;
-    padding: 5px 15px;
+/* Sidebar Widgets */
+.widget-card {
+    background: linear-gradient(145deg, #1a1a1a, #111);
+    border: 1px solid #252525;
     border-radius: 20px;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.zoom-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1px solid #ccc;
-    background: white;
-    cursor: pointer;
-    font-weight: bold;
-    color: #555;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
-}
-
-.zoom-btn:hover {
-    background-color: #e8f5e9;
-    color: #2E7D32;
-    border-color: #2E7D32;
-}
-
-.tree-scroll-wrapper {
-    flex: 1;
-    width: 100%;
-    height: 100%; /* Ensure it fills parent */
-    background: #f8f9fa; /* Slightly off-white background for contrast against white nodes */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden; /* Hide scrollbars, we use drag */
-    cursor: grab;
-    user-select: none;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
-}
-
-.tree-scroll-wrapper.active {
-    cursor: grabbing;
-}
-
-#plan-tree-canvas {
-    transform-origin: 0 0;
-    transition: transform 0.1s linear; /* Faster transition for smoother drag */
-    /* Creative Grid: Dots with a subtle cross pattern */
-    background-image: 
-        radial-gradient(#ccc 1px, transparent 1px),
-        linear-gradient(to right, rgba(224, 224, 224, 0.3) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(224, 224, 224, 0.3) 1px, transparent 1px);
-    background-size: 30px 30px; 
-    background-color: transparent;
-}
-
-/* 1. Connector Lines */
-.tree-link {
-    transition: stroke-width 0.3s;
-}
-.tree-link:hover {
-    stroke: #2E7D32;
-    stroke-width: 3;
-    z-index: 0;
-}
-
-.node-box {
-    fill: #ffffff; /* Main Theme: White */
-    stroke-width: 3px; /* Thicker border for category color */
-    filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.08)); /* Soft shadow */
-    transition: all 0.2s ease;
-}
-
-/* Hover Effect */
-g:hover .node-box {
-    transform: translateY(-3px);
-    filter: drop-shadow(0px 8px 15px rgba(0,0,0,0.15));
-}
-
-/* --- CATEGORY BORDER COLORS --- */
-/* University Requirements (Orange) */
-.node-box.cat-univ { stroke: #f57c00; }
-
-/* College Compulsory (Theme Green) */
-.node-box.cat-college { stroke: #2E7D32; }
-
-/* Major Compulsory (Blue) */
-.node-box.cat-major-req { stroke: #1565c0; }
-
-/* Major Elective (Teal/Cyan) */
-.node-box.cat-major-elec { stroke: #0097a7; }
-
-/* Supportive / Basic Sciences (Purple) */
-.node-box.cat-support { stroke: #7b1fa2; }
-
-/* Remedial / Others (Gray) */
-.node-box.cat-other { stroke: #616161; }
-
-/* Default fallback */
-.node-box.cat-default { stroke: #9e9e9e; }
-
-/* 3. Status Coloring */
-/* PASSED (Green Theme) */
-.node-box.passed { stroke: #2E7D32; stroke-width: 2; fill: #e8f5e9; }
-/* REGISTERED (Blue Theme) */
-.node-box.registered { stroke: #1565c0; stroke-width: 2; fill: #e3f2fd; }
-/* OPEN (Yellow/Orange Theme) */
-.node-box.open { stroke: #FFC107; stroke-width: 2; fill: #fffde7; }
-/* LOCKED (Gray Theme) */
-.node-box.locked { fill: #f5f5f5; stroke: #e0e0e0; }
-
-.node-code {
-    font-family: 'Segoe UI', sans-serif; 
-    font-weight: 800; 
-    fill: #333; 
-    font-size: 13px;
-    pointer-events: none;
-}
-.node-name {
-    font-family: 'Segoe UI', sans-serif; 
-    font-weight: 500; 
-    fill: #555; 
-    font-size: 10px;
-    pointer-events: none;
-}
-.node-box.passed ~ .node-code { fill: #1b5e20; }
-.node-box.registered ~ .node-code { fill: #0d47a1; }
-
-/* --- Add/Update these styles --- */
-
-/* The Black Screen Overlay */
-#plan-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* 50% opacity black */
-    z-index: 998; /* Below popup, above everything else */
-    backdrop-filter: blur(2px); /* Optional: slight blur effect */
-}
-
-/* Updated Popup Styling */
-#course-popup {
-    position: fixed; /* Change from absolute to fixed */
-    background: white;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    z-index: 999; /* Above overlay */
-    width: 280px;
-    border-left: 5px solid #2E7D32;
-    pointer-events: auto;
-    /* Remove transition if it causes lag during positioning */
+    margin-bottom: 15px;
 }
-
-/* Close button tweak */
-.close-popup {
-    top: 10px;
-    right: 15px;
-    font-size: 1.5rem;
-}
-
-
-#node-highlight-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Let clicks pass through to the overlay */
-    z-index: 999; /* Above the overlay (which is 998) */
-    display: none;
-}
-
-#node-highlight-container svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-}
-
-/* Ensure the Highlight Container is visible when active */
-#node-highlight-container.active {
-    display: block;
-}
-
-#popup-title { margin-top: 5px; margin-bottom: 5px; color: #2E7D32; font-size: 1.1em; }
-#popup-desc { font-size: 0.9em; color: #555; margin-bottom: 10px; }
-.popup-meta { display: flex; gap: 10px; font-size: 0.85em; }
-
-
-.node-html-clone {
-    position: fixed;
-    border-radius: 8px; /* Matches svg rx=8 */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    z-index: 1000; /* Highest priority */
-    pointer-events: none; /* Let clicks pass through if needed */
-    box-sizing: border-box;
-    /* Font styles matching SVG text */
-    font-family: sans-serif;
-    line-height: 1.2;
-}
-
-.node-html-clone .clone-code {
-    font-weight: 800;
-    font-size: 13px;
-    margin-bottom: 4px;
-    color: #333;
-}
-
-.node-html-clone .clone-name {
-    font-weight: 500;
-    font-size: 10px;
-    color: #666;
-    text-align: center;
-    padding: 0 5px;
-}
-
-/* Clone Colors (Matching your SVG classes) */
-.node-html-clone.passed { background: #e8f5e9; border: 2px solid #2E7D32; }
-.node-html-clone.passed .clone-code { color: #1b5e20; }
-
-.node-html-clone.registered { background: #e3f2fd; border: 2px solid #1565c0; }
-.node-html-clone.registered .clone-code { color: #0d47a1; }
-
-.node-html-clone.open { background: #fffde7; border: 2px solid #FFC107; }
-
-.node-html-clone.locked { background: #f5f5f5; border: 1px solid #e0e0e0; }
-
-
-.status-icon {
-    font-size: 14px;
-    font-weight: bold;
-    pointer-events: none;
-}
-/* Passed: Green Check */
-.status-icon.passed { fill: #2E7D32; }
-/* Locked: Gray Lock */
-.status-icon.locked { fill: #bdbdbd; }
-/* Registered: Blue Clock */
-.status-icon.registered { fill: #1565c0; }
-/* Open: Orange Open Lock */
-.status-icon.open { fill: #f57c00; }
-
-.plan-legend {
-    display: flex;
-    gap: 15px;
-    padding: 10px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    font-size: 0.85em;
-    color: #444;
-}
-
-.legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%; /* Make it circular */
-    margin-right: 6px;
-    border: 2px solid transparent;
-    background: white; /* Inner white */
-}
-
-.badge-yellow {
-    background-color: #fff8e1;
-    color: #f57c00;
-    border: 1px solid #ffe0b2;
-}
-
-/* Ensure text area matches input styles */
-textarea.custom-input {
-    resize: vertical;
-    font-family: inherit;
-}
-
-/* Search Suggestions Dropdown */
-.suggestions-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #2E7D32;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.suggestion-item {
-    padding: 10px 12px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9em;
-    display: flex;
-    justify-content: space-between;
-}
-
-.suggestion-item:last-child {
-    border-bottom: none;
-}
-
-.suggestion-item:hover {
-    background-color: #e8f5e9; /* Light Green */
-}
-
-.suggestion-code {
-    font-weight: bold;
-    color: #2E7D32;
-}
-
-.suggestion-name {
-    color: #333;
-    margin-left: 10px;
-    text-align: right;
-}
-
-/* Legend Colors mirroring the categories */
-.l-univ { border-color: #f57c00; }
-.l-coll { border-color: #2E7D32; }
-.l-major { border-color: #1565c0; }
-.l-elec { border-color: #0097a7; }
-
-/* --- 1. CATEGORY COLORS (Left Borders) --- */
-.tree-node {
-    border-left-width: 6px !important;
-    border-left-style: solid !important;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-/* Category Specific Colors */
-.cat-major-comp { border-left-color: #2E7D32; } /* Strong Green */
-.cat-college-comp { border-left-color: #66BB6A; } /* Light Green */
-.cat-uni-comp { border-left-color: #1B5E20; } /* Dark Forest Green */
-.cat-uni-elective { border-left-color: #F57C00; } /* Orange (Accent) */
-.cat-major-elective { border-left-color: #009688; } /* Teal (Accent) */
-.cat-support { border-left-color: #78909C; } /* Blue Grey */
-
-/* --- 2. ELECTIVE BLOCKS (The 4 separated blocks) --- */
-.elective-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 50px;
-    padding-top: 20px;
-    border-top: 2px dashed #eee;
-    flex-wrap: wrap;
-}
-
-.elective-block {
-    width: 140px;
-    height: 100px;
-    background: white;
-    border: 2px dashed #ccc; /* Dashed to show it's a "slot" */
-    border-left: 6px solid #ccc;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    transition: all 0.2s;
-}
-
-.elective-block:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    background-color: #f9fbf9;
-}
-
-/* --- 3. SIDE DRAWER (Slide from Left) --- */
-.side-drawer-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4);
-    z-index: 2000;
-    opacity: 0; visibility: hidden;
-    transition: all 0.3s;
-}
-.side-drawer {
-    position: fixed;
-    top: 0; left: -400px; /* Hidden */
-    width: 350px; height: 100%;
-    background: white;
-    z-index: 2001;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    transition: left 0.3s ease-out;
-    padding: 20px;
-    display: flex; flex-direction: column;
-}
-.side-drawer.open { left: 0; }
-.side-drawer-overlay.open { opacity: 1; visibility: visible; }
-
-.drawer-header {
+.widget-header {
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #252525;
+    padding-bottom: 10px;
 }
-.drawer-list { overflow-y: auto; flex: 1; }
+.widget-title { font-size: 0.9rem; font-weight: 700; color: #888; text-transform: uppercase; }
 
-/* Mini Course Cards inside Drawer */
-.drawer-node {
-    background: white;
-    border: 1px solid #eee;
-    border-left: 4px solid #ccc;
-    border-radius: 6px;
-    padding: 12px; margin-bottom: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.drawer-node:hover { transform: translateX(5px); background: #f1f8e9; }
+/* --- SIDEBAR REDESIGN --- */
 
-.popup-description {
-    font-size: 0.85em;
-    color: #444;
-    background-color: #f1f8e9; /* Very light green background */
-    padding: 10px;
-    border-radius: 6px;
-    margin: 10px 0;
-    line-height: 1.4;
-    max-height: 150px;
-    overflow-y: auto; /* Scroll if description is very long */
-    border-left: 3px solid #2E7D32;
-}
-
-
-/* Add to style.css */
-
-.queue-badge {
-    background-color: #F57C00;
-    color: white;
-    font-size: 0.75em;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: bold;
-    display: inline-block;
-    margin-top: 4px;
-}
-
-.waitlist-item {
-    padding: 10px;
-    border-bottom: 1px solid rgba(245, 124, 0, 0.2);
+.sidebar {
+    /* Ensure existing flex properties */
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    justify-content: space-between; /* Push footer to bottom */
 }
 
-.waitlist-item:last-child {
-    border-bottom: none;
+.nav-links {
+    flex: 1; /* Takes available space */
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 20px 0 0 0;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.user-profile-compact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: 0.2s;
+}
+.user-profile-compact:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.1);
+}
+
+.sidebar-avatar {
+    width: 40px; height: 40px;
+    background: #222;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.sidebar-user-details {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.s-name { font-weight: bold; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-major { font-size: 0.75rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Sidebar Logout Button */
+.sidebar-logout-btn {
+    background: rgba(255, 82, 82, 0.1);
+    color: var(--accent-red);
+    border: 1px solid transparent;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
+    width: 100%;
+}
+.sidebar-logout-btn:hover {
+    background: var(--accent-red);
+    color: white;
+}
+.sidebar-logout-btn svg { width: 20px; height: 20px; }
+
+/* Collapsed Sidebar Logic */
+.sidebar.collapsed .sidebar-user-details { display: none; }
+.sidebar.collapsed .sidebar-logout-btn { width: 45px; height: 45px; padding: 0; border-radius: 50%; margin: 0 auto; }
+.sidebar.collapsed .user-profile-compact { padding: 0; background: none; justify-content: center; }
+.sidebar.collapsed .sidebar-avatar { margin: 0; }
+
+/* Remove old Grid Column since Quick Services is gone */
+.dashboard-bottom-grid {
+    display: block; /* No longer a grid */
+    margin-top: 0;
+}
+
+/* --- AUTHENTICATION SCREEN STYLES --- */
+
+/* Center the login form in the middle of the screen */
+#auth-container {
+    width: 100%;
+    max-width: 420px;
+    margin: 8vh auto; /* Vertical centering */
+    padding: 40px;
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+    z-index: 100;
+}
+
+/* Typography for Auth */
+#auth-container h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, white, #aaa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Auth Inputs */
+#auth-container input {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 20px;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+
+#auth-container input:focus {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
+}
+
+/* Auth Button */
+#auth-action-btn {
+    margin-top: 10px;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--primary-dim), var(--primary));
+    color: #000;
+    font-weight: 800;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#auth-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 230, 118, 0.3);
+}
+
+#auth-action-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Toggle Link */
+#toggle-auth-mode {
+    color: var(--primary) !important;
+    font-weight: 700;
+    transition: 0.2s;
+}
+#toggle-auth-mode:hover {
+    text-shadow: 0 0 10px var(--primary-glow);
+    text-decoration: underline;
+}
+
+/* Error Message */
+#error-msg {
+    min-height: 20px;
+    text-align: center;
+    color: var(--accent-red);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* --- HIDE SIDEBAR WHEN LOGGED OUT --- */
+/* This class will be added to body via JS */
+body.auth-mode .sidebar {
+    display: none !important;
+}
+
+body.auth-mode .header-left, 
+body.auth-mode .header-right {
+    visibility: hidden; /* Hide menu buttons during login */
+}
+
+body.auth-mode .content-area {
+    /* Center the container properly when sidebar is gone */
+    margin: 0 auto; 
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
