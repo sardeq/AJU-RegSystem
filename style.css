@@ -725,11 +725,57 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px 
     cursor: pointer;
 }
 
-.toggles-row { display: flex; gap: 20px; flex-wrap: wrap; }
+.toggles-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
 .toggle-label {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 0.9rem; color: #bbb; cursor: pointer;
-    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ccc;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: #111;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    transition: 0.2s;
+}
+
+.toggle-label:hover {
+    background: #222;
+    border-color: #666;
+}
+
+/* Custom Checkbox Style (Simple) */
+.toggle-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #000;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    padding: 0; /* Reset padding override */
+}
+
+.toggle-label input[type="checkbox"]:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.toggle-label input[type="checkbox"]:checked::after {
+    content: '✔';
+    font-size: 12px;
+    color: black;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
 }
 .toggle-label input { width: auto; margin: 0; accent-color: var(--primary); }
 
@@ -1864,15 +1910,14 @@ html[dir="rtl"] .nav-icon {
 }
 
 .reg-search-wrapper input {
-    width: 100%;
-    background: #0a0a0a;
-    border: 1px solid #333;
-    border-radius: 50px;
-    padding: 12px 20px 12px 45px; /* Space for icon */
-    color: white;
-    font-size: 1rem;
-    height: 46px; /* Explicit height */
+    /* Large left padding to ensure text doesn't sit behind the icon */
+    padding-left: 50px !important; 
+    padding-right: 20px;
+    
+    /* Ensure height is vertically centered */
+    line-height: normal; 
 }
+
 .reg-search-wrapper input:focus {
     border-color: var(--primary);
     box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
@@ -2071,7 +2116,10 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 20px; }
     .ai-header-btn { width: 100%; justify-content: center; }
 }
 
-html[dir="rtl"] .reg-search-wrapper input { padding: 12px 45px 12px 20px; }
+html[dir="rtl"] .reg-search-wrapper input {
+    padding-left: 20px !important;
+    padding-right: 50px !important;
+}
 html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
 
 .filter-btn-glass {

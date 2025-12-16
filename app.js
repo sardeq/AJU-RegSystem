@@ -1505,26 +1505,18 @@ async function applySchedule(courses) {
 };
 
 async function loadRegistrationData(userId) {
-    // FIX: Changed ID to match your HTML
     const grid = document.getElementById('registration-courses-grid');
     if (grid) grid.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // 1. Fetch Active Semester
-        const { data: activeSem } = await supabase
-            .from('semesters')
-            .select('semester_id')
-            .eq('is_active', true)
-            .single();
+        // Fetch Active Semester
+        const { data: activeSem } = await supabase.from('semesters').select('semester_id').eq('is_active', true).single();
+        if (!activeSem) { if(grid) grid.innerHTML = '<p style="color:red;text-align:center">No Active Semester</p>'; return; }
 
-        if (!activeSem) {
-            if (grid) grid.innerHTML = '<p style="text-align:center; color:red;">No Active Semester.</p>';
-            return;
-        }
-
-        // 2. Fetch User Data (Profile, Enrollments, Waitlist, History)
+        // Fetch User Data
         const [profileRes, enrollRes, waitRes, historyRes] = await Promise.all([
             supabase.from('users').select('*').eq('id', userId).single(),
+            // Fetch schedule_text here to check for conflicts
             supabase.from('enrollments').select('section_id, status, sections(course_code, schedule_text, courses(credit_hours))').eq('user_id', userId).in('status', ['REGISTERED', 'ENROLLED']),
             supabase.from('waiting_list').select('section_id').eq('user_id', userId).eq('status', 'WAITING'),
             supabase.from('enrollments').select('sections(course_code)').eq('user_id', userId).eq('status', 'COMPLETED')
@@ -1532,37 +1524,34 @@ async function loadRegistrationData(userId) {
 
         if (profileRes.data) window.userProfile = profileRes.data;
 
-        // Process Enrollments
+        // Process Enrollments & Busy Times
         currentEnrollments = enrollRes.data ? enrollRes.data.map(e => e.section_id) : [];
-        window.enrolledCourseCodes = enrollRes.data ? enrollRes.data.map(e => e.sections?.course_code) : [];
+        
+        // STORE BUSY TIMES FOR CONFLICT FILTER
+        window.myBusyTimes = enrollRes.data ? enrollRes.data.map(e => e.sections?.schedule_text).filter(Boolean) : [];
+        
+        // Process Credits
         const totalCredits = enrollRes.data ? enrollRes.data.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0) : 0;
         window.currentTotalCredits = totalCredits;
         updateCreditUI(totalCredits);
 
-        // Process Waitlist & History
+        // Process Lists
         currentWaitlist = waitRes.data ? waitRes.data.map(w => w.section_id) : [];
         window.passedCourses = historyRes.data ? historyRes.data.map(h => h.sections?.course_code.toString()) : [];
 
-        // 3. Fetch All Course Sections
+        // Fetch Sections
         const { data: sections, error } = await supabase
             .from('sections')
-            .select(`
-                *,
-                courses (
-                    course_code, course_name_en, course_name_ar, credit_hours, category,
-                    prerequisites!prerequisites_course_code_fkey (prereq_code)
-                )
-            `)
+            .select(`*, courses (course_code, course_name_en, course_name_ar, credit_hours, category)`)
             .eq('semester_id', activeSem.semester_id)
             .order('course_code', { ascending: true });
 
         if (error) throw error;
-
         availableSectionsData = sections || [];
 
-        // 4. Render Everything
-        filterGrid('all'); // Initialize with 'All' filter
-        renderMiniRegisteredList();
+        // Render
+        filterGrid('all');
+        renderMiniRegisteredList(); // This is now safe
         renderMiniWaitlist();
 
     } catch (err) {
@@ -1599,67 +1588,69 @@ function renderRegistrationList(sections) {
     
     grid.innerHTML = '';
 
-    // --- 1. GET FILTER VALUES ---
-    const searchInput = document.getElementById('reg-search-input');
-    const searchText = searchInput ? searchInput.value.toLowerCase() : '';
-    
-    // Safety checks for dropdowns (in case they don't exist in HTML)
+    // 1. GET INPUTS
+    const searchText = document.getElementById('reg-search-input')?.value.toLowerCase() || '';
     const filterYear = document.getElementById('reg-filter-year')?.value || 'all';
     const filterCat = document.getElementById('reg-filter-category')?.value || 'all';
+    
+    // 2. GET NEW CHECKBOX VALUES
+    const hideCompleted = document.getElementById('reg-check-completed')?.checked || false;
+    const hideFull = document.getElementById('reg-check-full')?.checked || false;
+    const hideConflict = document.getElementById('reg-check-conflict')?.checked || false;
 
-    // --- 2. FILTERING LOGIC ---
+    // 3. FILTER LOOP
     const filtered = sections.filter(sec => {
         const course = sec.courses;
         const code = (course.course_code || sec.course_code).toString();
         const nameEn = course.course_name_en.toLowerCase();
-        const nameAr = course.course_name_ar ? course.course_name_ar.toLowerCase() : "";
         
-        // A. Search Text (Code or Name)
-        if (!code.toLowerCase().includes(searchText) && 
-            !nameEn.includes(searchText) && 
-            !nameAr.includes(searchText)) return false;
+        // Search
+        if (!code.toLowerCase().includes(searchText) && !nameEn.includes(searchText)) return false;
 
-        // B. Dropdown Filters
+        // Dropdowns
         if (filterYear !== 'all' && code.length >= 3 && code[2] !== filterYear) return false;
         if (filterCat !== 'all' && course.category !== filterCat) return false;
 
-        // C. Status Variables
+        // Status Variables
         const isRegistered = currentEnrollments.includes(sec.section_id);
         const isWaitlisted = currentWaitlist.includes(sec.section_id);
+        const isPassed = window.passedCourses && window.passedCourses.includes(code);
         const capacity = sec.capacity || 40;
         const enrolled = sec.enrolled_count || 0;
         const isFull = enrolled >= capacity;
 
-        // D. Pill Filter Logic (The Top Buttons)
+        // --- NEW CHECKBOX LOGIC ---
+        if (hideCompleted && isPassed) return false;
+        if (hideFull && isFull && !isRegistered) return false; // Don't hide if I'm registered
+        
+        if (hideConflict && !isRegistered) {
+            // Check if section time matches any of my busy times
+            if (sec.schedule_text && window.myBusyTimes && window.myBusyTimes.includes(sec.schedule_text)) {
+                return false;
+            }
+        }
+
+        // Pill Logic
         if (currentPillFilter === 'available') {
-            // Must be Open AND Not Registered AND Not Waitlisted
-            if (isRegistered || isWaitlisted || isFull) return false;
+            if (isRegistered || isWaitlisted || isFull || isPassed) return false;
         } 
         else if (currentPillFilter === 'waitlist') {
-            // Show only courses I am waitlisted for OR courses that are full (Waitlistable)
-            // But usually "Waitlist Status" implies "My Waitlist"
-            if (!isWaitlisted) return false; 
+            if (!isWaitlisted) return false;
         }
 
         return true;
     });
 
-    // --- 3. EMPTY STATE ---
     if (filtered.length === 0) {
-        grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align:center; padding:60px; color:#555;">
-                <div style="font-size:3rem; margin-bottom:15px; opacity:0.3;">🔍</div>
-                <p>No courses found matching criteria.</p>
-            </div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px;color:#666;"><p>No courses found.</p></div>`;
         return;
     }
 
-    // --- 4. RENDER CARDS ---
+    // 4. RENDER
     filtered.forEach(sec => {
         const course = sec.courses;
         const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
         
-        // Determine Status
         const isRegistered = currentEnrollments.includes(sec.section_id);
         const isWaitlisted = currentWaitlist.includes(sec.section_id);
         const isPassed = window.passedCourses && window.passedCourses.includes(course.course_code.toString());
@@ -1667,66 +1658,55 @@ function renderRegistrationList(sections) {
         const enrolled = sec.enrolled_count || 0;
         const isFull = enrolled >= capacity;
 
-        // UI Components
-        let statusBadge = '';
-        let actionBtn = '';
+        // UI Logic
+        let statusBadge = `<span class="rc-status">Open Seat</span>`;
+        let actionBtn = `<button class="rc-action-btn" onclick="handleRegister(${sec.section_id})">Register</button>`;
         let borderClass = '';
 
         if (isPassed) {
             statusBadge = `<span class="rc-status" style="background:rgba(255,255,255,0.1); color:#999;">Completed</span>`;
             actionBtn = `<button class="rc-action-btn registered" disabled>Passed</button>`;
-        } 
-        else if (isRegistered) {
+        } else if (isRegistered) {
             statusBadge = `<span class="rc-status" style="background:rgba(0, 230, 118, 0.15); color:#00e676;">Registered</span>`;
-            borderClass = 'border: 1px solid rgba(0,230,118,0.3);'; 
+            borderClass = 'border-color: rgba(0,230,118,0.3);';
             actionBtn = `<button class="rc-action-btn registered" disabled>Enrolled</button>`;
-        } 
-        else if (isWaitlisted) {
+        } else if (isWaitlisted) {
             statusBadge = `<span class="rc-status waitlist">On Waitlist</span>`;
-            actionBtn = `<button class="rc-action-btn outline" style="color:#ff9100; border-color:#ff9100;" onclick="dropWaitlist(${sec.section_id})">Leave Queue</button>`;
-        } 
-        else if (isFull) {
+            actionBtn = `<button class="rc-action-btn outline" onclick="dropWaitlist(${sec.section_id})">Leave Queue</button>`;
+        } else if (isFull) {
             statusBadge = `<span class="rc-status full">Class Full</span>`;
             actionBtn = `<button class="rc-action-btn outline" onclick="handleWaitlist(${sec.section_id})">Join Waitlist</button>`;
-        } 
-        else {
-            statusBadge = `<span class="rc-status">Open Seat</span>`;
-            actionBtn = `<button class="rc-action-btn" onclick="handleRegister(${sec.section_id})">Register</button>`;
         }
 
         const card = document.createElement('div');
         card.className = 'reg-card-new';
-        if(borderClass) card.style.cssText += borderClass;
+        if(borderClass) card.style.cssText = borderClass;
         
         card.innerHTML = `
             <div class="rc-header">
                 <span class="rc-code-pill">${course.course_code}</span>
                 <button class="rc-fav-btn">♡</button>
             </div>
-
             <div class="rc-body">
                 ${statusBadge}
                 <h3 class="rc-title">${courseName}</h3>
                 <p class="rc-desc">Section ${sec.section_number} • ${course.credit_hours} Cr</p>
-                
                 <div class="rc-meta-row">
                     <div class="rc-meta-pill">
-                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         ${sec.schedule_text || 'TBA'}
                     </div>
                     <div class="rc-meta-pill">
-                         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         ${sec.instructor_name || 'Staff'}
                     </div>
                 </div>
             </div>
-
             <div class="rc-footer">
                 <span class="rc-credits">${enrolled}/${capacity} Students</span>
                 ${actionBtn}
             </div>
         `;
-
         grid.appendChild(card);
     });
 }
@@ -2040,10 +2020,13 @@ window.handleWaitlist = async function(sectionId) {
     }
 };
 
-// Updated Mini Registered List (Sidebar)
 function renderMiniRegisteredList() {
     const list = document.getElementById('mini-registered-list');
-    const badge = document.getElementById('mini-reg-count'); // New badge
+    
+    // SAFETY CHECK: If element doesn't exist, stop immediately
+    if (!list) return; 
+
+    const badge = document.getElementById('mini-reg-count');
     
     list.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>';
 
@@ -2100,9 +2083,38 @@ window.showSection = function(sectionName) {
 
 if (authActionBtn) authActionBtn.addEventListener('click', handleAuth);
 
-if (aiBtn) aiBtn.addEventListener('click', () => {
+const aiBtnReg = document.getElementById('ai-enhance-btn-reg'); // The new ID
+const aiBtnHome = document.querySelector('.enhance-ai-btn'); // The old class
+
+function openAIModal() {
     if (!currentUser) { alert("Please log in."); return; }
-    aiPrefModal.classList.remove('hidden');
+    const modal = document.getElementById('ai-pref-modal');
+    if(modal) modal.classList.remove('hidden');
+}
+
+if (aiBtnReg) aiBtnReg.addEventListener('click', openAIModal);
+if (aiBtnHome) aiBtnHome.addEventListener('click', openAIModal);
+
+// 2. Filter Toggle Function
+window.toggleFilters = function() {
+    const panel = document.getElementById('reg-filter-panel');
+    if (panel) {
+        panel.classList.toggle('hidden');
+    } else {
+        console.error("Filter panel element not found");
+    }
+};
+
+// 3. Filter Inputs Event Listeners (Ensure these IDs exist in new HTML)
+const regFilters = ['reg-filter-year', 'reg-filter-category'];
+regFilters.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('change', () => {
+             // Re-render list with new dropdown values
+             if(availableSectionsData.length > 0) renderRegistrationList(availableSectionsData);
+        });
+    }
 });
 
 

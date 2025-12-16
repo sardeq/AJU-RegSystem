@@ -240,14 +240,27 @@
                 <option value="Major Elective">Major Elective</option>
             </select>
         </div>
+
+        <div class="toggles-row" style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
+            <label class="toggle-label">
+                <input type="checkbox" id="reg-check-completed" onclick="renderRegistrationList(availableSectionsData)"> 
+                Hide Completed
+            </label>
+            <label class="toggle-label">
+                <input type="checkbox" id="reg-check-conflict" onclick="renderRegistrationList(availableSectionsData)"> 
+                Hide Time Conflicts
+            </label>
+            <label class="toggle-label">
+                <input type="checkbox" id="reg-check-full" onclick="renderRegistrationList(availableSectionsData)"> 
+                Hide Full Sections
+            </label>
+        </div>
     </div>
 
     <div id="reg-credit-status" style="text-align:center; margin-bottom: 20px; font-size: 0.9rem; color: #666;"></div>
-
-    <div id="registration-courses-grid" class="reg-grid">
-        </div>
-
+    <div id="registration-courses-grid" class="reg-grid"></div>
 </div>
+
 
             <div id="courses-sheet-container" class="dashboard-view hidden">
                 <h2 class="section-title" data-i18n="nav_sheet">Courses Sheet</h2>
