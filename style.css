@@ -1788,3 +1788,7 @@ html[dir="rtl"] .nav-icon {
     margin-left: 10px;
     margin-right: 0;
 }
+
+.sidebar.collapsed .sidebar-brand-text {
+     display: none; 
+}
