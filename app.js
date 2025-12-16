@@ -677,28 +677,28 @@ async function loadDashboardData(userId) {
 
 async function renderHome(profile, schedule) {
     if (profile) {
-        // 1. Update Sidebar Profile Info (NEW)
+        // 1. Sidebar Profile Updates
         const sideName = document.getElementById('sidebar-user-name');
-        const sideMajor = document.getElementById('sidebar-user-major');
+        const sideId = document.getElementById('sidebar-user-id');
+        const homeName = document.getElementById('home-user-name');
         
         if (sideName) sideName.textContent = profile.full_name || "Student";
-        if (sideMajor) sideMajor.textContent = profile.major || "Software Engineering";
+        if (homeName) homeName.textContent = profile.full_name || "Student";
+        // Assuming ID is in metadata or just using a placeholder based on DB schema
+        if (sideId) sideId.textContent = `ID: ${profile.student_id || '202110452'}`; 
 
-        // 2. Stats (Existing code)
+        // 2. Stats Cards
         const gpaEl = document.getElementById('stat-gpa');
         if (gpaEl) gpaEl.textContent = profile.gpa ? profile.gpa.toFixed(2) : "N/A";
         
         const rankEl = document.getElementById('stat-rank');
-        if (rankEl) rankEl.textContent = profile.rank ? `Rank: #${profile.rank}` : "Rank: --";
+        if (rankEl) rankEl.textContent = profile.rank ? `#${profile.rank}` : "--";
 
-        const balEl = document.getElementById('stat-balance');
-        if (balEl) balEl.textContent = profile.balance ? `${Number(profile.balance).toFixed(2)}` : "0.00";
-
-        const courseCount = schedule ? schedule.length : 0;
         const regCountEl = document.getElementById('stat-registered-count');
+        const courseCount = schedule ? schedule.length : 0;
         if (regCountEl) regCountEl.textContent = courseCount;
         
-        // Hours Progress
+        // 3. Hours Calculation
         let completedHours = 0;
         const { data: history } = await supabase
             .from('enrollments')
@@ -710,19 +710,60 @@ async function renderHome(profile, schedule) {
             completedHours = history.reduce((sum, item) => sum + (item.sections?.courses?.credit_hours || 0), 0);
         }
 
-        const planTotal = 132;
-        const pct = Math.min(100, Math.round((completedHours / planTotal) * 100));
-
         const hoursText = document.getElementById('stat-hours-text');
-        const hoursBar = document.getElementById('stat-hours-bar');
-        const hoursSub = document.getElementById('stat-hours-sub');
-
         if (hoursText) hoursText.textContent = completedHours;
-        if (hoursBar) hoursBar.style.width = `${pct}%`;
-        if (hoursSub) hoursSub.textContent = `Out of ${planTotal} Hours (${pct}%)`;
     }
 
-    renderTodaySchedule(schedule);
+    // Render the Vertical Bento Schedule
+    renderBentoSchedule(schedule);
+}
+
+function renderBentoSchedule(enrollments) {
+    const listContainer = document.getElementById('bento-schedule-list');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = ''; 
+
+    const validEnrollments = enrollments ? enrollments.filter(e => e.sections) : [];
+
+    // Filter for "Today" (Simulated or Real)
+    const dayIndex = new Date().getDay(); // 0=Sun
+    const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const currentDayStr = daysMap[dayIndex];
+    
+    // Logic: If schedule text contains today's day name
+    const todayCourses = validEnrollments.filter(item => {
+        const scheduleText = item.sections?.schedule_text || "";
+        return scheduleText.toLowerCase().includes(currentDayStr.toLowerCase());
+    });
+
+    if (todayCourses.length === 0) {
+        listContainer.innerHTML = `
+            <div style="text-align:center; padding:30px; color:#666;">
+                <div style="font-size:2rem; margin-bottom:10px;">☕</div>
+                No classes today
+            </div>`;
+        return;
+    }
+
+    todayCourses.forEach(item => {
+        const sec = item.sections;
+        const course = sec.courses;
+        const courseName = currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
+        
+        // Extract time (e.g., 08:00 - 09:30)
+        const timeMatch = sec.schedule_text.match(/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/);
+        const timeDisplay = timeMatch ? timeMatch[0] : "TBA";
+
+        const div = document.createElement('div');
+        div.className = 'bento-class-card';
+        div.innerHTML = `
+            <span class="bcc-time-pill">${timeDisplay}</span>
+            <span class="bcc-title">${courseName}</span>
+            <span class="bcc-prof">Sec ${sec.section_number} • ${sec.room_number || 'Room TBA'}</span>
+        `;
+        listContainer.appendChild(div);
+    });
 }
 
 function renderTodaySchedule(enrollments) {
