@@ -1471,6 +1471,10 @@ function updateUI(session) {
         document.getElementById('schedule-container').classList.add('hidden');
         document.getElementById('plan-container').classList.add('hidden');
         
+        /* --- ADD THIS LINE --- */
+        document.getElementById('exceptions-container').classList.add('hidden'); 
+        /* --------------------- */
+        
         // 4. Reset Inputs
         if(emailInput) emailInput.value = '';
         if(passwordInput) passwordInput.value = '';
