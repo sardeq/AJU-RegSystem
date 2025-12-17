@@ -393,60 +393,95 @@
                     </div>
             </div>
 
-            <div id="exceptions-container" class="dashboard-view hidden">
-                <h2 class="section-title" data-i18n="exc_title">Exception Requests</h2>
-            
-                <div class="home-layout">
-                    <div class="left-col">
-                        <div class="filter-panel" style="padding: 25px;">
-                            <h3 style="margin-top:0; color:#2E7D32;" data-i18n="exc_new_req">New Request</h3>
-                            
-                            <div class="form-group">
-                                <label class="form-label" data-i18n="exc_type_label">Request Type</label>
-                                <select id="exc-type" class="custom-select" onchange="toggleExcFields()">
-                                    <option value="PREREQ" data-i18n="opt_prereq">Prerequisite Override</option>
-                                    <option value="ALTERNATIVE" data-i18n="opt_alt">Alternative Course</option>
-                                </select>
-                                <small id="exc-type-desc" style="color:#666; display:block; margin-top:5px;"></small>
-                            </div>
-            
-                            <div class="form-group">
-                                <label class="form-label" data-i18n="exc_target_label">Target Course</label>
-                                <div class="search-wrapper" style="position:relative;">
-                                    <input type="text" id="exc-target-search" class="custom-input" data-i18n-placeholder="ph_search_target" placeholder="Start typing course name or code..." autocomplete="off">
-                                    <input type="hidden" id="exc-target-code-hidden">
-                                    <div id="exc-target-suggestions" class="suggestions-list hidden"></div>
-                                </div>
-                            </div>
-            
-                            <div class="form-group hidden" id="alt-course-group">
-                                <label class="form-label" data-i18n="exc_alt_label">Replacing Course (Optional)</label>
-                                <div class="search-wrapper" style="position:relative;">
-                                    <input type="text" id="exc-alt-search" class="custom-input" data-i18n-placeholder="ph_search_alt" placeholder="Search replacement course..." autocomplete="off">
-                                    <input type="hidden" id="exc-alt-code-hidden">
-                                    <div id="exc-alt-suggestions" class="suggestions-list hidden"></div>
-                                </div>
-                            </div>
-            
-                            <div class="form-group">
-                                <label class="form-label" data-i18n="exc_reason_label">Reason / Justification</label>
-                                <textarea id="exc-reason" class="custom-input" rows="4" data-i18n-placeholder="ph_reason" placeholder="Explain why you need this exception..."></textarea>
-                            </div>
-            
-                            <button class="enhance-ai-btn" onclick="submitException()" data-i18n="btn_submit_req">Submit Request</button>
-                        </div>
-                    </div>
-            
-                    <div class="right-col">
-                        <div class="courses-container">
-                            <h3 class="courses-title" data-i18n="exc_history_title">Request History</h3>
-                            <div id="exception-history-list" class="mini-course-list" style="max-height: 500px;">
-                                <p style="text-align:center; color:#666; padding:20px;" data-i18n="lbl_loading">Loading...</p>
-                            </div>
-                        </div>
+<div id="exceptions-container" class="dashboard-view hidden">
+    <div class="sch-modern-header">
+        <div style="display: flex; flex-direction: column;">
+            <h2 class="section-title" data-i18n="exc_title" style="margin-bottom: 5px;">Exception Requests</h2>
+            <span style="color:#666; font-size:0.9rem;">Submit overrides for prerequisites or alternative courses.</span>
+        </div>
+        <div class="header-stats-pill">
+            <span id="exc-total-count" style="color:white; font-weight:bold;">0</span> Requests
+        </div>
+    </div>
+
+    <div class="exception-layout">
+        
+        <div class="exc-left-panel">
+            <div class="exc-form-card">
+                <div class="form-header-row">
+                    <div class="icon-box-orange">⚡</div>
+                    <div>
+                        <h3 style="margin:0; color:white;">New Exception Request</h3>
+                        <span style="font-size:0.8rem; color:#666;">Fill out the details below to request a curriculum override.</span>
                     </div>
                 </div>
+                
+                <div class="form-group" style="margin-top:20px;">
+                    <label class="form-label-modern" data-i18n="exc_type_label">Request Type</label>
+                    <div class="exc-type-grid">
+                        <label class="type-card">
+                            <input type="radio" name="exc-type-radio" value="PREREQ" checked onchange="updateExcType('PREREQ')">
+                            <span class="type-icon">🔓</span>
+                            <span class="type-name" data-i18n="opt_prereq">Prereq Override</span>
+                        </label>
+                        <label class="type-card">
+                            <input type="radio" name="exc-type-radio" value="ALTERNATIVE" onchange="updateExcType('ALTERNATIVE')">
+                            <span class="type-icon">🔀</span>
+                            <span class="type-name" data-i18n="opt_alt">Alternative Course</span>
+                        </label>
+                    </div>
+                    <select id="exc-type" class="hidden">
+                        <option value="PREREQ">Prerequisite</option>
+                        <option value="ALTERNATIVE">Alternative</option>
+                    </select>
+                </div>
+
+                <div class="ai-control-box">
+                    <div class="ai-box-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <span data-i18n="exc_target_label">Target Course (The course you want to take)</span>
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="exc-target-search" class="modern-input" data-i18n-placeholder="ph_search_target" placeholder="Search course code or name..." autocomplete="off">
+                        <input type="hidden" id="exc-target-code-hidden">
+                        <div id="exc-target-suggestions" class="suggestions-list hidden"></div>
+                    </div>
+                </div>
+
+                <div class="ai-control-box hidden" id="alt-course-group">
+                    <div class="ai-box-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                        <span data-i18n="exc_alt_label">Replacing Course</span>
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="exc-alt-search" class="modern-input" data-i18n-placeholder="ph_search_alt" placeholder="Search course to replace..." autocomplete="off">
+                        <input type="hidden" id="exc-alt-code-hidden">
+                        <div id="exc-alt-suggestions" class="suggestions-list hidden"></div>
+                    </div>
+                </div>
+
+                <div class="ai-control-box">
+                    <div class="ai-box-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <span data-i18n="exc_reason_label">Justification / Reason</span>
+                    </div>
+                    <textarea id="exc-reason" class="modern-textarea" rows="5" data-i18n-placeholder="ph_reason" placeholder="Please explain your academic situation in detail..."></textarea>
+                </div>
+
+                <button class="enhance-ai-btn" onclick="submitException()" data-i18n="btn_submit_req">
+                    <span>Submit Request 🚀</span>
+                </button>
             </div>
+        </div>
+
+        <div class="exc-right-panel">
+            <h3 class="section-title-sm" data-i18n="exc_history_title" style="margin-bottom:15px; color:#888;">History</h3>
+            <div id="exception-history-list" class="exc-history-grid">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+</div>
     
         </div>
     </div>

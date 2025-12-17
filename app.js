@@ -1739,6 +1739,16 @@ window.filterGrid = function(filterType) {
     renderRegistrationList(availableSectionsData);
 };
 
+window.updateExcType = function(val) {
+    // Sync the hidden select box (which existing logic uses)
+    const select = document.getElementById('exc-type');
+    if(select) {
+        select.value = val;
+        // Trigger the existing logic to toggle descriptions/fields
+        toggleExcFields(); 
+    }
+}
+
 window.renderRegistrationList = renderRegistrationList;
 
 function renderRegistrationList(sections) {
@@ -3202,6 +3212,9 @@ window.submitException = async function() {
 
 async function loadExceptionHistory(userId) {
     const list = document.getElementById('exception-history-list');
+    const countEl = document.getElementById('exc-total-count'); // Update total count
+    
+    if(!list) return;
     list.innerHTML = '<div class="spinner"></div>';
 
     try {
@@ -3214,40 +3227,62 @@ async function loadExceptionHistory(userId) {
         if (error) throw error;
 
         list.innerHTML = '';
+        if(countEl) countEl.textContent = data ? data.length : 0;
+
         if (!data || data.length === 0) {
-            list.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">No requests found.</p>';
+            list.innerHTML = `
+                <div style="text-align:center; padding:40px; color:#666; border:1px dashed #333; border-radius:20px;">
+                    <div style="font-size:2rem; margin-bottom:10px;">📭</div>
+                    No request history found.
+                </div>`;
             return;
         }
 
         data.forEach(req => {
             const date = new Date(req.created_at).toLocaleDateString();
+            const status = req.status || 'PENDING';
             
-            let badgeClass = 'badge-gray';
-            if (req.status === 'APPROVED') badgeClass = 'badge-green';
-            if (req.status === 'REJECTED') badgeClass = 'badge-red';
-            if (req.status === 'PENDING') badgeClass = 'badge-yellow';
+            // Map type to user-friendly text
+            const typeLabel = req.type === 'PREREQ' ? 'Prerequisite Override' : 'Alternative Course';
+            const icon = req.type === 'PREREQ' ? '🔓' : '🔀';
 
             const item = document.createElement('div');
-            item.className = 'course-item'; // Reuse existing card style
-            item.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:5px;">
-                    <div class="course-name" style="margin:0;">${req.course_code}</div>
-                    <span class="badge ${badgeClass}" style="font-size:0.7em;">${req.status}</span>
-                </div>
-                <div style="font-size:0.85em; color:#555; margin-bottom:5px;">
-                    <strong>Type:</strong> ${req.type === 'PREREQ' ? 'Prerequisite' : 'Alternative'}
-                </div>
-                <div style="font-size:0.85em; color:#666; font-style:italic; background:#f9f9f9; padding:5px; border-radius:4px;">
-                    "${req.reason}"
-                </div>
-                ${req.admin_response ? `
-                    <div style="font-size:0.85em; color:#2E7D32; margin-top:5px; border-top:1px dashed #ddd; padding-top:4px;">
-                        <strong>Admin:</strong> ${req.admin_response}
+            item.className = `exc-item-card status-${status}`;
+            
+            // Admin Response HTML (Only if exists)
+            let adminHtml = '';
+            if (req.admin_response) {
+                adminHtml = `
+                    <div class="exc-admin-box">
+                        <span class="admin-icon">👨‍🏫</span>
+                        <div class="admin-text">
+                            <span class="admin-label">Admin Response</span>
+                            ${req.admin_response}
+                        </div>
                     </div>
-                ` : ''}
-                <div style="font-size:0.75em; color:#999; text-align:right; margin-top:5px;">
-                    ${date}
+                `;
+            }
+
+            item.innerHTML = `
+                <div class="exc-card-header">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="exc-code-badge">${req.course_code}</span>
+                        <span style="color:#666; font-size:0.85rem;">${date}</span>
+                    </div>
+                    <span class="exc-status-badge">${status}</span>
                 </div>
+
+                <div class="exc-details-row">
+                    <span style="display:flex; align-items:center; gap:6px;">
+                        ${icon} ${typeLabel}
+                    </span>
+                </div>
+
+                <div class="exc-reason-box">
+                    ${req.reason}
+                </div>
+
+                ${adminHtml}
             `;
             list.appendChild(item);
         });
