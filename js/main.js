@@ -7,8 +7,8 @@ import { loadRegistrationData, setupRegistrationListeners } from './registration
 import { loadFullSchedule, loadHistoryTimeline } from './schedule.js';
 import { loadStudentPlan } from './plan.js';
 import { loadCoursesSheetData, setupSheetListeners } from './courses-sheet.js';
-import { loadExceptionHistory } from './exceptions.js';
-import { setupAIListeners } from './ai.js'; // Import setup
+import { loadExceptionHistory, setupExceptionListeners } from './exceptions.js'; // Imported setup
+import { setupAIListeners } from './ai.js'; 
 
 // Global Router
 window.showSection = function(sectionName) {
@@ -36,14 +36,32 @@ window.showSection = function(sectionName) {
     else if (sectionName === 'exceptions') loadExceptionHistory(userId);
 };
 
-// Init
 document.addEventListener('DOMContentLoaded', () => {
     applyLanguage(state.currentLang);
     
-    // --- SETUP LISTENERS ---
     setupRegistrationListeners();
     setupSheetListeners();
     setupAIListeners();
+    setupExceptionListeners(); 
+
+    const menuBtn = document.querySelector('.menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    if (menuBtn && sidebar) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+    }
+
+    const langBtn = document.querySelector('.lang-btn');
+    if (langBtn) {
+        langBtn.addEventListener('click', () => {
+            const newLang = state.currentLang === 'en' ? 'ar' : 'en';
+            applyLanguage(newLang);
+             if (state.currentUser && !document.getElementById('home-container').classList.contains('hidden')) {
+                import('./dashboard.js').then(m => m.loadDashboardData(state.currentUser.id));
+            }
+        });
+    }
 
     supabase.auth.onAuthStateChange((event, session) => {
         state.currentUser = session?.user || null;

@@ -54,6 +54,94 @@ export async function loadExceptionHistory(userId) {
     }
 }
 
+// --- FIX 3: SEARCH LOGIC RESTORED ---
+
+// 1. Fetch data if missing
+async function fetchAllCoursesForSearch() {
+    if (state.allCoursesData.length > 0) return; // Use cache if available
+
+    try {
+        const { data, error } = await supabase
+            .from('courses')
+            .select('course_code, course_name_en, course_name_ar');
+        
+        if (error) throw error;
+        state.allCoursesData = data; 
+        console.log("Loaded courses for search");
+    } catch (err) {
+        console.error("Failed to load courses:", err);
+    }
+}
+
+// 2. Setup Listeners
+export function setupExceptionListeners() {
+    setupCourseSearch('exc-target-search', 'exc-target-code-hidden', 'exc-target-suggestions');
+    setupCourseSearch('exc-alt-search', 'exc-alt-code-hidden', 'exc-alt-suggestions');
+    
+    // Lazy load courses when user clicks inputs
+    ['exc-target-search', 'exc-alt-search'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.addEventListener('focus', fetchAllCoursesForSearch);
+    });
+}
+
+// 3. Generic Search Function
+function setupCourseSearch(inputId, hiddenId, listId) {
+    const input = document.getElementById(inputId);
+    const hidden = document.getElementById(hiddenId);
+    const list = document.getElementById(listId);
+
+    if(!input) return;
+
+    input.addEventListener('input', () => {
+        const val = input.value.toLowerCase();
+        list.innerHTML = '';
+        
+        if (val.length < 2) {
+            list.classList.add('hidden');
+            return;
+        }
+
+        const matches = state.allCoursesData.filter(c => {
+            const code = c.course_code.toString();
+            const en = c.course_name_en.toLowerCase();
+            const ar = c.course_name_ar ? c.course_name_ar.toLowerCase() : "";
+            return code.includes(val) || en.includes(val) || ar.includes(val);
+        }).slice(0, 10);
+
+        if (matches.length === 0) {
+            list.classList.add('hidden');
+            return;
+        }
+
+        matches.forEach(c => {
+            const name = state.currentLang === 'ar' ? c.course_name_ar : c.course_name_en;
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `
+                <span class="suggestion-code">${c.course_code}</span>
+                <span class="suggestion-name">${name}</span>
+            `;
+            
+            div.onclick = () => {
+                input.value = `${c.course_code} - ${name}`;
+                if(hidden) hidden.value = c.course_code;
+                list.classList.add('hidden');
+            };
+            list.appendChild(div);
+        });
+        
+        list.classList.remove('hidden');
+    });
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+        if (input && list && !input.contains(e.target) && !list.contains(e.target)) {
+            list.classList.add('hidden');
+        }
+    });
+}
+
 // Expose submit function to global window for onclick
 window.submitException = async function() {
     if(!state.currentUser) {
@@ -88,3 +176,15 @@ window.submitException = async function() {
         alert("Error: " + err.message);
     }
 };
+
+window.updateExcType = function(val) {
+    const select = document.getElementById('exc-type');
+    if(select) select.value = val;
+    
+    // Toggle UI visibility
+    const altGroup = document.getElementById('alt-course-group');
+    if(altGroup) {
+        if(val === 'PREREQ') altGroup.classList.add('hidden');
+        else altGroup.classList.remove('hidden');
+    }
+}
