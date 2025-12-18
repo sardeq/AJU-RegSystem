@@ -1442,7 +1442,6 @@ function updateUI(session) {
         // 3. Show Sidebar
         sidebar.classList.remove('hidden');
 
-        // 4. Load Data & Show Home
         const userNameDisplay = document.querySelector('.user-name');
         if(userNameDisplay && session.user.user_metadata.full_name) {
             userNameDisplay.textContent = session.user.user_metadata.full_name;
@@ -1450,20 +1449,15 @@ function updateUI(session) {
 
         loadDashboardData(session.user.id);
         
-        // Default to Home view
         showSection('home'); 
 
     } else {
-        // --- LOGGED OUT STATE ---
         currentUser = null;
         
-        // 1. Add Auth Mode styling (Hides sidebar via CSS)
         body.classList.add('auth-mode');
 
-        // 2. Show Login Form
         authContainer.classList.remove('hidden');
         
-        // 3. Force Hide Sidebar & Dashboard Views
         sidebar.classList.add('hidden');
         homeContainer.classList.add('hidden');
         regContainer.classList.add('hidden');
@@ -1471,11 +1465,8 @@ function updateUI(session) {
         document.getElementById('schedule-container').classList.add('hidden');
         document.getElementById('plan-container').classList.add('hidden');
         
-        /* --- ADD THIS LINE --- */
         document.getElementById('exceptions-container').classList.add('hidden'); 
-        /* --------------------- */
         
-        // 4. Reset Inputs
         if(emailInput) emailInput.value = '';
         if(passwordInput) passwordInput.value = '';
         if(errorMsg) errorMsg.textContent = '';

@@ -116,91 +116,101 @@
                 </p>
             </div>
 
-            <div id="home-container" class="dashboard-view hidden">
-                
-                <div class="home-top-bar">
-                    <div class="welcome-text">
-                        <h1 data-i18n="welcome_title">Welcome, <span id="home-user-name" style="color:var(--primary)">Student</span></h1>
-                        <p style="color:#888; margin:0;">Here is your academic overview.</p>
-                    </div>
+<div id="home-container" class="dashboard-view">
+    
+    <div class="home-top-bar">
+        <div class="welcome-text">
+            <h1>Welcome back, <span id="home-user-name">Student</span>! 👋</h1>
+            <p style="color:#888;">Here is what’s happening with your academic life today.</p>
+        </div>
+        <div class="top-actions">
+            <button class="icon-btn-glass"><div class="notif-dot"></div>🔔</button>
+            <button class="btn-glass-green">
+                <span>Academic Calendar</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="bento-grid">
+        
+        <div class="bento-col-schedule">
+            <div class="bento-card-header">
+                <span>Today's Schedule</span>
+                <small style="color:#666">September 24</small>
+            </div>
+            <div id="bento-schedule-list" class="bento-schedule-list">
+                <div style="text-align:center; padding:20px; color:#444;">Loading schedule...</div>
+            </div>
+        </div>
+
+        <div class="bento-col-stats">
+            
+            <div class="stat-card-glass">
+                <div class="stat-top">
+                    <div class="icon-box-green">🎓</div>
+                    <span class="stat-pill-green">+0.2</span>
                 </div>
-
-                <div class="bento-grid">
-                    
-                    <div class="bento-col-schedule">
-                        <div class="bento-card-header">
-                            <span data-i18n="lbl_today_courses">Today</span>
-                            <button class="tiny-btn">↗</button>
-                        </div>
-                        <div id="bento-schedule-list" class="bento-schedule-list">
-                            <div class="spinner"></div>
-                        </div>
-                    </div>
-
-                    <div class="bento-col-stats">
-                        <div class="stat-card-glass">
-                            <div class="stat-top">
-                                <span class="stat-pill-green">0.15+</span> <div class="icon-box-green">📈</div>
-                            </div>
-                            <div class="stat-bottom">
-                                <span class="stat-value" id="stat-gpa">--</span>
-                                <span class="stat-label" data-i18n="lbl_gpa">GPA</span>
-                            </div>
-                        </div>
-
-                        <div class="stat-card-glass">
-                            <div class="stat-top">
-                                <span class="stat-pill-green">65%</span>
-                                <div class="icon-box-orange">🕒</div>
-                            </div>
-                            <div class="stat-bottom">
-                                <span class="stat-value" id="stat-hours-text">--</span>
-                                <span class="stat-label">Completed Hours</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bento-hero">
-                        <div class="hero-overlay"></div>
-                        <div class="hero-content-new">
-                            <div class="hero-badge" data-i18n="msg_registered">Registration Open ⚡</div>
-                            <h2 class="hero-title">Second Semester<br>2024/2025</h2>
-                            <p class="hero-desc">Start registering your courses now and use the AI Smart Schedule feature.</p>
-                            <div class="hero-btns">
-                                <button class="btn-white" onclick="showSection('registration')" data-i18n="nav_reg">Register Now</button>
-                                <button class="btn-outline" data-i18n="lbl_view_full">Details</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bento-bottom-row">
-                    <div class="alert-card-long">
-                        <div class="icon-circle-yellow">⚠️</div>
-                        <div class="alert-content">
-                            <strong>Pending Tuition Fees</strong>
-                            <small>Deadline for payment is next Thursday.</small>
-                        </div>
-                        <button class="tiny-arrow-btn">›</button>
-                    </div>
-
-                    <div class="mini-stat-card purple-gradient">
-                        <div class="mini-icon">🎓</div>
-                        <div class="mini-details">
-                            <span class="mini-label" data-i18n="lbl_rank">Rank</span>
-                            <span class="mini-val" id="stat-rank">--</span>
-                        </div>
-                    </div>
-
-                    <div class="mini-stat-card blue-gradient">
-                        <div class="mini-icon">📖</div>
-                        <div class="mini-details">
-                            <span class="mini-label" data-i18n="lbl_registered_courses">Registered</span>
-                            <span class="mini-val" id="stat-registered-count">0</span>
-                        </div>
-                    </div>
+                <div class="stat-bottom">
+                    <span id="stat-gpa" class="stat-value">--</span>
+                    <span class="stat-label">Current GPA</span>
                 </div>
             </div>
+
+            <div class="stat-card-glass">
+                <div class="stat-top">
+                    <div class="icon-box-orange">⚡</div>
+                </div>
+                <div class="stat-bottom">
+                    <span id="stat-hours-text" class="stat-value">--</span>
+                    <span class="stat-label">Hours Passed</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bento-hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-content-new">
+                <span class="hero-badge">Announcement</span>
+                <h2 class="hero-title">Registration for Fall 2025 is now open!</h2>
+                <p class="hero-desc">Check your advising plan before registering for new courses.</p>
+                <div class="hero-btns">
+                    <button class="btn-white" onclick="showSection('registration')">Register Now</button>
+                    <button class="btn-outline" onclick="showSection('plan')">View Plan</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bento-bottom-row">
+        
+        <div class="alert-card-long">
+            <div class="icon-circle-yellow">⚠️</div>
+            <div class="alert-content">
+                <strong>Outstanding Fees</strong>
+                <small>You have a pending payment of 150 JOD due next week.</small>
+            </div>
+        </div>
+
+        <div class="mini-stat-card purple-gradient">
+            <div class="mini-icon">📊</div>
+            <div class="mini-details">
+                <span id="stat-rank" class="mini-val">--</span>
+                <span class="mini-label">Class Rank</span>
+            </div>
+        </div>
+
+        <div class="mini-stat-card blue-gradient">
+            <div class="mini-icon">📚</div>
+            <div class="mini-details">
+                <span id="stat-registered-count" class="mini-val">0</span>
+                <span class="mini-label">Registered Courses</span>
+            </div>
+        </div>
+
+    </div>
+</div>
 
 <div id="registration-container" class="dashboard-view hidden">
     
@@ -642,6 +652,6 @@
         </div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
