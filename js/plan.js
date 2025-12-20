@@ -1,14 +1,15 @@
 // plan.js
 import { supabase } from './config.js';
-import { state, ROOT_SE_ID } from './state.js'; // Import the new ID
+import { state, ROOT_SE_ID } from './state.js';
 
 let currentScale = 1;
+// Store graph data globally for hover lookup
+let globalEdges = []; 
 
 export async function loadStudentPlan(userId) {
     const canvas = document.getElementById('plan-tree-canvas');
     if (!canvas) return;
 
-    // Reset layout & show loading
     canvas.innerHTML = '<div style="color:#fff; padding:20px;">Generating Plan Map...</div>';
     currentScale = 1;
     updateZoom();
@@ -36,22 +37,20 @@ export async function loadStudentPlan(userId) {
         }
 
         // 3. Calculate Layout
-        // Note: state.planRoots now only contains [ROOT_SE_ID]
         const layoutData = calculateTreeLayout(state.planRoots, state.planLinks);
         
-        // 4. Clear loading & resize canvas
+        // Save edges for hover logic
+        globalEdges = layoutData.edges;
+
+        // 4. Render
         canvas.innerHTML = '';
-        // Add padding to calculated size
         canvas.style.width = `${layoutData.width + 100}px`; 
         canvas.style.height = `${layoutData.height + 100}px`;
 
-        // 5. Render Lines FIRST (behind nodes)
         renderConnections(layoutData.edges, layoutData.nodes);
-        
-        // 6. Render Nodes
         renderNodes(layoutData.nodes, passed, registered);
 
-        // 7. Center view initially
+        // 5. Setup
         setTimeout(fitToScreen, 100);
         enableDragScroll();
 
@@ -61,7 +60,7 @@ export async function loadStudentPlan(userId) {
     }
 }
 
-// --- Layout Engine (Updated settings) ---
+// --- Layout Engine ---
 function calculateTreeLayout(roots, links) {
     const nodes = [];
     const edges = [];
@@ -77,11 +76,10 @@ function calculateTreeLayout(roots, links) {
     const visited = new Set();
     const levelCounts = {};
 
-    // --- Config: Tighter, grid-like spacing ---
-    const NODE_WIDTH = 180; // Matches CSS
-    const NODE_HEIGHT = 100; // Approx height of new card style
-    const GAP_X = 40; // Horizontal gap
-    const GAP_Y = 100; // Vertical gap (larger for clear separation)
+    const NODE_WIDTH = 180;
+    const NODE_HEIGHT = 100;
+    const GAP_X = 40;
+    const GAP_Y = 100;
 
     while (queue.length > 0) {
         const { id, level } = queue.shift();
@@ -111,14 +109,12 @@ function calculateTreeLayout(roots, links) {
         const rowWidth = countInRow * NODE_WIDTH + (countInRow - 1) * GAP_X;
         const rowStart = -(rowWidth / 2);
         
-        // Special handling for Super Root (Level 0) to center perfectly
         let x, y;
         if (lvl === 0) {
-             x = -(250 / 2); // Assuming approx width of super root pill
+             x = -(250 / 2); 
              y = 50;
         } else {
              x = rowStart + (rowPlacement[lvl] * (NODE_WIDTH + GAP_X));
-             // Add extra gap after level 0 for visual separation
              y = 50 + (lvl * (NODE_HEIGHT + GAP_Y)) + (lvl === 1 ? 40 : 0);
         }
 
@@ -130,14 +126,12 @@ function calculateTreeLayout(roots, links) {
         rowPlacement[lvl]++;
     });
 
-    // Normalize X coordinates starting at 50px padding
     const PADDING_LEFT = 50;
     const shiftX = PADDING_LEFT - minX;
 
     const finalNodes = nodes.map(n => ({
         ...n,
         x: n.rawX + shiftX,
-        // Recalculate center X for easier connector drawing later
         cx: n.rawX + shiftX + (n.level === 0 ? 125 : NODE_WIDTH / 2) 
     }));
 
@@ -149,7 +143,7 @@ function calculateTreeLayout(roots, links) {
     };
 }
 
-// --- Node Renderer (Handles Super Root vs Regular Courses) ---
+// --- Node Renderer (With Hover Events) ---
 function renderNodes(nodes, passed, registered) {
     const container = document.getElementById('plan-tree-canvas');
     
@@ -159,17 +153,17 @@ function renderNodes(nodes, passed, registered) {
         el.style.top = `${n.y}px`;
         el.id = `node-${n.id}`;
 
-        // --- CASE 1: Super Root Node ---
+        // Add Hover Events for Highlighting
+        el.onmouseenter = () => highlightTrace(n.id);
+        el.onmouseleave = () => resetTrace();
+
         if (n.id === ROOT_SE_ID) {
             el.className = 'super-root-node';
             el.innerHTML = `
                 <div class="sr-title">Software Engineering</div>
                 <div class="sr-subtitle">132 Credit Hours</div>
             `;
-            // No click action for root currently
-        } 
-        // --- CASE 2: Regular Course Node ---
-        else {
+        } else {
             const course = state.allCoursesData.find(c => c.course_code == n.id) || { course_name_en: n.id, credit_hours: 3 };
             const name = state.currentLang === 'ar' ? (course.course_name_ar || course.course_name_en) : course.course_name_en;
 
@@ -180,7 +174,6 @@ function renderNodes(nodes, passed, registered) {
             else if (isPrereqMet(n.id, passed)) { status = 'open'; icon = '🔓'; }
 
             el.className = `node-card ${status}`;
-            // New internal structure matching image style
             el.innerHTML = `
                 <div class="nc-header">
                     <span class="nc-code">${n.id}</span>
@@ -198,7 +191,7 @@ function renderNodes(nodes, passed, registered) {
     });
 }
 
-// --- Connection Renderer (Now Orthogonal/Straight Lines) ---
+// --- Connection Renderer (Orthogonal + IDs) ---
 function renderConnections(edges, nodes) {
     const container = document.getElementById('plan-tree-canvas');
     const svgNs = "http://www.w3.org/2000/svg";
@@ -209,39 +202,32 @@ function renderConnections(edges, nodes) {
     const nodeMap = {};
     nodes.forEach(n => nodeMap[n.id] = n);
 
-    // Dimensions needed for calculating connection points
-    const COURSE_W = 180; const COURSE_H = 100;
-    const ROOT_W = 250; const ROOT_H = 80; // Approx based on CSS padding
+    const COURSE_H = 100;
+    const ROOT_H = 80;
 
     edges.forEach(edge => {
         const sNode = nodeMap[edge.s];
         const tNode = nodeMap[edge.t];
         
         if (sNode && tNode) {
-            // Calculate Source Bottom Center coordinate
             const sH = sNode.level === 0 ? ROOT_H : COURSE_H;
-            const sx = sNode.cx; // Use pre-calculated center X
+            const sx = sNode.cx; 
             const sy = sNode.y + sH; 
-
-            // Calculate Target Top Center coordinate
             const tx = tNode.cx;
             const ty = tNode.y;
 
             const path = document.createElementNS(svgNs, "path");
             
-            // --- ORTHOGONAL PATH LOGIC (Circuit board style) ---
-            // 1. Move to source bottom (M sx sy)
-            // 2. Draw vertical down to halfway point (V midY)
-            // 3. Draw horizontal to target X (H tx)
-            // 4. Draw vertical down to target top (V ty)
-            
-            const midY = sy + (ty - sy) / 2; // Midpoint between levels
-            // Using SVG path commands: M=Move, V=Vertical Line, H=Horizontal Line
+            const midY = sy + (ty - sy) / 2;
             const d = `M ${sx} ${sy} V ${midY} H ${tx} V ${ty}`;
             
             path.setAttribute("d", d);
             path.setAttribute("class", "connector-path");
-            // Add markers if desired (e.g., arrows), but image didn't have them
+            
+            // Add ID to path so we can find it easily during hover
+            // ID Format: path-[source]-[target]
+            path.setAttribute("id", `path-${edge.s}-${edge.t}`);
+            
             svg.appendChild(path);
         }
     });
@@ -249,7 +235,60 @@ function renderConnections(edges, nodes) {
     container.appendChild(svg);
 }
 
-// --- Helper Utils (Unchanged) ---
+// --- Interaction Logic: Trace Highlighting ---
+function highlightTrace(nodeId) {
+    const canvas = document.getElementById('plan-tree-canvas');
+    if(!canvas) return;
+
+    // 1. Dim everything
+    canvas.classList.add('canvas-hovered');
+
+    // 2. Highlight Self
+    const self = document.getElementById(`node-${nodeId}`);
+    if(self) self.classList.add('active-node');
+
+    // 3. Highlight Downstream (Children)
+    // Find all edges where this node is the source
+    globalEdges.forEach(edge => {
+        if(edge.s === nodeId) {
+            // Highlight Edge
+            const path = document.getElementById(`path-${edge.s}-${edge.t}`);
+            if(path) path.classList.add('active-path');
+            
+            // Highlight Child Node
+            const child = document.getElementById(`node-${edge.t}`);
+            if(child) child.classList.add('active-node');
+        }
+    });
+
+    // 4. Highlight Upstream (Parents)
+    // Find all edges where this node is the target
+    globalEdges.forEach(edge => {
+        if(edge.t === nodeId) {
+            // Highlight Edge
+            const path = document.getElementById(`path-${edge.s}-${edge.t}`);
+            if(path) path.classList.add('active-path');
+            
+            // Highlight Parent Node
+            const parent = document.getElementById(`node-${edge.s}`);
+            if(parent) parent.classList.add('active-node');
+        }
+    });
+}
+
+function resetTrace() {
+    const canvas = document.getElementById('plan-tree-canvas');
+    if(!canvas) return;
+
+    // Remove dimming class
+    canvas.classList.remove('canvas-hovered');
+
+    // Remove all active classes
+    canvas.querySelectorAll('.active-node').forEach(el => el.classList.remove('active-node'));
+    canvas.querySelectorAll('.active-path').forEach(el => el.classList.remove('active-path'));
+}
+
+// --- Utils ---
 function isPrereqMet(code, passed) {
     const c = state.allCoursesData.find(x => x.course_code == code);
     if (!c || !c.prerequisites || !c.prerequisites.length) return true;
@@ -263,7 +302,7 @@ function updateZoom() {
 
 window.changeZoom = function(delta) {
     currentScale += delta;
-    if (currentScale < 0.3) currentScale = 0.3; // Allow smaller zoom for big map
+    if (currentScale < 0.3) currentScale = 0.3;
     if (currentScale > 1.5) currentScale = 1.5;
     updateZoom();
 };
@@ -273,14 +312,11 @@ window.fitToScreen = function() {
     const canvas = document.getElementById('plan-tree-canvas');
     if(!wrapper || !canvas) return;
 
-    // Calculate scale to fit width
     const scaleX = (wrapper.clientWidth - 100) / canvas.scrollWidth;
-    // Don't zoom in too much if it fits easily, limit max initial zoom
     currentScale = Math.min(Math.max(scaleX, 0.4), 1.0); 
     
     updateZoom();
     
-    // Center horizontally
     setTimeout(() => {
          wrapper.scrollLeft = (wrapper.scrollWidth - wrapper.clientWidth) / 2;
     }, 50);
@@ -293,7 +329,6 @@ function enableDragScroll() {
     let startX, startY, scrollLeft, scrollTop;
 
     slider.addEventListener('mousedown', (e) => {
-        // Don't drag if clicking a node
         if(e.target.closest('.node-card') || e.target.closest('.super-root-node')) return;
         isDown = true;
         slider.style.cursor = 'grabbing';
@@ -309,7 +344,6 @@ function enableDragScroll() {
         e.preventDefault();
         const x = e.pageX - slider.offsetLeft;
         const y = e.pageY - slider.offsetTop;
-        // Slower drag speed for better control
         const walkX = (x - startX) * 1.2; 
         const walkY = (y - startY) * 1.2;
         slider.scrollLeft = scrollLeft - walkX;

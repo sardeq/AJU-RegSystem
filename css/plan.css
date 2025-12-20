@@ -1,11 +1,8 @@
-/* plan.css */
-
 #tree-wrapper {
     position: relative;
     width: 100%;
-    height: 85vh; /* Slightly taller */
+    height: 85vh;
     overflow: auto;
-    /* Dark background with faint grid pattern */
     background-color: #080a10;
     background-image: 
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
@@ -18,16 +15,14 @@
 
 #plan-tree-canvas {
     position: relative;
-    transform-origin: top center; /* Zoom from top center looks better now */
+    transform-origin: top center;
     transition: transform 0.3s ease;
-    /* Ensure canvas has size for drag */
     min-width: 100%; 
     min-height: 100%;
-    padding: 50px; /* Add padding around the whole tree */
+    padding: 50px;
     box-sizing: border-box;
 }
 
-/* --- Connectors --- */
 .tree-svg-layer {
     position: absolute;
     top: 0; left: 0;
@@ -38,14 +33,37 @@
 
 .connector-path {
     fill: none;
-    stroke: #009ffd; /* Neon Blue */
+    stroke: #1e3a8a; /* Much darker blue by default (less visual noise) */
     stroke-width: 2px;
-    opacity: 0.8;
-    /* Removed dashed animation for solid technical look */
-    filter: drop-shadow(0 0 3px rgba(0, 159, 253, 0.5));
+    opacity: 0.6;
+    transition: all 0.3s ease; /* Smooth transition for hover */
 }
 
-/* --- Nodes --- */
+.canvas-hovered .node-card,
+.canvas-hovered .super-root-node,
+.canvas-hovered .connector-path {
+    opacity: 0.2; /* Dim unused items */
+    filter: grayscale(0.8);
+}
+
+/* Highlighted Nodes (Active) */
+.canvas-hovered .node-card.active-node,
+.canvas-hovered .super-root-node.active-node {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: scale(1.05);
+    z-index: 100;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+}
+
+/* Highlighted Paths (Active) */
+.canvas-hovered .connector-path.active-path {
+    opacity: 1 !important;
+    stroke: #00e676; /* Bright Neon Green for active path */
+    stroke-width: 3px;
+    filter: drop-shadow(0 0 5px rgba(0, 230, 118, 0.5));
+    z-index: 50;
+}
 
 /* Styles specifically for the Course Cards */
 .node-card {
