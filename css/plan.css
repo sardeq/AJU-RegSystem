@@ -1,52 +1,85 @@
+/* plan.css */
+
 #tree-wrapper {
     position: relative;
     width: 100%;
-    height: 75vh;
-    overflow: hidden; /* JavaScript handles drag scroll */
-    background: #111;
+    height: 80vh;
+    overflow: auto; /* Allow scrolling */
+    background-color: #0b0c15;
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(20, 30, 50, 0.4) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
     border-radius: 20px;
-    border: 1px solid #222;
     cursor: grab;
 }
 
 #plan-tree-canvas {
     position: relative;
-    transform-origin: top left;
+    transform-origin: left;
+    transition: transform 0.3s ease;
 }
 
-/* Node Styling */
-.node-box {
-    box-sizing: border-box;
-    transition: transform 0.2s, box-shadow 0.2s;
+/* --- Connectors --- */
+.tree-svg-layer {
+    position: absolute;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    z-index: 1; /* Lowest index */
 }
 
-.tree-link {
-    transition: stroke-width 0.2s;
+.connector-path {
+    fill: none;
+    stroke: #5c7cfa; /* Brighter Blue */
+    stroke-width: 3px; /* Thicker line */
+    opacity: 0.6;
 }
-.tree-link:hover {
-    stroke: var(--primary) !important;
-    stroke-width: 4px !important;
-}
+@keyframes dash { to { stroke-dashoffset: 1000; } }
 
-/* Side Drawer for Electives */
-.side-drawer {
-    position: fixed; top: 0; right: -350px;
-    width: 350px; height: 100%;
-    background: #141414; border-left: 1px solid #333;
-    z-index: 4000; transition: right 0.3s ease;
-    padding: 20px; display: flex; flex-direction: column;
-}
-.side-drawer.open { right: 0; }
-
-.drawer-node {
-    padding: 15px; margin-bottom: 10px;
-    background: #0a0a0a; border: 1px solid #222; border-radius: 8px;
+/* --- Nodes --- */
+.node-card {
+    position: absolute;
+    width: 160px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #151921;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 5;
     cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
-.drawer-node:hover { border-color: var(--primary); }
 
-.side-drawer-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-    z-index: 3999; display: none;
+.node-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    z-index: 10;
 }
-.side-drawer-overlay.open { display: block; }
+
+/* Node Status Colors */
+.node-card.passed {
+    border-color: #00e676;
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
+}
+.node-card.passed::before { content: '✅'; position:absolute; top:-8px; right:-8px; font-size:14px; background:#111; border-radius:50%; }
+
+.node-card.registered {
+    border-color: #2979ff;
+    box-shadow: 0 0 15px rgba(41, 121, 255, 0.15);
+}
+.node-card.registered::before { content: '📘'; position:absolute; top:-8px; right:-8px; font-size:14px; background:#111; border-radius:50%; }
+
+.node-card.locked { opacity: 0.6; border-color: #333; }
+.node-card.open { border-color: #fff; }
+
+/* Text Styles */
+.nc-code { font-size: 0.75rem; font-weight: 800; color: #888; letter-spacing: 1px; }
+.nc-name { font-size: 0.85rem; font-weight: 600; color: #eee; line-height: 1.2; }
+.nc-credits { font-size: 0.7rem; color: #555; margin-top: 4px; }
