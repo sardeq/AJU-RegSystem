@@ -158,3 +158,115 @@
     font-weight: 500;
     opacity: 0.9;
 }
+
+.elective-group-on-canvas {
+    position: absolute;
+    /* Left/Top are set by JS */
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 50;
+    /* No fixed or sticky here, so it moves with the canvas transform */
+}
+
+
+.elective-card-btn {
+    background: rgba(16, 24, 39, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border-left: 3px solid #ff9100; /* Orange Accent for Electives */
+}
+
+.elective-card-btn:hover {
+    transform: translateX(-5px);
+    background: rgba(30, 40, 60, 1);
+    border-color: #ff9100;
+}
+
+.ecb-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.ecb-sub {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* --- Slide-Out Drawer --- */
+.side-drawer-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(3px);
+}
+.side-drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+.side-drawer {
+    position: fixed; top: 0; right: -400px;
+    width: 350px; height: 100vh;
+    background: #0f111a;
+    border-left: 1px solid #333;
+    z-index: 2100;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+.side-drawer.open { right: 0; }
+
+.drawer-header {
+    padding: 20px;
+    border-bottom: 1px solid #222;
+    display: flex; justify-content: space-between; align-items: center;
+    background: #161b22;
+}
+
+.drawer-list {
+    flex: 1; overflow-y: auto;
+    padding: 15px;
+    display: flex; flex-direction: column; gap: 10px;
+}
+
+.drawer-item {
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border: 1px solid transparent;
+}
+.drawer-item.passed {
+    border-color: #00e676;
+    background: rgba(0, 230, 118, 0.05);
+}
+
+.di-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.di-code { font-weight: bold; color: #888; font-size: 0.8rem; }
+.di-name { font-size: 0.9rem; color: #eee; margin-bottom: 5px; font-weight: 600; }
+.di-meta { font-size: 0.75rem; color: #666; }
+
+/* --- Popups --- */
+#course-popup {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background: #141414;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 25px;
+    z-index: 3000;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+}
+#plan-overlay {
+    position: fixed; inset: 0; z-index: 2900;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+}
