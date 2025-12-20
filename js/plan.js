@@ -1,6 +1,6 @@
 // plan.js
 import { supabase } from './config.js';
-import { state } from './state.js';
+import { state, ROOT_SE_ID } from './state.js'; // Import the new ID
 
 let currentScale = 1;
 
@@ -8,8 +8,8 @@ export async function loadStudentPlan(userId) {
     const canvas = document.getElementById('plan-tree-canvas');
     if (!canvas) return;
 
-    // Reset layout
-    canvas.innerHTML = '';
+    // Reset layout & show loading
+    canvas.innerHTML = '<div style="color:#fff; padding:20px;">Generating Plan Map...</div>';
     currentScale = 1;
     updateZoom();
 
@@ -35,50 +35,54 @@ export async function loadStudentPlan(userId) {
             state.allCoursesData = courses || [];
         }
 
-        // 3. Build & Normalize Layout
+        // 3. Calculate Layout
+        // Note: state.planRoots now only contains [ROOT_SE_ID]
         const layoutData = calculateTreeLayout(state.planRoots, state.planLinks);
         
-        // 4. Resize Canvas to Fit Content
-        canvas.style.width = `${layoutData.width}px`;
-        canvas.style.height = `${layoutData.height}px`;
+        // 4. Clear loading & resize canvas
+        canvas.innerHTML = '';
+        // Add padding to calculated size
+        canvas.style.width = `${layoutData.width + 100}px`; 
+        canvas.style.height = `${layoutData.height + 100}px`;
 
-        // 5. Render Lines FIRST (so they are behind nodes)
+        // 5. Render Lines FIRST (behind nodes)
         renderConnections(layoutData.edges, layoutData.nodes);
         
         // 6. Render Nodes
         renderNodes(layoutData.nodes, passed, registered);
 
-        // 7. Initialize Dragging
+        // 7. Center view initially
+        setTimeout(fitToScreen, 100);
         enableDragScroll();
 
     } catch (err) {
         console.error("Plan Error:", err);
+        canvas.innerHTML = '<div style="color:red; padding:20px;">Error loading plan map.</div>';
     }
 }
 
+// --- Layout Engine (Updated settings) ---
 function calculateTreeLayout(roots, links) {
     const nodes = [];
     const edges = [];
     const levelMap = {}; 
     const childrenMap = {}; 
 
-    // 1. Build Adjacency Map
     links.forEach(l => {
         if (!childrenMap[l.s]) childrenMap[l.s] = [];
         childrenMap[l.s].push(l.t);
     });
 
-    // 2. BFS for Levels
     const queue = roots.map(r => ({ id: r, level: 0 }));
     const visited = new Set();
-    const levelCounts = {}; // How many nodes at each level
+    const levelCounts = {};
 
-    const NODE_WIDTH = 160;
-    const NODE_HEIGHT = 90;
-    const GAP_X = 60;
-    const GAP_Y = 150;
+    // --- Config: Tighter, grid-like spacing ---
+    const NODE_WIDTH = 180; // Matches CSS
+    const NODE_HEIGHT = 100; // Approx height of new card style
+    const GAP_X = 40; // Horizontal gap
+    const GAP_Y = 100; // Vertical gap (larger for clear separation)
 
-    // BFS Traversal
     while (queue.length > 0) {
         const { id, level } = queue.shift();
         if (visited.has(id)) continue;
@@ -95,11 +99,8 @@ function calculateTreeLayout(roots, links) {
         });
     }
 
-    // 3. Initial Placement (Centered around 0)
-    const rowPlacement = {}; // Track how many we've placed in this row so far
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let maxY = 0;
+    const rowPlacement = {};
+    let minX = Infinity; let maxX = -Infinity; let maxY = 0;
 
     visited.forEach(nodeId => {
         const lvl = levelMap[nodeId];
@@ -107,29 +108,37 @@ function calculateTreeLayout(roots, links) {
         
         if (typeof rowPlacement[lvl] === 'undefined') rowPlacement[lvl] = 0;
         
-        // Calculate row width to center it
         const rowWidth = countInRow * NODE_WIDTH + (countInRow - 1) * GAP_X;
-        const rowStart = -(rowWidth / 2); // Start centering around 0
+        const rowStart = -(rowWidth / 2);
         
-        const x = rowStart + (rowPlacement[lvl] * (NODE_WIDTH + GAP_X));
-        const y = 50 + (lvl * (NODE_HEIGHT + GAP_Y)); // 50px top padding
+        // Special handling for Super Root (Level 0) to center perfectly
+        let x, y;
+        if (lvl === 0) {
+             x = -(250 / 2); // Assuming approx width of super root pill
+             y = 50;
+        } else {
+             x = rowStart + (rowPlacement[lvl] * (NODE_WIDTH + GAP_X));
+             // Add extra gap after level 0 for visual separation
+             y = 50 + (lvl * (NODE_HEIGHT + GAP_Y)) + (lvl === 1 ? 40 : 0);
+        }
 
         if (x < minX) minX = x;
         if (x + NODE_WIDTH > maxX) maxX = x + NODE_WIDTH;
         if (y + NODE_HEIGHT > maxY) maxY = y + NODE_HEIGHT;
 
-        nodes.push({ id: nodeId, rawX: x, y: y });
+        nodes.push({ id: nodeId, rawX: x, y: y, level: lvl });
         rowPlacement[lvl]++;
     });
 
-    // 4. Normalization (Shift everything right so minX becomes 50)
+    // Normalize X coordinates starting at 50px padding
     const PADDING_LEFT = 50;
     const shiftX = PADDING_LEFT - minX;
 
     const finalNodes = nodes.map(n => ({
-        id: n.id,
+        ...n,
         x: n.rawX + shiftX,
-        y: n.y
+        // Recalculate center X for easier connector drawing later
+        cx: n.rawX + shiftX + (n.level === 0 ? 125 : NODE_WIDTH / 2) 
     }));
 
     return { 
@@ -140,74 +149,99 @@ function calculateTreeLayout(roots, links) {
     };
 }
 
+// --- Node Renderer (Handles Super Root vs Regular Courses) ---
 function renderNodes(nodes, passed, registered) {
     const container = document.getElementById('plan-tree-canvas');
     
     nodes.forEach(n => {
-        const course = state.allCoursesData.find(c => c.course_code == n.id) || { course_name_en: n.id, credit_hours: 3 };
-        const name = state.currentLang === 'ar' ? (course.course_name_ar || course.course_name_en) : course.course_name_en;
-
-        let status = 'locked';
-        if (passed.has(n.id)) status = 'passed';
-        else if (registered.has(n.id)) status = 'registered';
-        else if (isPrereqMet(n.id, passed)) status = 'open';
-
         const el = document.createElement('div');
-        el.className = `node-card ${status}`;
-        el.id = `node-${n.id}`; 
         el.style.left = `${n.x}px`;
         el.style.top = `${n.y}px`;
-        
-        el.innerHTML = `
-            <div class="nc-code">${n.id}</div>
-            <div class="nc-name">${name}</div>
-            <div class="nc-credits">${course.credit_hours} Cr</div>
-        `;
+        el.id = `node-${n.id}`;
 
-        el.onclick = () => window.showCoursePopup(n.id, course, status, 'status_'+status, el);
+        // --- CASE 1: Super Root Node ---
+        if (n.id === ROOT_SE_ID) {
+            el.className = 'super-root-node';
+            el.innerHTML = `
+                <div class="sr-title">Software Engineering</div>
+                <div class="sr-subtitle">132 Credit Hours</div>
+            `;
+            // No click action for root currently
+        } 
+        // --- CASE 2: Regular Course Node ---
+        else {
+            const course = state.allCoursesData.find(c => c.course_code == n.id) || { course_name_en: n.id, credit_hours: 3 };
+            const name = state.currentLang === 'ar' ? (course.course_name_ar || course.course_name_en) : course.course_name_en;
+
+            let status = 'locked';
+            let icon = '🔒';
+            if (passed.has(n.id)) { status = 'passed'; icon = '✅'; }
+            else if (registered.has(n.id)) { status = 'registered'; icon = '📘'; }
+            else if (isPrereqMet(n.id, passed)) { status = 'open'; icon = '🔓'; }
+
+            el.className = `node-card ${status}`;
+            // New internal structure matching image style
+            el.innerHTML = `
+                <div class="nc-header">
+                    <span class="nc-code">${n.id}</span>
+                    <span class="nc-icon">${icon}</span>
+                </div>
+                <div class="nc-body">
+                    <div class="nc-name">${name}</div>
+                    <div class="nc-credits">${course.credit_hours} Credits</div>
+                </div>
+            `;
+            el.onclick = () => window.showCoursePopup(n.id, course, status, 'status_'+status, el);
+        }
+
         container.appendChild(el);
     });
 }
 
+// --- Connection Renderer (Now Orthogonal/Straight Lines) ---
 function renderConnections(edges, nodes) {
     const container = document.getElementById('plan-tree-canvas');
     const svgNs = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNs, "svg");
-    
-    // --- FIX IS HERE: Use setAttribute instead of .className ---
     svg.setAttribute("class", "tree-svg-layer");
-    
-    // Set SVG to full size of canvas to ensure lines aren't cut off
-    svg.style.width = "100%";
-    svg.style.height = "100%";
+    svg.style.width = "100%"; svg.style.height = "100%";
 
-    const NODE_WIDTH = 160;
-    const NODE_HEIGHT = 90; 
-
-    // Helper to find node coordinates quickly
     const nodeMap = {};
     nodes.forEach(n => nodeMap[n.id] = n);
+
+    // Dimensions needed for calculating connection points
+    const COURSE_W = 180; const COURSE_H = 100;
+    const ROOT_W = 250; const ROOT_H = 80; // Approx based on CSS padding
 
     edges.forEach(edge => {
         const sNode = nodeMap[edge.s];
         const tNode = nodeMap[edge.t];
         
         if (sNode && tNode) {
-            const sx = sNode.x + NODE_WIDTH / 2;
-            const sy = sNode.y + NODE_HEIGHT; // Bottom of source
-            const tx = tNode.x + NODE_WIDTH / 2;
-            const ty = tNode.y; // Top of target
+            // Calculate Source Bottom Center coordinate
+            const sH = sNode.level === 0 ? ROOT_H : COURSE_H;
+            const sx = sNode.cx; // Use pre-calculated center X
+            const sy = sNode.y + sH; 
+
+            // Calculate Target Top Center coordinate
+            const tx = tNode.cx;
+            const ty = tNode.y;
 
             const path = document.createElementNS(svgNs, "path");
             
-            // Curve logic: Down from source, Up from target
-            const c1x = sx; const c1y = sy + 60;
-            const c2x = tx; const c2y = ty - 60;
+            // --- ORTHOGONAL PATH LOGIC (Circuit board style) ---
+            // 1. Move to source bottom (M sx sy)
+            // 2. Draw vertical down to halfway point (V midY)
+            // 3. Draw horizontal to target X (H tx)
+            // 4. Draw vertical down to target top (V ty)
             
-            const d = `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${tx} ${ty}`;
+            const midY = sy + (ty - sy) / 2; // Midpoint between levels
+            // Using SVG path commands: M=Move, V=Vertical Line, H=Horizontal Line
+            const d = `M ${sx} ${sy} V ${midY} H ${tx} V ${ty}`;
             
             path.setAttribute("d", d);
             path.setAttribute("class", "connector-path");
+            // Add markers if desired (e.g., arrows), but image didn't have them
             svg.appendChild(path);
         }
     });
@@ -215,6 +249,7 @@ function renderConnections(edges, nodes) {
     container.appendChild(svg);
 }
 
+// --- Helper Utils (Unchanged) ---
 function isPrereqMet(code, passed) {
     const c = state.allCoursesData.find(x => x.course_code == code);
     if (!c || !c.prerequisites || !c.prerequisites.length) return true;
@@ -228,25 +263,38 @@ function updateZoom() {
 
 window.changeZoom = function(delta) {
     currentScale += delta;
-    if (currentScale < 0.4) currentScale = 0.4;
+    if (currentScale < 0.3) currentScale = 0.3; // Allow smaller zoom for big map
     if (currentScale > 1.5) currentScale = 1.5;
     updateZoom();
 };
 
 window.fitToScreen = function() {
-    currentScale = 0.8;
-    updateZoom();
     const wrapper = document.getElementById('tree-wrapper');
-    // Center scroll
-    wrapper.scrollLeft = (wrapper.scrollWidth - wrapper.clientWidth) / 2;
+    const canvas = document.getElementById('plan-tree-canvas');
+    if(!wrapper || !canvas) return;
+
+    // Calculate scale to fit width
+    const scaleX = (wrapper.clientWidth - 100) / canvas.scrollWidth;
+    // Don't zoom in too much if it fits easily, limit max initial zoom
+    currentScale = Math.min(Math.max(scaleX, 0.4), 1.0); 
+    
+    updateZoom();
+    
+    // Center horizontally
+    setTimeout(() => {
+         wrapper.scrollLeft = (wrapper.scrollWidth - wrapper.clientWidth) / 2;
+    }, 50);
 };
 
 function enableDragScroll() {
     const slider = document.getElementById('tree-wrapper');
+    if(!slider) return;
     let isDown = false;
     let startX, startY, scrollLeft, scrollTop;
 
     slider.addEventListener('mousedown', (e) => {
+        // Don't drag if clicking a node
+        if(e.target.closest('.node-card') || e.target.closest('.super-root-node')) return;
         isDown = true;
         slider.style.cursor = 'grabbing';
         startX = e.pageX - slider.offsetLeft;
@@ -261,8 +309,9 @@ function enableDragScroll() {
         e.preventDefault();
         const x = e.pageX - slider.offsetLeft;
         const y = e.pageY - slider.offsetTop;
-        const walkX = (x - startX) * 1.5;
-        const walkY = (y - startY) * 1.5;
+        // Slower drag speed for better control
+        const walkX = (x - startX) * 1.2; 
+        const walkY = (y - startY) * 1.2;
         slider.scrollLeft = scrollLeft - walkX;
         slider.scrollTop = scrollTop - walkY;
     });

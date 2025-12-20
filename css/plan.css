@@ -3,83 +3,140 @@
 #tree-wrapper {
     position: relative;
     width: 100%;
-    height: 80vh;
-    overflow: auto; /* Allow scrolling */
-    background-color: #0b0c15;
+    height: 85vh; /* Slightly taller */
+    overflow: auto;
+    /* Dark background with faint grid pattern */
+    background-color: #080a10;
     background-image: 
-        radial-gradient(circle at 50% 50%, rgba(20, 30, 50, 0.4) 0%, transparent 50%),
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    background-size: 100% 100%, 40px 40px, 40px 40px;
-    border-radius: 20px;
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
     cursor: grab;
+    border-radius: 12px;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
 }
 
 #plan-tree-canvas {
     position: relative;
-    transform-origin: left;
+    transform-origin: top center; /* Zoom from top center looks better now */
     transition: transform 0.3s ease;
+    /* Ensure canvas has size for drag */
+    min-width: 100%; 
+    min-height: 100%;
+    padding: 50px; /* Add padding around the whole tree */
+    box-sizing: border-box;
 }
 
 /* --- Connectors --- */
 .tree-svg-layer {
     position: absolute;
-    top: 0; 
-    left: 0;
-    width: 100%; 
-    height: 100%;
-    z-index: 1; /* Lowest index */
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .connector-path {
     fill: none;
-    stroke: #5c7cfa; /* Brighter Blue */
-    stroke-width: 3px; /* Thicker line */
-    opacity: 0.6;
+    stroke: #009ffd; /* Neon Blue */
+    stroke-width: 2px;
+    opacity: 0.8;
+    /* Removed dashed animation for solid technical look */
+    filter: drop-shadow(0 0 3px rgba(0, 159, 253, 0.5));
 }
-@keyframes dash { to { stroke-dashoffset: 1000; } }
 
 /* --- Nodes --- */
+
+/* Styles specifically for the Course Cards */
 .node-card {
     position: absolute;
-    width: 160px;
-    padding: 12px;
-    border-radius: 12px;
-    background: #151921;
+    width: 180px; /* Wider style */
+    /* Rectangular, technical look */
+    background: rgba(16, 24, 39, 0.9); 
     border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
+    border-left: 3px solid #555; /* Default locked border */
+    padding: 0; /* Reset padding for inner structure */
+    z-index: 10;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    z-index: 5;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
 .node-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    z-index: 10;
+    transform: translateY(-3px);
+    background: rgba(26, 34, 50, 1);
+    z-index: 20;
 }
 
-/* Node Status Colors */
-.node-card.passed {
-    border-color: #00e676;
-    box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
+/* Node Inner Structure matching image */
+.nc-header {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-.node-card.passed::before { content: '✅'; position:absolute; top:-8px; right:-8px; font-size:14px; background:#111; border-radius:50%; }
+
+.nc-body {
+    padding: 10px 12px;
+}
+
+.nc-code { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; color: #8899ac; }
+.nc-icon { font-size: 1rem; }
+.nc-name { font-size: 0.85rem; font-weight: 700; color: #e2e8f0; line-height: 1.3; margin-bottom: 6px;}
+.nc-credits { font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase;}
+
+
+/* Node Status Colors (Neon borders) */
+.node-card.passed {
+    border-left-color: #00e676; /* Neon Green */
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.15);
+}
+.node-card.passed .nc-code { color: #00e676; }
 
 .node-card.registered {
-    border-color: #2979ff;
-    box-shadow: 0 0 15px rgba(41, 121, 255, 0.15);
+    border-left-color: #2979ff; /* Neon Blue */
+    box-shadow: 0 0 15px rgba(41, 121, 255, 0.2);
 }
-.node-card.registered::before { content: '📘'; position:absolute; top:-8px; right:-8px; font-size:14px; background:#111; border-radius:50%; }
+.node-card.registered .nc-code { color: #2979ff; }
 
-.node-card.locked { opacity: 0.6; border-color: #333; }
-.node-card.open { border-color: #fff; }
+.node-card.open {
+    border-left-color: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+.node-card.open .nc-code { color: #ddd; }
 
-/* Text Styles */
-.nc-code { font-size: 0.75rem; font-weight: 800; color: #888; letter-spacing: 1px; }
-.nc-name { font-size: 0.85rem; font-weight: 600; color: #eee; line-height: 1.2; }
-.nc-credits { font-size: 0.7rem; color: #555; margin-top: 4px; }
+.node-card.locked { opacity: 0.7; }
+
+
+/* --- NEW: Super Root Node Styling --- */
+.super-root-node {
+    position: absolute;
+    padding: 20px 40px;
+    background: linear-gradient(135deg, #2a2a72 0%, #009ffd 100%);
+    border-radius: 50px; /* Pill shape */
+    color: white;
+    text-align: center;
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0, 159, 253, 0.3), inset 0 0 20px rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.2);
+    min-width: 250px;
+}
+
+.sr-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.sr-subtitle {
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
