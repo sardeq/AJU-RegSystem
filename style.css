@@ -27,6 +27,19 @@
     --sidebar-width: 280px;
     --sidebar-collapsed: 80px;
     --header-height: 80px;
+
+
+
+    --bg-color: #1a1a1a; /* Dark background matching the image */
+    --text-color: #e0e0e0;
+    --sidebar-width: 250px;
+    --card-bg: #2d2d2d;
+    --card-border: #404040;
+    --accent-color: #3498db;
+    /* Status Colors */
+    --status-completed: #2ecc71; /* Green */
+    --status-locked: #545454;    /* Grey */
+    --status-available: #f1c40f; /* Yellow (future use) */
 }
 
 /* --- RESET --- */
@@ -294,60 +307,6 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px 
 }
 .suggestion-item:hover { background: var(--primary); color: black; }
 .suggestion-code { font-weight: bold; font-size: 0.9em; }
-
-/* --- PLAN TREE & DRAWERS --- */
-#plan-tree-canvas { transform-origin: top left; transition: transform 0.1s linear; }
-
-.tree-scroll-wrapper {
-    width: 100%; height: 700px;
-    background: #080808;
-    border: 1px solid #333;
-    border-radius: var(--radius-xl);
-    overflow: hidden; 
-    position: relative;
-    cursor: grab;
-    background-image: radial-gradient(#222 1px, transparent 1px);
-    background-size: 30px 30px;
-}
-
-/* Nodes Styling (Important for Tree) */
-.node-box {
-    background: var(--bg-card); color: white;
-    border-radius: 12px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center;
-    transition: 0.2s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-/* Side Drawers */
-.side-drawer {
-    position: fixed; top: 0; right: 0;
-    width: 400px; height: 100vh;
-    background: #161616;
-    z-index: 2000;
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-left: 1px solid #333;
-    box-shadow: -10px 0 50px rgba(0,0,0,0.5);
-    display: flex; flex-direction: column;
-}
-.side-drawer.open { transform: translateX(0); }
-
-.side-drawer-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(2px);
-    z-index: 1999;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.3s;
-}
-.side-drawer-overlay.open { opacity: 1; pointer-events: auto; }
-.drawer-list { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.drawer-node {
-    background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; transition: 0.2s;
-}
-.drawer-node:hover { background: #222; border-color: var(--primary); }
 
 /* --- MODALS --- */
 .modal {
@@ -2804,4 +2763,101 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
 @media (max-width: 1000px) {
     .exception-layout { grid-template-columns: 1fr; }
     .exc-type-grid { grid-template-columns: 1fr 1fr; }
+}
+
+
+#tree-view {
+    position: relative;
+    /* Ensure container is large enough for absolute positioning */
+    min-height: 80vh; 
+    min-width: 100%;
+    overflow: auto;
+}
+
+/* The container for nodes and SVG */
+#tree-container {
+    position: relative;
+    /* Removed grid display. We will rely on JS absolute positioning. */
+    width: 2000px; /* Give plenty of space for horizontal scrolling if needed */
+    height: 1500px; /* Give plenty of space for vertical scrolling */
+}
+
+
+/* SVG Container for Arrows */
+#arrows-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to nodes */
+    z-index: 0; /* Behind nodes */
+}
+
+.arrow-line {
+    stroke: #666; /* Thicker grey lines */
+    stroke-width: 3px;
+    fill: none;
+    transition: stroke 0.3s ease;
+}
+
+.arrow-line.critical {
+    stroke: #d32f2f;
+    stroke-width: 4px;
+}
+
+
+/* Course Node Styling (Redesigned to match image) */
+.course-node {
+    position: absolute; /* Critical for the JS layout engine */
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px; /* Rounded corners */
+    padding: 15px;
+    width: 140px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1;
+    overflow: hidden; /* Ensure status bar doesn't bleed out */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+}
+
+/* The colored status bar on the left */
+.course-node::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background-color: var(--status-locked); /* Default grey */
+}
+
+/* Status variations */
+.course-node.completed::before {
+    background-color: var(--status-completed); /* Green */
+}
+
+
+.course-node:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    border-color: #777;
+}
+
+.course-code {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+/* Removed .course-name as it's not in the reference image style */
+.course-name {
+    display: none; 
 }

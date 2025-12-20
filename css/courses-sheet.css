@@ -1,0 +1,162 @@
+/* css/courses-sheet.css */
+
+/* --- STATS ROW (Top) --- */
+.sheet-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.sheet-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+.sheet-stat-card:hover { transform: translateY(-2px); }
+
+/* Bottom Border Glows */
+.sheet-stat-card.green-glow { border-bottom: 3px solid var(--primary); }
+.sheet-stat-card.purple-glow { border-bottom: 3px solid #651fff; }
+.sheet-stat-card.blue-glow { border-bottom: 3px solid #2979ff; }
+
+.ss-icon {
+    width: 45px; height: 45px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+
+.ss-info { flex: 1; display: flex; flex-direction: column; }
+.ss-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.ss-value { font-size: 1.6rem; font-weight: 800; color: white; margin-top: 2px; }
+.ss-value small { font-size: 0.9rem; color: #555; font-weight: 600; margin-left: 5px; }
+
+/* Progress Bar inside Card */
+.ss-progress-track {
+    width: 100%; height: 4px; background: #222; margin-top: 8px; border-radius: 2px;
+}
+.ss-progress-bar { 
+    height: 100%; background: var(--primary); 
+    border-radius: 2px; box-shadow: 0 0 10px var(--primary-glow); 
+    transition: width 0.5s ease-out;
+}
+
+/* --- CONTROLS BAR (Search & Filter) --- */
+.sheet-controls-bar {
+    display: flex; gap: 20px; margin-bottom: 25px; align-items: center; flex-wrap: wrap;
+}
+
+.sheet-search-wrapper {
+    flex: 1; min-width: 250px; position: relative;
+}
+.sheet-search-wrapper input {
+    background: #080808 !important;
+    border: 1px solid #333 !important;
+    padding-left: 45px !important;
+    border-radius: 14px;
+}
+.sheet-search-wrapper input:focus { border-color: var(--primary) !important; }
+
+/* Filter Group */
+.sheet-filter-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.sheet-select {
+    background: #111; color: white; border: 1px solid #333;
+    padding: 10px 15px; border-radius: 12px; cursor: pointer;
+    min-width: 130px; outline: none;
+}
+.sheet-select:focus { border-color: var(--primary); }
+
+/* Pill Checkboxes (Passed/Remaining) */
+.sheet-toggles { display: flex; gap: 10px; }
+.pill-checkbox { position: relative; cursor: pointer; user-select: none; }
+.pill-checkbox input { display: none; }
+.pill-checkbox span {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 24px;
+    color: #888;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: 0.2s;
+}
+.pill-checkbox input:checked + span {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-color: rgba(255,255,255,0.3);
+}
+.pill-checkbox input:checked + span::before { content: '✓ '; color: var(--primary); margin-right: 5px; }
+
+/* --- THE COURSE LIST --- */
+.sheet-list-header {
+    display: flex; padding: 0 25px; margin-bottom: 10px;
+    color: #666; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;
+    gap: 15px;
+}
+
+.sheet-grid-container {
+    display: flex; flex-direction: column; gap: 10px;
+    padding-bottom: 50px;
+}
+
+.sheet-row-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px 25px;
+    display: flex; align-items: center; gap: 15px;
+    transition: transform 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.sheet-row-card:hover { transform: translateX(5px); background: var(--bg-card-hover); border-color: #333; }
+
+/* Status Indicators (Left Border) */
+.sheet-row-card.passed { border-left: 4px solid var(--status-completed); }
+.sheet-row-card.failed { border-left: 4px solid var(--accent-red); }
+.sheet-row-card.registered { border-left: 4px solid var(--accent-blue); }
+.sheet-row-card.pending { border-left: 4px solid #333; opacity: 0.7; }
+
+/* Columns */
+.src-code { width: 80px; font-weight: 800; color: #888; font-size: 0.9rem; }
+.src-main { flex: 1; display: flex; flex-direction: column; }
+.src-title { font-weight: 700; color: white; font-size: 1rem; margin-bottom: 4px; }
+.src-cat { 
+    font-size: 0.75rem; color: #666; 
+    background: #1a1a1a; padding: 2px 8px; border-radius: 4px; 
+    display: inline-block; width: fit-content;
+}
+
+.src-credits { width: 100px; color: #ccc; font-size: 0.9rem; }
+.src-prereq { width: 120px; font-size: 0.8rem; color: #666; font-style: italic; }
+
+.src-grade-box { width: 100px; text-align: right; display: flex; justify-content: flex-end; }
+.grade-pill {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1.1rem;
+}
+.gp-green { background: rgba(0,230,118,0.1); color: var(--primary); }
+.gp-red { background: rgba(255,82,82,0.1); color: var(--accent-red); }
+.gp-gray { color: #444; font-size: 1.2rem; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .sheet-stats-row { grid-template-columns: 1fr; }
+    .sheet-list-header { display: none; }
+    .sheet-row-card { flex-wrap: wrap; height: auto; padding: 15px; }
+    .src-code { width: 100%; margin-bottom: 5px; color: var(--primary); }
+    .src-main { width: 100%; margin-bottom: 10px; }
+    .src-grade-box { position: absolute; top: 15px; right: 15px; }
+}

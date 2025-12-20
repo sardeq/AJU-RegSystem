@@ -1,0 +1,67 @@
+/* --- SCHEDULE GRID --- */
+.sch-modern-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 25px; background: rgba(255,255,255,0.02);
+    padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
+}
+
+.sch-modern-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px; margin-bottom: 40px;
+}
+
+.sch-card-modern {
+    background: #0a0a0a; border: 1px solid #222; border-radius: 24px;
+    padding: 20px; display: flex; gap: 20px; position: relative;
+    overflow: hidden; transition: transform 0.2s;
+}
+.sch-card-modern:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
+
+.sch-time-box {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--primary-glow); border: 1px solid rgba(0, 230, 118, 0.1);
+    border-radius: 16px; min-width: 70px; padding: 10px 0;
+}
+.stb-start { font-size: 1.1rem; font-weight: 800; color: white; }
+.stb-days { font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase; }
+
+.sch-main-info { flex: 1; display: flex; flex-direction: column; }
+.sch-title { font-size: 1.1rem; font-weight: 700; color: white; margin: 0 0 12px 0; }
+.sch-meta-item { color: #888; font-size: 0.85rem; margin-bottom: 4px; }
+
+.sch-drop-btn {
+    width: 36px; height: 36px; border-radius: 50%; background: transparent;
+    border: 1px solid transparent; color: #444; cursor: pointer;
+}
+.sch-drop-btn:hover { background: rgba(255, 82, 82, 0.1); color: var(--accent-red); }
+
+/* --- HISTORY TIMELINE --- */
+.history-timeline { position: relative; padding: 20px 0 20px 20px; margin-top: 30px; }
+.history-timeline::before {
+    content: ''; position: absolute; top: 10px; bottom: 0; left: 29px;
+    width: 2px; background: #333; z-index: 0;
+}
+
+.timeline-year-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; position: relative; z-index: 1; }
+.t-year-dot {
+    width: 20px; height: 20px; background: var(--bg-body);
+    border: 4px solid var(--primary); border-radius: 50%;
+}
+.t-year-title {
+    font-size: 1.4rem; font-weight: 800; color: var(--primary);
+    background: rgba(0, 230, 118, 0.05); padding: 5px 15px; border-radius: 20px;
+}
+
+.timeline-semester-block { margin-left: 50px; margin-bottom: 35px; position: relative; }
+.history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; }
+
+.h-card {
+    background: #0a0a0a; border: 1px solid #222; border-radius: 12px;
+    padding: 15px; border-left: 4px solid #444;
+}
+.h-card.pass { border-left-color: var(--primary); }
+.h-card.fail { border-left-color: var(--accent-red); }
+
+.hc-code { font-weight: 800; color: #fff; }
+.hc-grade { font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #222; float: right; }
+.h-card.pass .hc-grade { color: var(--primary); }

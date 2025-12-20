@@ -509,3 +509,279 @@ window.closeDrawer = function() {
     document.getElementById('elective-drawer').classList.remove('open');
     document.getElementById('elective-drawer-overlay').classList.remove('open');
 };
+
+
+// plan.js
+
+// Global object to hold utility functions for the degree plan
+window.PlanUtils = {
+    // --- Data Processing ---
+
+    // Enriches course data with status (completed, prerequisites met, etc.) based on student data.
+    enrichCourseData: (courses, studentData) => {
+        const completedSet = new Set(studentData.completedCourses);
+
+        return courses.map(course => {
+            const isCompleted = completedSet.has(course.courseCode);
+            // Check if all prerequisites are in the completed set.
+            // Handles cases with 'or' (e.g., "A or B") by splitting and checking if at least one option is met.
+            const prereqsMet = course.prerequisites.length === 0 || course.prerequisites.every(prereqGroup => {
+                const options = prereqGroup.split(' or ').map(s => s.trim());
+                return options.some(option => completedSet.has(option));
+            });
+
+            let status = 'locked';
+            if (isCompleted) {
+                status = 'completed';
+            } else if (prereqsMet) {
+                status = 'available';
+            }
+
+            return { ...course, status, isCompleted, prereqsMet };
+        });
+    },
+
+
+    // --- Layout Calculation (The core logic for the tree structure) ---
+
+    // Calculates the "level" of each course.
+    // The level is the length of the longest chain of prerequisites leading to the course.
+    // Level 0 = no prerequisites. Level 1 = requires a Level 0 course, etc.
+    calculateLevels: (courses) => {
+        const levels = {};
+        const courseMap = new Map(courses.map(c => [c.courseCode, c]));
+
+        function getLevel(courseCode, visited = new Set()) {
+            // Avoid infinite loops in circular dependencies (shouldn't happen in a valid plan, but good practice)
+            if (visited.has(courseCode)) return -1; 
+            if (levels[courseCode] !== undefined) return levels[courseCode];
+
+            const course = courseMap.get(courseCode);
+            if (!course || course.prerequisites.length === 0) {
+                levels[courseCode] = 0;
+                return 0;
+            }
+
+            visited.add(courseCode);
+            
+            // Find the maximum level among all direct prerequisites.
+            let maxPrereqLevel = -1;
+            course.prerequisites.forEach(prereqGroup => {
+                // Handle 'or' conditions: find the *minimum* level among the options required to satisfy this group.
+                // We assume the student takes the shortest path.
+                const options = prereqGroup.split(' or ').map(s => s.trim());
+                let minOptionLevel = Infinity;
+                
+                options.forEach(option => {
+                    // Recursive call to get the level of the prerequisite
+                    const lvl = getLevel(option, new Set(visited));
+                    if (lvl !== -1) {
+                         minOptionLevel = Math.min(minOptionLevel, lvl);
+                    }
+                });
+
+                if (minOptionLevel !== Infinity) {
+                     maxPrereqLevel = Math.max(maxPrereqLevel, minOptionLevel);
+                }
+            });
+            visited.delete(courseCode);
+
+             // The course's level is one higher than the deepest prerequisite chain.
+            levels[courseCode] = maxPrereqLevel + 1;
+            return levels[courseCode];
+        }
+
+        courses.forEach(c => getLevel(c.courseCode));
+        return levels;
+    },
+
+    // Identifies "critical paths" in the degree plan.
+    // A critical path is a sequence of courses where each is a prerequisite for the next,
+    // and delay in any course delays graduation. This usually corresponds to the longest chains.
+    identifyCriticalPaths: (courses, levels) => {
+        let maxLevel = -1;
+        // Find the highest level defined in the plan.
+        Object.values(levels).forEach(l => maxLevel = Math.max(maxLevel, l));
+        
+        // Start backtracking from courses at the highest level.
+        const finalCourses = courses.filter(c => levels[c.courseCode] === maxLevel);
+        const criticalPaths = [];
+
+        function backtrack(courseCode, currentPath) {
+            const course = courses.find(c => c.courseCode === courseCode);
+            if (!course || course.prerequisites.length === 0) {
+                // End of a chain reached.
+                criticalPaths.push([courseCode, ...currentPath]);
+                return;
+            }
+
+            // Find which prerequisites are on the critical path (i.e., have a level exactly one less than current).
+            const criticalPrereqs = [];
+             course.prerequisites.forEach(prereqGroup => {
+                 // Simplification for critical path visual: take the first option in an 'or' group that fits the level criteria.
+                const options = prereqGroup.split(' or ').map(s => s.trim());
+                const targetPrereq = options.find(op => levels[op] === levels[courseCode] - 1);
+                if(targetPrereq) criticalPrereqs.push(targetPrereq);
+            });
+
+            if (criticalPrereqs.length === 0) {
+                 // Path ends here if no direct critical predecessor is found.
+                criticalPaths.push([courseCode, ...currentPath]);
+            } else {
+                 // Continue backtracking for each critical prerequisite.
+                criticalPrereqs.forEach(prereq => backtrack(prereq, [courseCode, ...currentPath]));
+            }
+        }
+
+        finalCourses.forEach(c => backtrack(c.courseCode, []));
+        // Flatten the paths into a set of unique connection strings (e.g., "CS101->CS102") for easy lookup.
+        const criticalEdges = new Set();
+        criticalPaths.forEach(path => {
+            for(let i=0; i < path.length - 1; i++) {
+                criticalEdges.add(`${path[i]}->${path[i+1]}`);
+            }
+        });
+        return criticalEdges;
+    },
+
+
+    // --- Rendering (Drawing the visual elements) ---
+
+    // Renders the entire flowchart (tree) into the DOM container.
+    renderTree: (containerId, courses, studentData, handleCourseClick) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = ''; // Clear previous render
+
+        // 1. Enrich data with status and calculate layout levels.
+        const enrichedCourses = PlanUtils.enrichCourseData(courses, studentData);
+        const levels = PlanUtils.calculateLevels(enrichedCourses);
+        const criticalEdges = PlanUtils.identifyCriticalPaths(enrichedCourses, levels);
+
+        // 2. Group courses by their calculated level for layout.
+        const coursesByLevel = {};
+        enrichedCourses.forEach(course => {
+            const lvl = levels[course.courseCode] || 0;
+            if (!coursesByLevel[lvl]) coursesByLevel[lvl] = [];
+            coursesByLevel[lvl].push(course);
+        });
+
+        // Define layout constants for spacing.
+        const nodeWidth = 140;
+        const nodeHeight = 60;
+        const xGap = 100; // Horizontal space between levels
+        const yGap = 40;  // Vertical space between nodes in the same level
+        const startX = 50;
+        const startY = 50;
+
+        const nodePositions = {};
+        const maxLevel = Math.max(...Object.keys(coursesByLevel).map(Number));
+
+        // 3. Create HTML nodes and place them absolutely.
+        // Iterate through levels (left to right).
+        for (let lvl = 0; lvl <= maxLevel; lvl++) {
+            const levelCourses = coursesByLevel[lvl] || [];
+            // Calculate X coordinate for this level.
+            const currentX = startX + lvl * (nodeWidth + xGap);
+            
+            // Center the group vertically relative to the tallest group for better aesthetics.
+            // Find max number of courses in any level to determine center point.
+            const maxCoursesInAnyLevel = Math.max(...Object.values(coursesByLevel).map(c => c.length));
+            const totalMaxHeight = maxCoursesInAnyLevel * (nodeHeight + yGap) - yGap;
+            const currentLevelHeight = levelCourses.length * (nodeHeight + yGap) - yGap;
+            const yOffset = (totalMaxHeight - currentLevelHeight) / 2;
+
+
+            levelCourses.forEach((course, index) => {
+                // Calculate Y coordinate for this course within its level.
+                const currentY = startY + yOffset + index * (nodeHeight + yGap);
+
+                // Create the DOM element for the course node.
+                const node = document.createElement('div');
+                node.classList.add('course-node', course.status);
+                node.id = `node-${course.courseCode}`;
+                // Apply calculated positions.
+                node.style.left = `${currentX}px`;
+                node.style.top = `${currentY}px`;
+                
+                // Apply style for completed courses (adds green status bar).
+                if (course.isCompleted) {
+                    node.classList.add('completed');
+                }
+
+                // Basic HTML structure for the node content.
+                node.innerHTML = `
+                    <div class="course-code">${course.courseCode}</div>
+                    <div class="course-name">${course.title}</div> 
+                `;
+
+                // Add click handler for opening the course details modal.
+                node.addEventListener('click', () => handleCourseClick(course));
+                container.appendChild(node);
+
+                // Store position for arrow drawing later.
+                // Adjust coordinates to be the center points of the node sides.
+                nodePositions[course.courseCode] = {
+                    id: node.id,
+                    inputPoint: { x: currentX, y: currentY + nodeHeight / 2 },     // Left side center
+                    outputPoint: { x: currentX + nodeWidth, y: currentY + nodeHeight / 2 } // Right side center
+                };
+            });
+        }
+
+        // 4. Draw connections (arrows) between nodes.
+        // Create an SVG element to hold all the arrows.
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.id = "arrows-svg";
+        // Set SVG size to match the container's scrollable area.
+        svg.setAttribute('width', container.scrollWidth);
+        svg.setAttribute('height', container.scrollHeight);
+        container.appendChild(svg);
+
+        enrichedCourses.forEach(course => {
+            if (!nodePositions[course.courseCode]) return;
+            const toPos = nodePositions[course.courseCode].inputPoint;
+
+             course.prerequisites.forEach(prereqGroup => {
+                 // For visualization, draw lines from all individual options in an 'or' group.
+                prereqGroup.split(' or ').forEach(prereqCode => {
+                     prereqCode = prereqCode.trim();
+                     if (nodePositions[prereqCode]) {
+                         const fromPos = nodePositions[prereqCode].outputPoint;
+                         const isCritical = criticalEdges.has(`${prereqCode}->${course.courseCode}`);
+                         // Draw the actual arrow using SVG.
+                         PlanUtils.drawArrow(svg, fromPos, toPos, isCritical);
+                     }
+                });
+            });
+        });
+    },
+
+    // Draws a single Bezier curve arrow between two points on the SVG canvas.
+    drawArrow: (svg, start, end, isCritical) => {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        
+        // Calculate control points for a smooth Bezier curve.
+        // The curve goes horizontally out from 'start' and horizontally into 'end'.
+        const deltaX = end.x - start.x;
+        // Determine how far out the control points should be based on distance.
+        // Ensure a minimum curve even for close nodes.
+        const controlPointOffset = Math.max(deltaX * 0.4, 50); 
+
+        const cp1x = start.x + controlPointOffset;
+        const cp1y = start.y;
+        const cp2x = end.x - controlPointOffset;
+        const cp2y = end.y;
+
+        // Define the SVG path data using Cubic Bezier curve command (C).
+        const d = `M ${start.x} ${start.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${end.x} ${end.y}`;
+        path.setAttribute("d", d);
+        // Add classes for styling (thickness, color, etc.).
+        path.classList.add("arrow-line");
+        if (isCritical) path.classList.add("critical");
+
+        // Add rounding to the start and end of the lines.
+        path.setAttribute("stroke-linecap", "round");
+        
+        svg.appendChild(path);
+    }
+};

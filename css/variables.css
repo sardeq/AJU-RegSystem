@@ -1,0 +1,32 @@
+:root {
+    /* --- COLOR PALETTE --- */
+    --bg-body: #050505;       /* Deepest Black */
+    --bg-card: #0a0a0a;       /* Standard Card */
+    --bg-card-hover: #141414; /* Lighter Hover */
+    --bg-input: #0f0f0f;      
+    
+    --primary: #00e676;       /* Neon Emerald */
+    --primary-dim: #00c853;   /* Darker Green */
+    --primary-glow: rgba(0, 230, 118, 0.15);
+    
+    --accent-orange: #ff9100; /* Waitlist */
+    --accent-red: #ff5252;    /* Danger/Errors */
+    --accent-blue: #2979ff;   /* Info */
+    
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --border-color: #222;
+
+    /* --- DIMENSIONS --- */
+    --radius-xl: 24px;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    
+    --sidebar-width: 280px;
+    --sidebar-collapsed: 80px;
+    --header-height: 80px;
+    
+    /* --- TREE VIEW SPECIFIC --- */
+    --status-completed: #2ecc71; 
+    --status-locked: #545454;    
+}
