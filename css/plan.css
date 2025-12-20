@@ -1,13 +1,12 @@
 /* plan.css - Dark Neon Glass Redesign */
 
-/* --- Main Wrapper & Grid Background --- */
+/* --- Main Wrapper --- */
 #tree-wrapper {
     position: relative;
     width: 100%;
     height: 85vh;
-    overflow: hidden; /* We use custom drag logic */
-    background-color: #0d1117; /* Deep blue-black */
-    /* Grid Pattern to match image */
+    overflow: hidden;
+    background-color: #0d1117; 
     background-image: 
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
@@ -18,95 +17,74 @@
     user-select: none;
 }
 
-#tree-wrapper:active {
-    cursor: grabbing;
-}
+#tree-wrapper:active { cursor: grabbing; }
 
 #plan-tree-canvas {
     position: absolute;
     top: 0; left: 0;
     transform-origin: center top;
     transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    /* Ensure canvas is large enough to hold the tree */
 }
 
-/* --- SVG Connectors --- */
+/* --- Connectors --- */
 .tree-svg-layer {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 1;
-    pointer-events: none;
+    position: absolute; top: 0; left: 0;
+    pointer-events: none; z-index: 1;
 }
 
 .connector-path {
     fill: none;
-    stroke: #30363d; /* Subtle dark gray-blue for inactive lines */
-    stroke-width: 2px;
-    stroke-dasharray: 6; /* Dashed lines like the reference image */
+    stroke: #30363d; 
+    stroke-width: 1.5px; /* Thinner default lines */
+    stroke-dasharray: 4; /* Dotted default lines for less clutter */
+    opacity: 0.3; /* Low opacity default */
     transition: all 0.3s ease;
 }
 
-/* Specific styling for the line coming from the Super Root */
+/* Super Root Connection */
 .connector-path[id^="path-ROOT"] {
     stroke: #58a6ff;
     stroke-width: 2px;
-    stroke-dasharray: none; /* Solid line for main branches */
+    stroke-dasharray: none; 
+    opacity: 0.8;
     filter: drop-shadow(0 0 3px #58a6ff);
 }
 
-/* --- Super Root (The Title Node) --- */
+/* --- Super Root --- */
 .super-root-node {
     position: absolute;
     padding: 20px 60px;
-    /* Dark Glass + Gradient Glow */
     background: rgba(13, 17, 23, 0.9);
     backdrop-filter: blur(10px);
     border-radius: 50px;
     color: white;
     text-align: center;
     z-index: 10;
-    /* Blue/Purple Neon Glow */
     box-shadow: 
         0 0 40px rgba(88, 166, 255, 0.2), 
         inset 0 0 20px rgba(88, 166, 255, 0.05);
     border: 1px solid rgba(88, 166, 255, 0.3);
     min-width: 300px;
-    transform: translateX(-50%); /* Center based on coordinate */
 }
 
 .sr-title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #58a6ff;
-    text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
-    margin-bottom: 2px;
-    font-family: 'Cairo', sans-serif;
+    font-size: 1.8rem; font-weight: 800; color: #58a6ff;
+    text-shadow: 0 0 15px rgba(88, 166, 255, 0.4); margin-bottom: 2px;
 }
+.sr-subtitle { font-size: 0.85rem; color: #8b949e; font-weight: 600; letter-spacing: 1px; }
 
-.sr-subtitle {
-    font-size: 0.85rem;
-    color: #8b949e;
-    font-weight: 600;
-    letter-spacing: 1px;
-}
-
-/* --- The Course Card --- */
+/* --- Course Card --- */
 .node-card {
     position: absolute;
-    width: 200px;
-    height: 70px;
-    background: rgba(22, 27, 34, 0.85); /* Darker Card Background */
+    width: 200px; height: 75px;
+    background: rgba(22, 27, 34, 0.85); 
     backdrop-filter: blur(5px);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    z-index: 10;
-    cursor: pointer;
+    z-index: 10; cursor: pointer;
     transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
-    padding: 0;
-    overflow: hidden;
+    display: flex; align-items: center;
+    padding: 0; overflow: hidden;
 }
 
 .node-card:hover {
@@ -116,138 +94,205 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* Status Indicators (The colored left border & glow) */
-
-/* PASSED (Green) */
-.node-card.passed {
-    border: 1px solid rgba(35, 134, 54, 0.5);
-    box-shadow: 0 0 15px rgba(35, 134, 54, 0.1);
-}
-.node-card.passed .nc-status-bar { background-color: #238636; box-shadow: 0 0 10px #238636; }
-.node-card.passed .nc-icon { color: #2ea043; background: rgba(46, 160, 67, 0.15); }
-
-/* REGISTERED (Blue) */
-.node-card.registered {
-    border: 1px solid rgba(56, 139, 253, 0.5);
-    box-shadow: 0 0 15px rgba(56, 139, 253, 0.1);
-}
-.node-card.registered .nc-status-bar { background-color: #1f6feb; box-shadow: 0 0 10px #1f6feb; }
-.node-card.registered .nc-icon { color: #58a6ff; background: rgba(88, 166, 255, 0.15); }
-
-/* AVAILABLE (Gray/White) */
-.node-card.open {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.node-card.open .nc-status-bar { background-color: #8b949e; }
-.node-card.open .nc-icon { color: #c9d1d9; background: rgba(255, 255, 255, 0.05); }
-
-/* LOCKED (Dim) */
-.node-card.locked {
-    opacity: 0.6;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-.node-card.locked .nc-status-bar { background-color: #30363d; }
-.node-card.locked .nc-icon { color: #484f58; background: rgba(0,0,0,0.2); }
-
-/* --- Card Inner Layout --- */
-.nc-status-bar {
-    width: 4px;
-    height: 100%;
-}
-
+/* Inner Layout */
+.nc-status-bar { width: 4px; height: 100%; }
 .nc-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 12px;
-}
-
-.nc-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.nc-name {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #e6edf3;
-    line-height: 1.2;
-    white-space: nowrap;
+    flex: 1; display: flex; flex-direction: column; 
+    justify-content: center; padding: 0 12px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 140px;
 }
-
-.nc-credits {
-    font-size: 0.65rem;
-    color: #8b949e;
-    text-transform: uppercase;
-    font-weight: 600;
+.nc-name {
+    font-size: 0.8rem; font-weight: 700; color: #e6edf3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 2px;
 }
-
+.nc-code {
+    font-size: 0.7rem; color: #8b949e; font-family: monospace; letter-spacing: 0.5px;
+}
+.nc-credits-badge {
+    font-size: 0.65rem; color: #8b949e; 
+    background: rgba(255,255,255,0.05);
+    padding: 2px 6px; border-radius: 4px;
+    margin-right: 8px;
+}
 .nc-icon-wrapper {
-    width: 40px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 36px; height: 100%;
+    display: flex; align-items: center; justify-content: center;
     border-left: 1px solid rgba(255,255,255,0.05);
 }
+.nc-icon { font-size: 0.9rem; }
 
-.nc-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-}
+/* Status Colors */
+.node-card.passed { border-color: rgba(35, 134, 54, 0.5); box-shadow: 0 0 10px rgba(35, 134, 54, 0.1); }
+.node-card.passed .nc-status-bar { background-color: #238636; box-shadow: 0 0 8px #238636; }
+.node-card.passed .nc-icon { color: #2ea043; }
 
-/* --- Interactive Hover Tracing --- */
+.node-card.registered { border-color: rgba(56, 139, 253, 0.5); box-shadow: 0 0 10px rgba(56, 139, 253, 0.1); }
+.node-card.registered .nc-status-bar { background-color: #1f6feb; box-shadow: 0 0 8px #1f6feb; }
+.node-card.registered .nc-icon { color: #58a6ff; }
+
+.node-card.open { border-color: rgba(255, 255, 255, 0.2); }
+.node-card.open .nc-status-bar { background-color: #8b949e; }
+.node-card.open .nc-icon { color: #c9d1d9; }
+
+.node-card.locked { opacity: 0.6; border-color: rgba(255,255,255,0.05); }
+.node-card.locked .nc-status-bar { background-color: #30363d; }
+.node-card.locked .nc-icon { color: #484f58; }
+
+
+/* --- INTERACTIVE TRACING (Fixes) --- */
+
+/* When hovering canvas, dim everything by default */
 .canvas-hovered .node-card,
-.canvas-hovered .connector-path {
-    opacity: 0.1;
-    filter: blur(1px);
+.canvas-hovered .connector-path,
+.canvas-hovered .super-root-node {
+    opacity: 0.1 !important;
+    filter: blur(2px) !important;
+    transition: all 0.2s ease;
 }
 
-.canvas-hovered .node-card.active-node {
-    opacity: 1;
-    filter: none;
+/* BUT keep the ACTIVE items bright */
+.canvas-hovered .node-card.active-node,
+.canvas-hovered .super-root-node.active-node {
+    opacity: 1 !important;
+    filter: none !important;
     transform: scale(1.05);
     z-index: 100;
+    box-shadow: 0 0 30px rgba(88, 166, 255, 0.3);
+    border-color: #58a6ff;
 }
 
+/* Highlight the active path lines */
 .canvas-hovered .connector-path.active-path {
-    opacity: 1;
-    filter: none;
+    opacity: 1 !important;
+    filter: none !important;
     stroke: #58a6ff;
     stroke-width: 3px;
-    stroke-dasharray: none;
-    filter: drop-shadow(0 0 5px #58a6ff);
-}
-
-/* --- Electives Drawer & Overlay (Unchanged mostly) --- */
-.elective-group-on-canvas {
-    position: absolute;
-    width: 200px;
-    display: flex; flex-direction: column; gap: 15px;
+    stroke-dasharray: none; /* Solid line for path */
+    filter: drop-shadow(0 0 8px #58a6ff) !important;
     z-index: 50;
 }
-.elective-card-btn {
-    background: rgba(22, 27, 34, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-left: 3px solid #d29922; /* Orange for electives */
-    border-radius: 8px; padding: 15px;
-    cursor: pointer; backdrop-filter: blur(5px);
-}
-.elective-card-btn:hover { background: #21262d; transform: translateX(-5px); }
-.ecb-title { color: #e6edf3; font-weight: bold; font-size: 0.9rem; }
-.ecb-sub { color: #8b949e; font-size: 0.75rem; }
 
-/* Popup (Existing styles are fine, just ensuring z-index) */
-#course-popup { z-index: 5000; }
-#plan-overlay { z-index: 4999; }
+
+/* --- Electives (Sidebar on Canvas) --- */
+.elective-group-container {
+    position: absolute; width: 220px;
+    display: flex; flex-direction: column; gap: 12px;
+    z-index: 50;
+}
+.elective-section-title {
+    color: #8b949e; font-size: 0.8rem; text-transform: uppercase; 
+    font-weight: bold; letter-spacing: 1px; margin-bottom: 5px;
+    padding-left: 5px;
+}
+.elective-card-btn {
+    background: rgba(13, 17, 23, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px; padding: 12px;
+    cursor: pointer; display: flex; align-items: center; gap: 12px;
+    transition: all 0.2s;
+    border-left: 3px solid #d29922; /* Orange Accent */
+}
+.elective-card-btn:hover {
+    background: rgba(56, 139, 253, 0.1);
+    border-color: #58a6ff;
+    border-left-color: #58a6ff;
+    transform: translateX(-5px);
+}
+.ecb-icon {
+    font-size: 1.2rem; color: #d29922;
+}
+.elective-card-btn:hover .ecb-icon { color: #58a6ff; }
+
+.ecb-info { flex: 1; display: flex; flex-direction: column; }
+.ecb-title { font-size: 0.85rem; font-weight: bold; color: #e6edf3; }
+.ecb-sub { font-size: 0.7rem; color: #8b949e; }
+.ecb-arrow { font-size: 0.9rem; color: #8b949e; }
+
+
+/* --- POPUP (Glass Theme) --- */
+#plan-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px);
+    z-index: 4999;
+}
+#course-popup {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background: #0d1117; /* Dark Base */
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    border-radius: 16px;
+    padding: 25px;
+    z-index: 5000;
+    box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(88, 166, 255, 0.1);
+}
+#popup-title {
+    margin: 0; font-size: 1.2rem; color: #58a6ff; margin-bottom: 5px;
+}
+#popup-desc {
+    color: #8b949e; font-size: 0.9rem; margin-top: 0; margin-bottom: 15px; font-family: monospace;
+}
+.popup-description {
+    color: #c9d1d9; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px;
+}
+.popup-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
+}
+.close-popup {
+    position: absolute; top: 15px; right: 15px;
+    background: transparent; border: none; color: #8b949e;
+    font-size: 1.5rem; cursor: pointer;
+}
+.close-popup:hover { color: white; }
+
+
+/* --- RIGHT DRAWER (Electives) --- */
+.side-drawer-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 5001;
+    opacity: 0; visibility: hidden; transition: 0.3s;
+}
+.side-drawer-overlay.open { opacity: 1; visibility: visible; }
+
+.side-drawer {
+    position: fixed; top: 0; right: -400px;
+    width: 350px; height: 100%;
+    background: #0d1117;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    z-index: 5002;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+.side-drawer.open { right: 0; }
+
+.drawer-header {
+    padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(22, 27, 34, 0.95);
+}
+.drawer-list {
+    flex: 1; overflow-y: auto; padding: 20px;
+}
+
+/* Drawer Item */
+.drawer-item {
+    background: rgba(33, 38, 45, 0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px; padding: 12px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+.drawer-item:hover {
+    background: rgba(56, 139, 253, 0.1);
+    border-color: rgba(56, 139, 253, 0.3);
+}
+.di-header {
+    display: flex; justify-content: space-between; margin-bottom: 4px;
+}
+.di-code { font-family: monospace; color: #58a6ff; font-size: 0.85rem; font-weight: bold; }
+.di-credits { font-size: 0.75rem; color: #8b949e; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; }
+.di-name { color: #e6edf3; font-size: 0.9rem; font-weight: 600; }

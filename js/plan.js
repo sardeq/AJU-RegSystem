@@ -51,7 +51,7 @@ export async function loadStudentPlan(userId) {
         const layoutData = calculateTreeLayout(state.planRoots, state.planLinks);
         globalEdges = layoutData.edges;
 
-        const ELECTIVE_AREA_WIDTH = 250; 
+        const ELECTIVE_AREA_WIDTH = 300; 
         const totalWidth = Math.max(wrapper.clientWidth, layoutData.width + ELECTIVE_AREA_WIDTH);
         const totalHeight = Math.max(wrapper.clientHeight, layoutData.height + 200);
 
@@ -60,7 +60,7 @@ export async function loadStudentPlan(userId) {
         canvas.style.width = `${totalWidth}px`; 
         canvas.style.height = `${totalHeight}px`;
 
-        // Draw connections FIRST so they are behind nodes
+        // Draw connections FIRST
         renderOrthogonalConnections(layoutData.edges, layoutData.nodes);
         
         // Draw Nodes
@@ -74,7 +74,6 @@ export async function loadStudentPlan(userId) {
 
         // Center the view initially
         const startX = (wrapper.clientWidth - totalWidth) / 2;
-        // If content is wider than screen, scroll to center
         if (totalWidth > wrapper.clientWidth) {
             wrapper.scrollLeft = (totalWidth - wrapper.clientWidth) / 2;
         }
@@ -87,7 +86,6 @@ export async function loadStudentPlan(userId) {
 
 /**
  * Standard Tree Layout Algorithm
- * Returns nodes with {x, y, id} and width/height of tree
  */
 function calculateTreeLayout(roots, links) {
     const nodes = [];
@@ -104,7 +102,6 @@ function calculateTreeLayout(roots, links) {
     const visited = new Set();
     const levelCounts = {};
 
-    // BFS to assign levels
     while (queue.length > 0) {
         const { id, level } = queue.shift();
         if (visited.has(id)) continue;
@@ -121,48 +118,42 @@ function calculateTreeLayout(roots, links) {
         });
     }
 
-    // Grid Settings
     const NODE_W = 200;
-    const NODE_H = 70;
-    const GAP_X = 50;
+    const NODE_H = 75; 
+    const GAP_X = 60;
     const GAP_Y = 100;
-    const ROW_OFFSET = {}; // Track X position per level
+    const ROW_OFFSET = {}; 
 
     let minX = Infinity; let maxX = -Infinity; let maxY = 0;
 
-    // Position Nodes
     visited.forEach(nodeId => {
         const lvl = levelMap[nodeId];
         const countInRow = levelCounts[lvl];
         
         if (typeof ROW_OFFSET[lvl] === 'undefined') ROW_OFFSET[lvl] = 0;
         
-        // Center the row based on number of items
         const rowTotalWidth = countInRow * NODE_W + (countInRow - 1) * GAP_X;
         const rowStart = -(rowTotalWidth / 2);
         
         let x, y;
         
-        // Level 0 (Super Root)
         if (lvl === 0) {
-             x = 0; // Centered at 0
+             x = 0; 
              y = 60;
         } else {
              x = rowStart + (ROW_OFFSET[lvl] * (NODE_W + GAP_X)) + (NODE_W / 2);
              y = 60 + (lvl * (NODE_H + GAP_Y));
         }
 
-        // Adjust constraints
         if (x < minX) minX = x;
         if (x + NODE_W > maxX) maxX = x + NODE_W;
         if (y + NODE_H > maxY) maxY = y + NODE_H;
 
-        // Store center points for lines
         nodes.push({ 
             id: nodeId, 
-            left: x, // CSS left
-            top: y,  // CSS top
-            cx: x + (lvl === 0 ? 0 : 0), // Center X for lines (adjusted in render)
+            left: x, 
+            top: y,  
+            cx: x + (lvl === 0 ? 0 : 0), 
             cy: y + (lvl === 0 ? 50 : NODE_H/2),
             level: lvl
         });
@@ -170,15 +161,14 @@ function calculateTreeLayout(roots, links) {
         ROW_OFFSET[lvl]++;
     });
 
-    // Shift everything so minX is positive (plus padding)
     const PADDING_LEFT = 100;
     const xShift = Math.abs(minX) + PADDING_LEFT;
 
     const finalNodes = nodes.map(n => ({
         ...n,
         left: n.left + xShift,
-        cx: n.left + xShift + (n.id === ROOT_SE_ID ? 0 : NODE_W/2), // Center point
-        cy: n.top + (n.id === ROOT_SE_ID ? 100 : NODE_H/2) // Connection point
+        cx: n.left + xShift + (n.id === ROOT_SE_ID ? 0 : NODE_W/2), 
+        cy: n.top + (n.id === ROOT_SE_ID ? 100 : NODE_H/2) 
     }));
 
     return { 
@@ -196,61 +186,48 @@ function renderNodes(nodes, passed, registered) {
         const el = document.createElement('div');
         el.style.left = `${n.left}px`;
         el.style.top = `${n.top}px`;
-        el.id = `node-${n.id}`;
+        el.id = `node-${n.id}`; // CRITICAL: ID must match highlight logic
 
-        // Event Listeners for tracing
+        // Event Listeners for Recursive Trace
         el.onmouseenter = () => highlightTrace(n.id);
         el.onmouseleave = () => resetTrace();
 
-        // 1. SUPER ROOT (The Title Bubble)
         if (n.id === ROOT_SE_ID) {
             el.className = 'super-root-node';
             el.innerHTML = `
                 <div class="sr-title">Software Engineering</div>
-                <div class="sr-subtitle">Plan 2021 • 132 Hours</div>
+                <div class="sr-subtitle">132 Hours</div>
             `;
-            // Center the super root visually
             el.style.transform = "translateX(-50%)"; 
         } 
-        // 2. COURSE CARDS
         else {
             const course = state.allCoursesData.find(c => c.course_code == n.id) 
-                           || { course_name_en: n.id, credit_hours: 3 };
+                           || { course_name_en: n.id, credit_hours: 3, course_code: n.id };
             
             const name = state.currentLang === 'ar' ? (course.course_name_ar || course.course_name_en) : course.course_name_en;
 
-            // Determine Status
             let status = 'locked';
-            let icon = '🔒'; // Default Lock
+            let icon = '🔒'; 
             
-            if (passed.has(n.id)) { 
-                status = 'passed'; 
-                icon = '✔'; 
-            } else if (registered.has(n.id)) { 
-                status = 'registered'; 
-                icon = '⏳'; 
-            } else if (isPrereqMet(n.id, passed)) { 
-                status = 'open'; 
-                icon = '🔓'; 
-            }
+            if (passed.has(n.id)) { status = 'passed'; icon = '✔'; } 
+            else if (registered.has(n.id)) { status = 'registered'; icon = '⏳'; } 
+            else if (isPrereqMet(n.id, passed)) { status = 'open'; icon = '🔓'; }
 
             el.className = `node-card ${status}`;
             
-            // New HTML Structure matching the image style
             el.innerHTML = `
                 <div class="nc-status-bar"></div>
                 <div class="nc-content">
-                    <div class="nc-header">
-                        <span class="nc-name">${name}</span>
-                    </div>
-                    <div class="nc-credits">${course.credit_hours} Credits</div>
+                    <div class="nc-name">${name}</div>
+                    <div class="nc-code">${course.course_code}</div>
                 </div>
+                <div class="nc-credits-badge">${course.credit_hours} Cr</div>
                 <div class="nc-icon-wrapper">
                     <span class="nc-icon">${icon}</span>
                 </div>
             `;
             
-            el.onclick = () => window.showCoursePopup(n.id, course, status);
+            el.onclick = () => window.showCoursePopup(course, status);
         }
         container.appendChild(el);
     });
@@ -261,10 +238,7 @@ function renderOrthogonalConnections(edges, nodes) {
     const svgNs = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNs, "svg");
     svg.setAttribute("class", "tree-svg-layer");
-    
-    // Ensure SVG covers full scrollable area
-    svg.style.width = "100%"; 
-    svg.style.height = "100%";
+    svg.style.width = "100%"; svg.style.height = "100%";
 
     const nodeMap = {};
     nodes.forEach(n => nodeMap[n.id] = n);
@@ -274,26 +248,23 @@ function renderOrthogonalConnections(edges, nodes) {
         const t = nodeMap[edge.t];
         
         if (s && t) {
-            // Calculate coordinates
-            // Source is usually bottom center of parent
             const sx = s.cx; 
-            const sy = s.top + (s.id === ROOT_SE_ID ? 80 : 70); // 80 is height of super node approx
-            
-            // Target is top center of child
+            const sy = s.top + (s.id === ROOT_SE_ID ? 80 : 75); 
             const tx = t.cx; 
             const ty = t.top;
-
-            const path = document.createElementNS(svgNs, "path");
             
-            // Orthogonal Logic: Down -> Across -> Down
+            // To prevent lines from overlapping exactly, we add a tiny random jitter
+            // or we could use levels. For now, a clean midY is sufficient.
             const midY = sy + (ty - sy) / 2;
             
-            // Path Data
             const d = `M ${sx} ${sy} L ${sx} ${midY} L ${tx} ${midY} L ${tx} ${ty}`;
             
+            const path = document.createElementNS(svgNs, "path");
             path.setAttribute("d", d);
             path.setAttribute("class", "connector-path");
-            path.setAttribute("id", `path-${edge.s}-${edge.t}`);
+            
+            // CRITICAL: ID must match highlight logic (String conversion)
+            path.setAttribute("id", `path-${String(edge.s)}-${String(edge.t)}`);
             
             svg.appendChild(path);
         }
@@ -303,16 +274,25 @@ function renderOrthogonalConnections(edges, nodes) {
 
 function renderElectives(canvas, startX) {
     const groupContainer = document.createElement('div');
-    groupContainer.className = 'elective-group-on-canvas';
+    groupContainer.className = 'elective-group-container';
     groupContainer.style.left = `${startX}px`;
-    groupContainer.style.top = '150px'; 
+    groupContainer.style.top = '120px'; 
     
+    const title = document.createElement('div');
+    title.className = 'elective-section-title';
+    title.innerText = 'Electives';
+    groupContainer.appendChild(title);
+
     ELECTIVE_GROUPS.forEach(group => {
         const btn = document.createElement('div');
         btn.className = 'elective-card-btn';
         btn.innerHTML = `
-            <div class="ecb-title">${group.name}</div>
-            <div class="ecb-sub">${group.count} Required</div>
+            <div class="ecb-icon">⚡</div>
+            <div class="ecb-info">
+                <div class="ecb-title">${group.name}</div>
+                <div class="ecb-sub">${group.count}</div>
+            </div>
+            <div class="ecb-arrow">→</div>
         `;
         btn.onclick = () => openElectiveDrawer(group);
         groupContainer.appendChild(btn);
@@ -321,7 +301,7 @@ function renderElectives(canvas, startX) {
     canvas.appendChild(groupContainer);
 }
 
-// --- Drag & Trace Utilities ---
+// --- Interactions ---
 
 function initDragLogic(wrapper, canvas) {
     let isDown = false;
@@ -352,27 +332,60 @@ function initDragLogic(wrapper, canvas) {
     });
 }
 
+// --- RECURSIVE TRACE LOGIC ---
 function highlightTrace(nodeId) {
     const canvas = document.getElementById('plan-tree-canvas');
     if(!canvas) return;
+    
+    // 1. Activate Canvas Mode (Dim everything else)
     canvas.classList.add('canvas-hovered');
 
-    const self = document.getElementById(`node-${nodeId}`);
-    if(self) self.classList.add('active-node');
+    // 2. Identify all connected nodes/edges
+    const activeNodes = new Set();
+    const activeEdges = new Set();
 
-    // Trace both up (parents) and down (children)
-    // For simple trace, we just look at edges
-    globalEdges.forEach(edge => {
-        if(edge.s === nodeId) {
-            // Child connection
-            document.getElementById(`path-${edge.s}-${edge.t}`)?.classList.add('active-path');
-            document.getElementById(`node-${edge.t}`)?.classList.add('active-node');
-        }
-        if(edge.t === nodeId) {
-            // Parent connection
-            document.getElementById(`path-${edge.s}-${edge.t}`)?.classList.add('active-path');
-            document.getElementById(`node-${edge.s}`)?.classList.add('active-node');
-        }
+    // Helper: Trace Up (Parents)
+    function traceUp(currId) {
+        if(activeNodes.has(currId)) return;
+        activeNodes.add(currId);
+        
+        // Find edges where target == currId
+        globalEdges.forEach(edge => {
+            if(String(edge.t) === String(currId)) {
+                activeEdges.add(`path-${edge.s}-${edge.t}`);
+                traceUp(edge.s);
+            }
+        });
+    }
+
+    // Helper: Trace Down (Children)
+    function traceDown(currId) {
+        // Note: We don't stop if visited because we might reach a node from a different path
+        // but for simple trees Set check is fine.
+        activeNodes.add(currId);
+
+        // Find edges where source == currId
+        globalEdges.forEach(edge => {
+            if(String(edge.s) === String(currId)) {
+                activeEdges.add(`path-${edge.s}-${edge.t}`);
+                traceDown(edge.t);
+            }
+        });
+    }
+
+    // Start Trace
+    traceUp(nodeId);
+    traceDown(nodeId);
+
+    // 3. Apply CSS Classes
+    activeNodes.forEach(nid => {
+        const el = document.getElementById(`node-${nid}`);
+        if(el) el.classList.add('active-node');
+    });
+
+    activeEdges.forEach(eid => {
+        const el = document.getElementById(eid);
+        if(el) el.classList.add('active-path');
     });
 }
 
@@ -380,8 +393,13 @@ function resetTrace() {
     const canvas = document.getElementById('plan-tree-canvas');
     if(!canvas) return;
     canvas.classList.remove('canvas-hovered');
-    canvas.querySelectorAll('.active-node').forEach(el => el.classList.remove('active-node'));
-    canvas.querySelectorAll('.active-path').forEach(el => el.classList.remove('active-path'));
+    
+    // Remove all active classes
+    const activeNodes = canvas.querySelectorAll('.active-node');
+    activeNodes.forEach(el => el.classList.remove('active-node'));
+    
+    const activePaths = canvas.querySelectorAll('.active-path');
+    activePaths.forEach(el => el.classList.remove('active-path'));
 }
 
 function isPrereqMet(code, passed) {
@@ -390,7 +408,38 @@ function isPrereqMet(code, passed) {
     return c.prerequisites.every(p => passed.has(p.prereq_code));
 }
 
-// Drawer & Popup Logic (Keep existing logic, just export needed functions)
+// --- Popup & Drawer Functions ---
+
+window.showCoursePopup = function(course, status) {
+    const popup = document.getElementById('course-popup');
+    const overlay = document.getElementById('plan-overlay');
+    if(!popup || !overlay) return;
+
+    document.getElementById('popup-title').innerText = course.course_name_en || course.course_code;
+    
+    const desc = course.description || "This course introduces fundamental concepts in " + course.course_name_en + ". Students will learn key methodologies and apply them in practical scenarios.";
+    document.getElementById('popup-desc').innerText = course.course_code;
+    document.getElementById('popup-long-desc').innerText = desc;
+    
+    document.getElementById('popup-credits').innerText = `${course.credit_hours} Credit Hours`;
+    
+    const statusBadge = document.getElementById('popup-status');
+    statusBadge.innerText = status.toUpperCase();
+    statusBadge.className = 'badge'; 
+    if(status === 'passed') statusBadge.classList.add('badge-green');
+    else if(status === 'registered') statusBadge.classList.add('badge-blue');
+    else if(status === 'open') statusBadge.classList.add('badge-yellow');
+    else statusBadge.classList.add('badge-gray');
+
+    popup.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+}
+
+window.closePlanPopup = function() {
+    document.getElementById('course-popup')?.classList.add('hidden');
+    document.getElementById('plan-overlay')?.classList.add('hidden');
+}
+
 async function openElectiveDrawer(group) {
     const drawer = document.getElementById('elective-drawer');
     const overlay = document.getElementById('elective-drawer-overlay');
@@ -409,17 +458,22 @@ async function openElectiveDrawer(group) {
     relevantCourses.forEach(course => {
         const item = document.createElement('div');
         item.className = 'drawer-item';
-        item.style.padding = "15px";
-        item.style.marginBottom = "10px";
-        item.style.background = "rgba(255,255,255,0.05)";
-        item.style.borderRadius = "8px";
+        
         item.innerHTML = `
-            <div style="font-weight:bold; color:#fff;">${course.course_name_en}</div>
-            <div style="font-size:0.8em; color:#888;">${course.course_code} • ${course.credit_hours} Cr</div>
+            <div class="di-header">
+                <span class="di-code">${course.course_code}</span>
+                <span class="di-credits">${course.credit_hours} Cr</span>
+            </div>
+            <div class="di-name">${course.course_name_en}</div>
         `;
         listContainer.appendChild(item);
     });
 
     drawer.classList.add('open');
     overlay.classList.add('open');
+}
+
+window.closeDrawer = function() {
+    document.getElementById('elective-drawer')?.classList.remove('open');
+    document.getElementById('elective-drawer-overlay')?.classList.remove('open');
 }
