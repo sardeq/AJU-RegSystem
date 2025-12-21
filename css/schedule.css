@@ -65,3 +65,42 @@
 .hc-code { font-weight: 800; color: #fff; }
 .hc-grade { font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #222; float: right; }
 .h-card.pass .hc-grade { color: var(--primary); }
+
+
+/* --- RTL (ARABIC) TIMELINE FIXES --- */
+
+html[dir="rtl"] .history-timeline {
+    /* Flip padding to the right side */
+    padding: 20px 20px 20px 0;
+}
+
+html[dir="rtl"] .history-timeline::before {
+    /* Move the vertical spine line to the right */
+    left: auto;
+    right: 29px;
+}
+
+html[dir="rtl"] .timeline-semester-block {
+    /* Indent content from the right, remove left indent */
+    margin-left: 0;
+    margin-right: 50px;
+}
+
+html[dir="rtl"] .h-card {
+    /* Reset Left Border to default thin grey */
+    border-left: 1px solid #222;
+    
+    /* Move the thick status border to the Right */
+    border-right-width: 4px;
+    border-right-style: solid;
+    border-right-color: #444; /* Default/Active color */
+}
+
+/* Map the status colors to the Right Border */
+html[dir="rtl"] .h-card.pass { border-right-color: var(--primary); }
+html[dir="rtl"] .h-card.fail { border-right-color: var(--accent-red); }
+
+/* Flip the Grade Pill (since it uses float) */
+html[dir="rtl"] .hc-grade {
+    float: left;
+}

@@ -160,3 +160,48 @@
     .src-main { width: 100%; margin-bottom: 10px; }
     .src-grade-box { position: absolute; top: 15px; right: 15px; }
 }
+
+
+/* --- RTL (ARABIC) FIXES --- */
+
+html[dir="rtl"] .sheet-row-card {
+    border-left: none !important; /* Remove English border */
+    border-right-width: 4px;
+    border-right-style: solid;
+}
+
+/* Re-apply colors to the Right Border */
+html[dir="rtl"] .sheet-row-card.passed { border-right-color: var(--status-completed); }
+html[dir="rtl"] .sheet-row-card.failed { border-right-color: var(--accent-red); }
+html[dir="rtl"] .sheet-row-card.registered { border-right-color: var(--accent-blue); }
+html[dir="rtl"] .sheet-row-card.pending { border-right-color: #333; }
+
+/* Search Input: Flip Padding and Icon */
+html[dir="rtl"] .sheet-search-wrapper input {
+    padding-left: 15px !important;
+    padding-right: 45px !important;
+}
+
+html[dir="rtl"] .sheet-search-wrapper .search-icon-absolute {
+    left: auto;
+    right: 15px;
+}
+
+/* Flip Grade Box Alignment */
+html[dir="rtl"] .src-grade-box {
+    text-align: left;
+    justify-content: flex-start; /* Move grade pill to the left side */
+}
+
+/* Flip Header Text for Grade Column */
+html[dir="rtl"] .sheet-list-header > div:last-child {
+    text-align: left !important;
+}
+
+/* Mobile View Adjustments for Arabic */
+@media (max-width: 900px) {
+    html[dir="rtl"] .src-grade-box {
+        right: auto;
+        left: 15px; /* Move absolute positioned grade to left on mobile */
+    }
+}
