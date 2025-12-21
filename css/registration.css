@@ -65,20 +65,13 @@
 }
 .rc-action-btn.registered { background: var(--primary-dim); color: white; cursor: default; }
 
-/* --- AI ADVISOR BUTTON --- */
-.ai-header-btn {
-    height: 46px; padding: 0 25px;
-    background: linear-gradient(135deg, var(--primary-dim), var(--primary));
-    color: black; border: none; border-radius: 24px;
-    font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 230, 118, 0.2);
-}
 
 /* --- EXCEPTION & SHEET --- */
 .exception-layout { display: grid; grid-template-columns: 1fr 360px; gap: 30px; }
 .exc-form-card { background: #0a0a0a; border: 1px solid #222; border-radius: 24px; padding: 30px; }
 .sheet-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 
-/* Responsive */
+/* Responsive Grid Adjustments */
 @media (max-width: 900px) {
     .reg-controls-bar { flex-direction: column; align-items: stretch; }
     .exception-layout, .sheet-stats-row { grid-template-columns: 1fr; }
@@ -215,7 +208,7 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 }
 
-/* 4. Radio Cards (Relaxed, Balanced, Intense) */
+/* 4. Radio Cards */
 .radio-card {
     background: #0a0a0a;
     border: 1px solid #333;
@@ -232,10 +225,7 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
 }
 
 .radio-card:hover { border-color: #555; background: #111; }
-
-/* The actual radio input is hidden, we style the label based on :checked state */
 .radio-card input { display: none; }
-
 .radio-card:has(input:checked) {
     background: rgba(0, 230, 118, 0.1);
     border-color: var(--primary);
@@ -243,7 +233,6 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
     box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
     font-weight: bold;
 }
-
 .emoji { font-size: 1.8rem; margin-bottom: 5px; display: block; }
 
 /* 5. Inputs inside AI Box (Credits, Focus, etc) */
@@ -288,12 +277,27 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
 }
 .enhance-ai-btn:hover { transform: translateY(-3px) scale(1.02); }
 
-/* 7. Modal Form Wrapper */
+
+/* --- MODAL FIXES --- */
+
+/* Wrapper for form scrolling */
 .pref-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: 100%;
+}
+
+/* Critical: Scrollable Modals on Mobile */
+#ai-pref-modal .modal-content, 
+#ai-modal .modal-content {
+    max-height: 85dvh; /* Don't go taller than viewport */
+    overflow-y: auto;  /* Allow internal scrolling */
+    display: flex;
+    flex-direction: column;
+    /* Ensure scrollbar looks nice */
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
 }
 
 #ai-modal .modal-content {
@@ -302,7 +306,8 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
     transition: max-width 0.3s ease;
 }
 
-/* 2. Horizontal Scroll Container */
+
+/* 2. Horizontal Scroll Container (Desktop Results) */
 .results-grid {
     display: flex;            /* Horizontal layout */
     flex-direction: row;
@@ -428,22 +433,42 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
     transform: scale(1.02);
 }
 
-/* 4. Mobile Responsiveness */
+/* --- MOBILE SPECIFIC OVERRIDES --- */
 @media (max-width: 768px) {
-    #ai-modal .modal-content {
+    #ai-modal .modal-content,
+    #ai-pref-modal .modal-content {
         max-width: 95% !important;
-        padding: 20px;
+        padding: 20px !important;
+        margin-top: 10px;
     }
 
+    /* Stack AI form options vertically */
+    .box-grid-3, .box-grid-2 {
+        grid-template-columns: 1fr; 
+    }
+    
+    /* Make radio cards horizontal to save vertical space on stack */
+    .radio-card {
+        flex-direction: row; 
+        justify-content: flex-start;
+        gap: 15px;
+        padding: 10px;
+    }
+    .radio-card .emoji { margin-bottom: 0; font-size: 1.2rem; }
+
+    /* Results should stack vertically, not scroll horizontally */
     .results-grid {
-        flex-direction: column; /* Stack vertically on mobile */
-        overflow-x: visible;
+        flex-direction: column; 
+        overflow-x: hidden;
+        overflow-y: visible;
         padding-bottom: 0;
+        height: auto;
     }
 
     .schedule-card {
         min-width: 0;
         width: 100%;
         flex: none;
+        margin-bottom: 20px;
     }
 }
