@@ -1,18 +1,18 @@
-/* --- RESET & GLOBAL --- */
 * { box-sizing: border-box; }
 
 body {
     font-family: 'Cairo', sans-serif;
     margin: 0;
     padding: 0;
-    height: 100vh;
+    /* Use dvh to fix mobile scroll getting cut off by address bars */
+    height: 100dvh; 
+    width: 100vw;
     background-color: var(--bg-body);
     color: var(--text-main);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden; /* We keep this hidden to let content-area scroll */
 }
-
 .hidden { display: none !important; }
 
 /* Scrollbars */
@@ -21,14 +21,13 @@ body {
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-/* --- HEADER --- */
 .header {
     height: var(--header-height);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 40px;
-    background: rgba(5, 5, 5, 0.8);
+    padding: 0 20px; /* Reduced padding for mobile */
+    background: rgba(5, 5, 5, 0.95); /* More opaque on mobile */
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
@@ -93,8 +92,12 @@ body {
 
 .header-right { display: flex; gap: 15px; }
 
-/* --- SIDEBAR --- */
-.main-container { display: flex; flex: 1; overflow: hidden; }
+.main-container { 
+    display: flex; 
+    flex: 1; 
+    overflow: hidden; 
+    position: relative; 
+}
 
 .sidebar {
     width: var(--sidebar-width);
@@ -103,8 +106,8 @@ body {
     display: flex;
     flex-direction: column;
     padding: 20px;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 40;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
     justify-content: space-between;
 }
 
@@ -174,15 +177,14 @@ body {
 }
 .mini-logout-btn:hover { color: var(--accent-red); }
 
-/* --- CONTENT AREA --- */
 .content-area {
     flex: 1;
     overflow-y: auto;
-    padding: 30px 40px;
+    overflow-x: hidden;
+    padding: 20px; /* Reduced padding for mobile */
     position: relative;
-    background-image: 
-        radial-gradient(circle at 15% 50%, rgba(0, 230, 118, 0.03), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(41, 121, 255, 0.03), transparent 25%);
+    -webkit-overflow-scrolling: touch; 
+    padding-bottom: 80px; /* Extra padding for mobile bottom */
 }
 
 .dashboard-view { 
@@ -248,3 +250,54 @@ input:focus, select:focus { border-color: var(--primary) !important; }
 html[dir="rtl"] .header-right { gap: 12px; }
 html[dir="rtl"] .nav-link { flex-direction: row; }
 html[dir="rtl"] .nav-icon { margin-left: 10px; margin-right: 0; }
+
+
+
+
+
+@media (max-width: 900px) {
+    /* detach sidebar from flow */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        height: 100dvh;
+        width: 280px;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        /* Default LTR Hidden State */
+        left: 0;
+        transform: translateX(-100%);
+    }
+
+    /* Class to show sidebar via JS */
+    .sidebar.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* Overlay Backdrop */
+    .mobile-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(2px);
+        z-index: 900;
+        opacity: 0; pointer-events: none;
+        transition: 0.3s;
+    }
+    .mobile-overlay.active {
+        opacity: 1; pointer-events: auto;
+    }
+
+    /* RTL Mobile Handling */
+    html[dir="rtl"] .sidebar {
+        left: auto; 
+        right: 0;
+        border-right: none;
+        border-left: 1px solid var(--border-color);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        transform: translateX(100%); /* Hide to right */
+    }
+
+    html[dir="rtl"] .sidebar.mobile-open {
+        transform: translateX(0) !important;
+    }
+}

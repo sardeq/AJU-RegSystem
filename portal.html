@@ -17,55 +17,6 @@
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-<style>
-        .hidden { display: none !important; }
-        body { margin: 0; background-color: #050505; color: white; font-family: sans-serif; }
-
-        /* --- FIX: MOBILE RTL LAYOUT --- */
-        @media (max-width: 768px) {
-            .main-container {
-                /* Ensure container doesn't force side-by-side on mobile */
-                display: block !important; 
-                position: relative;
-            }
-
-            .sidebar {
-                position: fixed;
-                top: 0;
-                bottom: 0;
-                width: 250px;
-                z-index: 1000;
-                transition: transform 0.3s ease;
-                /* Default hidden state for mobile */
-            }
-
-            /* LTR Default Mobile */
-            html[dir="ltr"] .sidebar {
-                left: 0;
-                transform: translateX(-100%);
-            }
-            html[dir="ltr"] .sidebar.mobile-visible {
-                transform: translateX(0);
-            }
-
-            /* RTL Specific Mobile */
-            html[dir="rtl"] .sidebar {
-                right: 0;
-                left: auto; /* Reset left */
-                transform: translateX(100%); /* Hide to the right */
-            }
-            html[dir="rtl"] .sidebar.mobile-visible {
-                transform: translateX(0);
-            }
-
-            .content-area {
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 20px;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -85,6 +36,7 @@
     </header>
 
     <div class="main-container">
+        <div id="mobile-overlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding: 0 5px;">
                 <img src="Images/enhanced.png" alt="Logo" class="sidebar-logo" style="height: 45px; width: auto; margin-bottom: 0;">

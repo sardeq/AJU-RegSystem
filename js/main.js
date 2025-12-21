@@ -9,6 +9,7 @@ import { loadCoursesSheetData, setupSheetListeners } from './courses-sheet.js';
 import { loadExceptionHistory, setupExceptionListeners } from './exceptions.js'; 
 import { setupAIListeners } from './ai.js'; 
 
+// --- Navigation Handler ---
 window.showSection = function(sectionName) {
     document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -20,6 +21,11 @@ window.showSection = function(sectionName) {
     
     const navItem = document.getElementById('nav-' + sectionName);
     if(navItem) navItem.classList.add('active');
+
+    // MOBILE FIX: Close sidebar automatically when a link is clicked on mobile
+    if (window.innerWidth <= 900) {
+        closeMobileSidebar();
+    }
 
     if(!state.currentUser) return;
     const userId = state.currentUser.id;
@@ -34,6 +40,21 @@ window.showSection = function(sectionName) {
     else if (sectionName === 'exceptions') loadExceptionHistory(userId);
 };
 
+// --- Mobile Sidebar Helpers ---
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    if(sidebar) sidebar.classList.toggle('mobile-open'); // Matches new CSS
+    if(overlay) overlay.classList.toggle('active');
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    if(sidebar) sidebar.classList.remove('mobile-open');
+    if(overlay) overlay.classList.remove('active');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     applyLanguage(state.currentLang);
     
@@ -42,16 +63,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAIListeners();
     setupExceptionListeners(); 
 
+    // --- SIDEBAR TOGGLE LOGIC (FIXED) ---
     const menuBtn = document.querySelector('.menu-btn');
     const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
     
     if (menuBtn && sidebar) {
-        menuBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-visible');
-            sidebar.classList.toggle('collapsed');
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Stop click from hitting document
+            
+            // Check screen size to decide behavior
+            if (window.innerWidth <= 900) {
+                // Mobile: Slide in/out
+                toggleSidebar();
+            } else {
+                // Desktop: Collapse/Expand
+                sidebar.classList.toggle('collapsed');
+            }
         });
     }
 
+    // Close when clicking the overlay (Black background)
+    if (overlay) {
+        overlay.addEventListener('click', closeMobileSidebar);
+    }
+
+    // --- Language Toggle ---
     const langBtn = document.querySelector('.lang-btn');
     if (langBtn) {
         langBtn.addEventListener('click', () => {
@@ -63,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Auth Logic ---
     supabase.auth.onAuthStateChange((event, session) => {
         state.currentUser = session?.user || null;
         updateAuthUI(session);
@@ -89,8 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isCurrentlyLogin) {
                 nameInput.classList.remove('hidden');
                 confirmPass.classList.remove('hidden');
-                
-
                 formTitle.setAttribute('data-i18n', 'auth_signup_title');
                 authBtn.setAttribute('data-i18n', 'btn_signup');
                 toggleText.setAttribute('data-i18n', 'auth_have_account');
@@ -98,13 +134,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 nameInput.classList.add('hidden');
                 confirmPass.classList.add('hidden');
-
                 formTitle.setAttribute('data-i18n', 'auth_login_title');
                 authBtn.setAttribute('data-i18n', 'btn_login');
                 toggleText.setAttribute('data-i18n', 'auth_no_account');
                 toggleBtn.setAttribute('data-i18n', 'btn_signup');
             }
-
             applyLanguage(state.currentLang);
         });
     }
