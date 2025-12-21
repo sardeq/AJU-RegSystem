@@ -157,12 +157,29 @@ export async function fetchStudentContext(userId) {
     return { history: allTakenOrRegistered, busyTimes: busyTimes, options: eligibleSections };
 }
 
-// Helper: Call Supabase Function (replaces external API call logic)
 async function getOpenRouterRecommendations(context, preferences) {
     const { data, error } = await supabase.functions.invoke('generate-schedule', {
         body: { context, preferences }
     });
-    if (error) throw new Error(error.message);
+
+    if (error) {
+        let customMessage = "AI Advisor Failed";
+        
+        if (error.context && typeof error.context.json === 'function') {
+            try {
+                const body = await error.context.json();
+                if (body && body.error) customMessage = body.error;
+            } catch (e) {
+                console.error("Could not parse error body", e);
+            }
+        } else if (error.message) {
+            customMessage = error.message;
+        }
+
+        console.error("Full AI Error Object:", error);
+        throw new Error(customMessage);
+    }
+    
     return data;
 }
 
