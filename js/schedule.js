@@ -4,18 +4,19 @@ import { updateCreditUI, translations } from './utils.js';
 
 window.dropCourse = async function(enrollmentId) {
     if(!confirm("Drop this course?")) return;
-    await supabase.from('enrollments').delete().eq('enrollment_id', enrollmentId);
-    loadFullSchedule(state.currentUser.id);
+    try {
+        const { error } = await supabase.from('enrollments').delete().eq('enrollment_id', enrollmentId);
+        if(error) throw error;
+        loadFullSchedule(state.currentUser.id);
+    } catch(err) {
+        alert("Error dropping course: " + err.message);
+    }
 };
 
 export async function loadFullSchedule(userId) {
     const grid = document.getElementById('schedule-modern-grid');
     if(grid) grid.innerHTML = '<div class="spinner"></div>';
     
-    // Remove old table references
-    // const tbody = document.getElementById('full-schedule-body'); 
-    // const cardGrid = document.getElementById('schedule-card-grid');
-
     try {
         const { data: schedule, error } = await supabase
             .from('enrollments')
@@ -23,16 +24,9 @@ export async function loadFullSchedule(userId) {
                 enrollment_id, 
                 status,
                 sections (
-                    section_number,
-                    schedule_text,
-                    room_number,
-                    instructor_name,
+                    section_number, schedule_text, room_number, instructor_name,
                     courses (
-                        course_code,
-                        course_name_en,
-                        course_name_ar,
-                        credit_hours,
-                        category
+                        course_code, course_name_en, course_name_ar, credit_hours, category
                     )
                 )
             `)
@@ -45,7 +39,7 @@ export async function loadFullSchedule(userId) {
         const totalCredits = schedule.reduce((sum, item) => sum + (item.sections?.courses?.credit_hours || 0), 0);
         updateCreditUI(totalCredits);
 
-        renderScheduleTable(schedule); // Uses new renderer
+        renderScheduleTable(schedule); 
 
     } catch (err) {
         console.error("Schedule Error:", err);
@@ -53,14 +47,13 @@ export async function loadFullSchedule(userId) {
     }
 }
 
-
 function renderScheduleTable(scheduleData) {
     const grid = document.getElementById('schedule-modern-grid');
     if(!grid) return;
     grid.innerHTML = '';
 
     if (!scheduleData || scheduleData.length === 0) {
-        const msg = translations[utils.currentLang]?.msg_no_schedule || "No active courses.";
+        const msg = translations[state.currentLang]?.msg_no_schedule || "No active courses.";
         grid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #666; border: 1px dashed #333; border-radius: 20px;">
                 <div style="font-size: 2rem; margin-bottom: 10px;">📅</div>
@@ -100,15 +93,9 @@ function renderScheduleTable(scheduleData) {
                 </div>
                 <h3 class="sch-title">${courseName}</h3>
                 <div class="sch-meta-grid">
-                     <div class="sch-meta-item">
-                        ${sec.schedule_text || 'TBA'}
-                     </div>
-                     <div class="sch-meta-item">
-                        ${sec.room_number || 'Room TBA'}
-                     </div>
-                     <div class="sch-meta-item">
-                        ${sec.instructor_name || 'Staff'}
-                     </div>
+                     <div class="sch-meta-item">${sec.schedule_text || 'TBA'}</div>
+                     <div class="sch-meta-item">${sec.room_number || 'Room TBA'}</div>
+                     <div class="sch-meta-item">${sec.instructor_name || 'Staff'}</div>
                 </div>
             </div>
 
@@ -129,36 +116,21 @@ export async function loadHistoryTimeline(userId) {
     container.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // 1. Fetch History AND Active Courses
-        // We include 'REGISTERED' and 'ENROLLED' to show the current semester
         const { data, error } = await supabase
             .from('enrollments')
             .select(`
-                status, 
-                grade_value,
+                status, grade_value,
                 sections (
-                    semester_id,
-                    semesters (name),
-                    courses (
-                        course_code, 
-                        course_name_en, 
-                        course_name_ar, 
-                        credit_hours
-                    )
+                    semester_id, semesters (name),
+                    courses ( course_code, course_name_en, course_name_ar, credit_hours )
                 )
             `)
             .eq('user_id', userId)
             .in('status', ['COMPLETED', 'FAILED', 'REGISTERED', 'ENROLLED']) 
-            .order('sections(semester_id)', { ascending: true }); // Oldest first
+            .order('sections(semester_id)', { ascending: true });
 
         if (error) throw error;
-
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="text-align:center; padding:30px; color:#666;">No academic history found.</p>';
-            return;
-        }
-
-        renderTimeline(data, container);
+        renderTimeline(data);
 
     } catch (err) {
         console.error("History Timeline Error:", err);
@@ -176,17 +148,16 @@ function renderTimeline(data) {
         return;
     }
 
-    // Group by Year/Semester
     const grouped = {}; 
     data.forEach(item => {
-        const sem = item.sections?.semesters?.name || "Unknown";
+        if(!item.sections?.semesters) return;
+        const sem = item.sections.semesters.name || "Unknown";
         const year = sem.split(' ').pop(); 
         if(!grouped[year]) grouped[year] = {};
         if(!grouped[year][sem]) grouped[year][sem] = [];
         grouped[year][sem].push(item);
     });
 
-    // Render Groups
     Object.keys(grouped).sort((a,b) => b-a).forEach(year => {
         const yearBlock = document.createElement('div');
         yearBlock.className = 'timeline-year-block';
@@ -201,7 +172,7 @@ function renderTimeline(data) {
                     <div class="h-card ${statusClass}">
                         <div class="hc-top">
                             <span class="hc-code">${c.course_code}</span> 
-                            <span class="hc-grade">${course.grade_value || course.status}</span>
+                            <span class="hc-grade">${course.grade_value || '-'}</span>
                         </div>
                         <div class="hc-name">${c.course_name_en}</div>
                     </div>`;
