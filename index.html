@@ -32,7 +32,7 @@
             <div class="nav-actions">
                 <button class="search-btn">🔍</button>
                 <a href="portal.html" class="btn btn-outline">تسجيل الدخول</a>
-                <a href="portal.html" class="btn btn-primary">سجل الآن</a>
+                <a href="#" id="navRegisterBtn" class="btn btn-primary">سجل الآن</a>
             </div>
         </div>
     </header>
@@ -45,7 +45,7 @@
                 جامعة عجلون الوطنية، صرح علمي متميز يجمع بين الأصالة والحداثة في بيئة تعليمية محفزة.
             </p>
             <div class="hero-buttons">
-                <a href="#" class="btn btn-warning">طلب التحاق إلكتروني ←</a>
+                <a href="#" id="bannerRegisterBtn" class="btn btn-warning">طلب التحاق إلكتروني ←</a>
                 <a href="#" class="btn btn-outline-light">تصفح التخصصات</a>
             </div>
         </div>
@@ -144,5 +144,145 @@
         </div>
     </footer>
 
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">×</span>
+            
+            <div class="modal-header-center">
+                <h2>طلب التحاق جديد</h2>
+                <p>املأ النموذج التالي لتقديم طلب التحاق للفصل الدراسي القادم</p>
+            </div>
+  
+            <form id="universityRegistrationForm">
+                
+                <h4 class="form-section-title">بيانات الطالب</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الاسم الرباعي (بالعربية)</label>
+                        <input type="text" name="arabicName" placeholder="الاسم الأول - الأب - الجد - العائلة" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name (English)</label>
+                        <input type="text" name="englishName" placeholder="Name in English" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الرقم الوطني / رقم الجواز</label>
+                        <input type="text" name="nationalId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>تاريخ الميلاد</label>
+                        <input type="date" name="dob" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الجنس</label>
+                        <select name="gender" required>
+                            <option value="">اختر الجنس</option>
+                            <option value="Male">ذكر</option>
+                            <option value="Female">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>الجنسية</label>
+                        <select name="nationality" required>
+                            <option value="Jordanian">أردني</option>
+                            <option value="Non-Jordanian">غير أردني</option>
+                        </select>
+                    </div>
+                </div>
+  
+                <h4 class="form-section-title">معلومات الاتصال</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>رقم الهاتف الخلوي</label>
+                        <input type="tel" name="phone" placeholder="07xxxxxxxx" required>
+                    </div>
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" name="email" placeholder="example@mail.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>العنوان بالتفصيل</label>
+                    <input type="text" name="address" placeholder="المحافظة - المدينة - اسم الشارع">
+                </div>
+  
+                <h4 class="form-section-title">بيانات الثانوية العامة</h4>
+                <div class="form-row three-col">
+                    <div class="form-group">
+                        <label>سنة الثانوية</label>
+                        <input type="number" name="hsYear" value="2024">
+                    </div>
+                    <div class="form-group">
+                        <label>المعدل</label>
+                        <input type="number" step="0.1" name="gpa" placeholder="00.0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الفرع</label>
+                        <select name="branch" required>
+                            <option value="">اختر الفرع</option>
+                            <option value="Scientific">علمي</option>
+                            <option value="Literary">أدبي</option>
+                            <option value="Industrial">صناعي</option>
+                        </select>
+                    </div>
+                </div>
+  
+                <h4 class="form-section-title">التخصص المطلوب</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الكلية</label>
+                        <select name="college" required>
+                            <option value="">اختر الكلية</option>
+                            <option value="IT">تكنولوجيا المعلومات</option>
+                            <option value="Engineering">الهندسة</option>
+                            <option value="Business">الأعمال</option>
+                            <option value="Arts">الآداب</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>التخصص</label>
+                        <select name="major" required>
+                            <option value="">اختر التخصص (يظهر بناءً على الكلية)</option>
+                            <option value="SE">هندسة البرمجيات</option>
+                            <option value="CS">علم الحاسوب</option>
+                            <option value="Civil">هندسة مدنية</option>
+                        </select>
+                    </div>
+                </div>
+  
+                <h4 class="form-section-title">المرفقات</h4>
+                <div class="form-row">
+                    <div class="form-group file-box">
+                        <div class="file-content">
+                            <span>📂</span>
+                            <p>صورة عن الهوية الشخصية</p>
+                        </div>
+                        <input type="file" name="fileId" id="fileId" accept="image/*,.pdf">
+                    </div>
+                    <div class="form-group file-box">
+                        <div class="file-content">
+                            <span>📝</span>
+                            <p>كشف علامات الثانوية العامة</p>
+                        </div>
+                        <input type="file" name="fileGrades" id="fileGrades" accept="image/*,.pdf">
+                    </div>
+                </div>
+  
+                <div class="form-group" style="margin-top: 20px;">
+                    <label style="font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" required> أقر بأن جميع المعلومات الواردة أعلاه صحيحة.
+                    </label>
+                </div>
+  
+                <button type="submit" class="submit-btn">إرسال طلب الالتحاق 🚀</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/landing-logic.js"></script>
 </body>
 </html>
