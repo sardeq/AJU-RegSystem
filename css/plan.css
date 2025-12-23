@@ -5,7 +5,7 @@
     position: relative;
     width: 100%;
     height: 85vh;
-    overflow: hidden;
+    overflow: hidden; /* Hide scrollbars for infinite canvas feel */
     background-color: #0d1117; 
     background-image: 
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
@@ -15,6 +15,7 @@
     border-radius: 12px;
     box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
     user-select: none;
+    touch-action: none; /* Prevent browser zooming/scrolling on touch */
 }
 
 #tree-wrapper:active { cursor: grabbing; }
@@ -22,8 +23,9 @@
 #plan-tree-canvas {
     position: absolute;
     top: 0; left: 0;
-    transform-origin: center top;
-    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: 0 0; /* Changed from center top to 0 0 for easier matrix math */
+    transition: transform 0.1s ease-out; /* Smoother zoom updates */
+    will-change: transform;
 }
 
 /* --- Connectors --- */

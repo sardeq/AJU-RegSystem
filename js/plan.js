@@ -2,7 +2,15 @@
 import { supabase } from './config.js';
 import { state, ROOT_SE_ID } from './state.js';
 
-let currentScale = 1;
+// --- Zoom & Pan State ---
+let transformState = {
+    scale: 0.75, // Default zoomed out "a bit more"
+    x: 0,
+    y: 0
+};
+let isDragging = false;
+let startX = 0;
+let startY = 0;
 let globalEdges = []; 
 
 const ELECTIVE_GROUPS = [
@@ -39,9 +47,9 @@ export async function loadStudentPlan(userId) {
 
     canvas.innerHTML = '<div style="color:#fff; padding:50px; text-align:center;">Generating Plan...</div>';
     
-    // Reset view
-    canvas.style.transform = 'translate(0px, 0px) scale(1)';
-    currentScale = 1;
+    // Reset State
+    transformState = { scale: 0.75, x: 0, y: 0 };
+    updateTransform();
 
     try {
         // 1. Fetch History
@@ -71,14 +79,12 @@ export async function loadStudentPlan(userId) {
         const layoutData = calculateTreeLayout(state.planRoots, state.planLinks);
         globalEdges = layoutData.edges;
 
-        const ELECTIVE_AREA_WIDTH = 300; 
-        const totalWidth = Math.max(wrapper.clientWidth, layoutData.width + ELECTIVE_AREA_WIDTH);
-        const totalHeight = Math.max(wrapper.clientHeight, layoutData.height + 200);
-
         // 4. Render
         canvas.innerHTML = '';
-        canvas.style.width = `${totalWidth}px`; 
-        canvas.style.height = `${totalHeight}px`;
+        // Note: Width/Height on canvas aren't strictly necessary with infinite pan/zoom 
+        // but can help with bounds if needed. We'll leave them unset or large.
+        canvas.style.width = `${layoutData.width + 500}px`; 
+        canvas.style.height = `${layoutData.height + 500}px`;
 
         // Draw connections FIRST
         renderOrthogonalConnections(layoutData.edges, layoutData.nodes);
@@ -89,19 +95,85 @@ export async function loadStudentPlan(userId) {
         // Render Electives to the right of the tree
         renderElectives(canvas, layoutData.width + 50); 
 
-        // 5. Init Dragging
-        initDragLogic(wrapper, canvas);
+        // 5. Center the View Initially
+        centerView(wrapper, layoutData.width);
 
-        // Center the view initially
-        const startX = (wrapper.clientWidth - totalWidth) / 2;
-        if (totalWidth > wrapper.clientWidth) {
-            wrapper.scrollLeft = (totalWidth - wrapper.clientWidth) / 2;
-        }
+        // 6. Init Zoom/Pan Logic
+        initZoomPanLogic(wrapper, canvas);
 
     } catch (err) {
         console.error("Plan Error:", err);
         canvas.innerHTML = '<div style="color:red; padding:20px;">Error loading plan.</div>';
     }
+}
+
+// --- NEW ZOOM & PAN LOGIC ---
+function initZoomPanLogic(wrapper, canvas) {
+    // 1. Wheel Zoom
+    wrapper.onwheel = (e) => {
+        e.preventDefault();
+
+        const zoomIntensity = 0.001; // Sensitivity
+        const delta = -e.deltaY * zoomIntensity;
+        const oldScale = transformState.scale;
+        
+        // Calculate new scale with limits
+        let newScale = oldScale + delta;
+        newScale = Math.min(Math.max(0.2, newScale), 3); // Min 0.2x, Max 3x
+
+        // Calculate mouse position relative to the canvas
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Math to zoom towards the mouse cursor
+        // (mouseX - x) / oldScale = (mouseX - newX) / newScale
+        transformState.x = mouseX - (mouseX - transformState.x) * (newScale / oldScale);
+        transformState.y = mouseY - (mouseY - transformState.y) * (newScale / oldScale);
+        transformState.scale = newScale;
+
+        updateTransform();
+    };
+
+    // 2. Drag Panning
+    wrapper.onmousedown = (e) => {
+        if(e.target.closest('.node-card') || e.target.closest('.elective-stack')) return;
+        isDragging = true;
+        startX = e.clientX - transformState.x;
+        startY = e.clientY - transformState.y;
+        wrapper.style.cursor = 'grabbing';
+    };
+
+    window.onmouseup = () => {
+        isDragging = false;
+        wrapper.style.cursor = 'grab';
+    };
+
+    window.onmousemove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        transformState.x = e.clientX - startX;
+        transformState.y = e.clientY - startY;
+        updateTransform();
+    };
+}
+
+function updateTransform() {
+    const canvas = document.getElementById('plan-tree-canvas');
+    if(canvas) {
+        canvas.style.transform = `translate(${transformState.x}px, ${transformState.y}px) scale(${transformState.scale})`;
+    }
+}
+
+function centerView(wrapper, contentWidth) {
+    // Centers the tree horizontally, with some padding from top
+    const wrapperWidth = wrapper.clientWidth;
+    
+    // x = (ContainerWidth - (ContentWidth * Scale)) / 2
+    transformState.x = (wrapperWidth - (contentWidth * transformState.scale)) / 2;
+    transformState.y = 50; // Slight top padding
+    
+    updateTransform();
 }
 
 /**
@@ -206,7 +278,7 @@ function renderNodes(nodes, passed, registered) {
         const el = document.createElement('div');
         el.style.left = `${n.left}px`;
         el.style.top = `${n.top}px`;
-        el.id = `node-${n.id}`; // CRITICAL: ID must match highlight logic
+        el.id = `node-${n.id}`; 
 
         // Event Listeners for Recursive Trace
         el.onmouseenter = () => highlightTrace(n.id);
@@ -273,8 +345,6 @@ function renderOrthogonalConnections(edges, nodes) {
             const tx = t.cx; 
             const ty = t.top;
             
-            // To prevent lines from overlapping exactly, we add a tiny random jitter
-            // or we could use levels. For now, a clean midY is sufficient.
             const midY = sy + (ty - sy) / 2;
             
             const d = `M ${sx} ${sy} L ${sx} ${midY} L ${tx} ${midY} L ${tx} ${ty}`;
@@ -282,8 +352,6 @@ function renderOrthogonalConnections(edges, nodes) {
             const path = document.createElementNS(svgNs, "path");
             path.setAttribute("d", d);
             path.setAttribute("class", "connector-path");
-            
-            // CRITICAL: ID must match highlight logic (String conversion)
             path.setAttribute("id", `path-${String(edge.s)}-${String(edge.t)}`);
             
             svg.appendChild(path);
@@ -293,16 +361,13 @@ function renderOrthogonalConnections(edges, nodes) {
 }
 
 function renderElectives(canvas, startX) {
-    // Create the container zone
     const zone = document.createElement('div');
     zone.className = 'elective-zone';
     
     // Position it relative to the tree width (startX)
-    // We add some vertical padding so it aligns nicely with the Root or the first row
     zone.style.left = `${startX + 40}px`; 
     zone.style.top = '100px'; 
     
-    // Add the decorative "Bus Line" label
     const label = document.createElement('div');
     label.className = 'zone-label';
     label.innerText = 'Elective Bank';
@@ -329,36 +394,6 @@ function renderElectives(canvas, startX) {
     });
 
     canvas.appendChild(zone);
-}
-// --- Interactions ---
-
-function initDragLogic(wrapper, canvas) {
-    let isDown = false;
-    let startX, startY, scrollLeft, scrollTop;
-
-    wrapper.addEventListener('mousedown', (e) => {
-        if(e.target.closest('.node-card') || e.target.closest('.elective-card-btn')) return;
-        isDown = true;
-        wrapper.style.cursor = 'grabbing';
-        startX = e.pageX - wrapper.offsetLeft;
-        startY = e.pageY - wrapper.offsetTop;
-        scrollLeft = wrapper.scrollLeft;
-        scrollTop = wrapper.scrollTop;
-    });
-
-    wrapper.addEventListener('mouseleave', () => { isDown = false; wrapper.style.cursor = 'grab'; });
-    wrapper.addEventListener('mouseup', () => { isDown = false; wrapper.style.cursor = 'grab'; });
-    
-    wrapper.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - wrapper.offsetLeft;
-        const y = e.pageY - wrapper.offsetTop;
-        const walkX = (x - startX); 
-        const walkY = (y - startY);
-        wrapper.scrollLeft = scrollLeft - walkX;
-        wrapper.scrollTop = scrollTop - walkY;
-    });
 }
 
 // --- RECURSIVE TRACE LOGIC ---
@@ -389,10 +424,7 @@ function highlightTrace(nodeId) {
 
     // Helper: Trace Down (Children)
     function traceDown(currId) {
-        // Note: We don't stop if visited because we might reach a node from a different path
-        // but for simple trees Set check is fine.
         activeNodes.add(currId);
-
         // Find edges where source == currId
         globalEdges.forEach(edge => {
             if(String(edge.s) === String(currId)) {
