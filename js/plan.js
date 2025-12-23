@@ -4,14 +4,31 @@ import { state, ROOT_SE_ID } from './state.js';
 
 // --- Zoom & Pan State ---
 let transformState = {
-    scale: 0.75, // Default zoomed out "a bit more"
+    scale: 0.6, // Start slightly more zoomed out
     x: 0,
     y: 0
 };
+
+// Input State
 let isDragging = false;
 let startX = 0;
 let startY = 0;
+let lastMouseX = 0;
+let lastMouseY = 0;
+
+// Performance Flags
+let isInteracting = false;
+let interactTimeout = null;
+let animationFrameId = null;
+let needsUpdate = false;
+
 let globalEdges = []; 
+
+let traceMap = {
+    parents: {},  // nodeId -> [parentIds]
+    children: {}, // nodeId -> [childIds]
+    edges: {}     // "source-target" -> edgeElementId
+};
 
 const ELECTIVE_GROUPS = [
     { 
@@ -48,10 +65,11 @@ export async function loadStudentPlan(userId) {
     canvas.innerHTML = '<div style="color:#fff; padding:50px; text-align:center;">Generating Plan...</div>';
     
     // Reset State
-    transformState = { scale: 0.75, x: 0, y: 0 };
-    updateTransform();
+    transformState = { scale: 0.6, x: 0, y: 0 };
+    cancelAnimationFrame(animationFrameId);
 
     try {
+        // ... (Keep Data Fetching logic unchanged: 1. History, 2. Courses, 3. Layout) ...
         // 1. Fetch History
         const { data: history } = await supabase
             .from('enrollments')
@@ -75,31 +93,26 @@ export async function loadStudentPlan(userId) {
             state.allCoursesData = courses || [];
         }
 
-        // 3. Calculate Layout (Grid/Tree)
+        // 3. Calculate Layout
         const layoutData = calculateTreeLayout(state.planRoots, state.planLinks);
         globalEdges = layoutData.edges;
 
         // 4. Render
         canvas.innerHTML = '';
-        // Note: Width/Height on canvas aren't strictly necessary with infinite pan/zoom 
-        // but can help with bounds if needed. We'll leave them unset or large.
-        canvas.style.width = `${layoutData.width + 500}px`; 
-        canvas.style.height = `${layoutData.height + 500}px`;
+        // Set huge bounds to ensure no clipping during pans
+        canvas.style.width = `${Math.max(4000, layoutData.width + 1000)}px`; 
+        canvas.style.height = `${Math.max(4000, layoutData.height + 1000)}px`;
 
-        // Draw connections FIRST
         renderOrthogonalConnections(layoutData.edges, layoutData.nodes);
-        
-        // Draw Nodes
         renderNodes(layoutData.nodes, passed, registered);
-        
-        // Render Electives to the right of the tree
         renderElectives(canvas, layoutData.width + 50); 
 
-        // 5. Center the View Initially
+        // 5. Center View
         centerView(wrapper, layoutData.width);
 
-        // 6. Init Zoom/Pan Logic
+        // 6. Start Loop
         initZoomPanLogic(wrapper, canvas);
+        startRenderLoop();
 
     } catch (err) {
         console.error("Plan Error:", err);
@@ -107,74 +120,119 @@ export async function loadStudentPlan(userId) {
     }
 }
 
-// --- NEW ZOOM & PAN LOGIC ---
+// --- OPTIMIZED ZOOM & PAN LOGIC ---
+
+function startRenderLoop() {
+    const canvas = document.getElementById('plan-tree-canvas');
+    
+    function loop() {
+        if (needsUpdate && canvas) {
+            // Use translate3d for GPU acceleration
+            canvas.style.transform = `translate3d(${transformState.x}px, ${transformState.y}px, 0) scale(${transformState.scale})`;
+            needsUpdate = false;
+        }
+        animationFrameId = requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+function setInteracting(active) {
+    const wrapper = document.getElementById('tree-wrapper');
+    if (!wrapper) return;
+
+    // Clear existing timeout to prevent flickering
+    if (interactTimeout) clearTimeout(interactTimeout);
+
+    if (active) {
+        if (!isInteracting) {
+            isInteracting = true;
+            wrapper.classList.add('is-interacting');
+        }
+    } else {
+        // Debounce turning it off so we don't flash styles on every wheel tick
+        interactTimeout = setTimeout(() => {
+            isInteracting = false;
+            wrapper.classList.remove('is-interacting');
+        }, 100);
+    }
+}
+
 function initZoomPanLogic(wrapper, canvas) {
     // 1. Wheel Zoom
     wrapper.onwheel = (e) => {
         e.preventDefault();
+        setInteracting(true);
 
-        const zoomIntensity = 0.001; // Sensitivity
+        const zoomIntensity = 0.0008; // Lower sensitivity for smoothness
         const delta = -e.deltaY * zoomIntensity;
         const oldScale = transformState.scale;
         
-        // Calculate new scale with limits
         let newScale = oldScale + delta;
-        newScale = Math.min(Math.max(0.2, newScale), 3); // Min 0.2x, Max 3x
+        newScale = Math.min(Math.max(0.1, newScale), 4); // Min 0.1x, Max 4x
 
-        // Calculate mouse position relative to the canvas
         const rect = wrapper.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        // Math to zoom towards the mouse cursor
-        // (mouseX - x) / oldScale = (mouseX - newX) / newScale
+        // Zoom towards mouse pointer
         transformState.x = mouseX - (mouseX - transformState.x) * (newScale / oldScale);
         transformState.y = mouseY - (mouseY - transformState.y) * (newScale / oldScale);
         transformState.scale = newScale;
 
-        updateTransform();
+        needsUpdate = true;
+        
+        // Turn off interaction mode shortly after wheel stops
+        setInteracting(false);
     };
 
     // 2. Drag Panning
     wrapper.onmousedown = (e) => {
+        // Ignore clicks on cards or interactive elements
         if(e.target.closest('.node-card') || e.target.closest('.elective-stack')) return;
+        
         isDragging = true;
+        setInteracting(true);
+        
+        // Calculate the "start" offset based on current transform
         startX = e.clientX - transformState.x;
         startY = e.clientY - transformState.y;
+        
         wrapper.style.cursor = 'grabbing';
     };
 
-    window.onmouseup = () => {
-        isDragging = false;
-        wrapper.style.cursor = 'grab';
-    };
+    window.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            setInteracting(false);
+            wrapper.style.cursor = 'grab';
+        }
+    });
 
-    window.onmousemove = (e) => {
+    window.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
         e.preventDefault();
+        
+        // Raw position update
         transformState.x = e.clientX - startX;
         transformState.y = e.clientY - startY;
-        updateTransform();
-    };
-}
-
-function updateTransform() {
-    const canvas = document.getElementById('plan-tree-canvas');
-    if(canvas) {
-        canvas.style.transform = `translate(${transformState.x}px, ${transformState.y}px) scale(${transformState.scale})`;
-    }
+        
+        needsUpdate = true;
+    });
 }
 
 function centerView(wrapper, contentWidth) {
-    // Centers the tree horizontally, with some padding from top
     const wrapperWidth = wrapper.clientWidth;
+    const wrapperHeight = wrapper.clientHeight;
     
-    // x = (ContainerWidth - (ContentWidth * Scale)) / 2
+    // Center horizontally, and place slightly down from top
     transformState.x = (wrapperWidth - (contentWidth * transformState.scale)) / 2;
-    transformState.y = 50; // Slight top padding
+    transformState.y = 50; 
     
-    updateTransform();
+    needsUpdate = true;
 }
+
+// ... (Keep calculateTreeLayout, renderNodes, renderOrthogonalConnections, renderElectives, highlightTrace, resetTrace, isPrereqMet unchanged) ...
+// Ensure you copy those functions from the previous version exactly as they were.
 
 /**
  * Standard Tree Layout Algorithm
@@ -398,6 +456,8 @@ function renderElectives(canvas, startX) {
 
 // --- RECURSIVE TRACE LOGIC ---
 function highlightTrace(nodeId) {
+    if(isInteracting) return; // Disable trace while dragging for performance
+
     const canvas = document.getElementById('plan-tree-canvas');
     if(!canvas) return;
     
@@ -472,6 +532,8 @@ function isPrereqMet(code, passed) {
 // --- Popup & Drawer Functions ---
 
 window.showCoursePopup = function(course, status) {
+    if(isInteracting || isDragging) return; // Prevent clicking while dragging
+    
     const popup = document.getElementById('course-popup');
     const overlay = document.getElementById('plan-overlay');
     if(!popup || !overlay) return;

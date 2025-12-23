@@ -1,11 +1,10 @@
 /* plan.css - Dark Neon Glass Redesign */
 
-/* --- Main Wrapper --- */
 #tree-wrapper {
     position: relative;
     width: 100%;
     height: 85vh;
-    overflow: hidden; /* Hide scrollbars for infinite canvas feel */
+    overflow: hidden;
     background-color: #0d1117; 
     background-image: 
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
@@ -15,17 +14,31 @@
     border-radius: 12px;
     box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
     user-select: none;
-    touch-action: none; /* Prevent browser zooming/scrolling on touch */
+    touch-action: none;
 }
 
 #tree-wrapper:active { cursor: grabbing; }
 
+
+.is-interacting .node-card,
+.is-interacting .super-root-node,
+.is-interacting .elective-stack {
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+    opacity: 0.9; 
+}
+
+.is-interacting .connector-path {
+    transition: none !important;
+}
+
 #plan-tree-canvas {
     position: absolute;
     top: 0; left: 0;
-    transform-origin: 0 0; /* Changed from center top to 0 0 for easier matrix math */
-    transition: transform 0.1s ease-out; /* Smoother zoom updates */
+    transform-origin: 0 0;
     will-change: transform;
+    transform: translateZ(0); 
 }
 
 /* --- Connectors --- */
@@ -79,21 +92,28 @@
 .node-card {
     position: absolute;
     width: 200px; height: 75px;
-    background: rgba(22, 27, 34, 0.85); 
-    backdrop-filter: blur(5px);
+    /* Reduced transparency slightly for performance */
+    background: #161b22; 
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     z-index: 10; cursor: pointer;
-    transition: all 0.25s ease;
+    
+    /* FAST transitions only */
+    transition: transform 0.1s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    
     display: flex; align-items: center;
     padding: 0; overflow: hidden;
+    
+    /* Hardware acceleration for individual nodes */
+    transform: translateZ(0);
 }
 
 .node-card:hover {
     transform: translateY(-5px) scale(1.02);
-    background: rgba(33, 38, 45, 0.95);
+    background: #21262d;
     z-index: 20;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border-color: #58a6ff;
 }
 
 /* Inner Layout */
@@ -148,31 +168,28 @@
 .canvas-hovered .node-card,
 .canvas-hovered .connector-path,
 .canvas-hovered .super-root-node {
-    opacity: 0.1 !important;
-    filter: blur(2px) !important;
-    transition: all 0.2s ease;
+    opacity: 0.15 !important; /* Just dimming, much faster than blur */
+    transition: opacity 0.2s ease;
 }
 
-/* BUT keep the ACTIVE items bright */
+/* Keep ACTIVE items bright */
 .canvas-hovered .node-card.active-node,
 .canvas-hovered .super-root-node.active-node {
     opacity: 1 !important;
-    filter: none !important;
-    transform: scale(1.05);
     z-index: 100;
-    box-shadow: 0 0 30px rgba(88, 166, 255, 0.3);
+    box-shadow: 0 0 25px rgba(88, 166, 255, 0.2);
     border-color: #58a6ff;
 }
 
-/* Highlight the active path lines */
+/* Active Path */
 .canvas-hovered .connector-path.active-path {
     opacity: 1 !important;
-    filter: none !important;
     stroke: #58a6ff;
     stroke-width: 3px;
-    stroke-dasharray: none; /* Solid line for path */
-    filter: drop-shadow(0 0 8px #58a6ff) !important;
+    stroke-dasharray: none;
     z-index: 50;
+    /* Remove drop-shadow filter if still laggy, but usually this is okay on single lines */
+    filter: drop-shadow(0 0 4px #58a6ff); 
 }
 
 .elective-zone {
