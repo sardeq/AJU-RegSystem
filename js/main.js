@@ -105,59 +105,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-supabase.auth.onAuthStateChange(async (event, session) => {
-    state.currentUser = session?.user || null;
-    updateAuthUI(session);
+supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth Event:", event);
+        state.currentUser = session?.user || null;
+        updateAuthUI(session);
 
-    const adminNav = document.getElementById('nav-admin-admissions');
-    const studentNavs = document.querySelectorAll('.student-only');
+        const adminNav = document.getElementById('nav-admin-admissions');
+        const studentNavs = document.querySelectorAll('.student-only');
 
-    if (session?.user) {
+        if (session?.user) {
+            // 1. OPTIMISTIC UI: Default to Student View IMMEDIATELY
+            // This ensures the screen is never blank/stuck while loading
+            if(adminNav) adminNav.classList.add('hidden');
+            studentNavs.forEach(el => el.classList.remove('hidden'));
+
+            // Force 'home' if no specific view is active (handles Refresh)
+            if (!document.querySelector('.dashboard-view:not(.hidden)')) {
+                showSection('home');
+            }
+
+            // 2. CHECK ROLE IN BACKGROUND
+            // We do not 'await' this, so the UI stays responsive
+            checkUserRole(session.user.id);
+        } else {
+            // LOGGED OUT
+            if(adminNav) adminNav.classList.add('hidden');
+            document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden'));
+            if(document.getElementById('auth-container')) {
+                document.getElementById('auth-container').classList.remove('hidden');
+            }
+        }
+    });
+
+    // Helper function for role check
+    async function checkUserRole(userId) {
         try {
-            // 1. Fetch role
             const { data: profile } = await supabase
                 .from('users')
                 .select('role')
-                .eq('id', session.user.id)
+                .eq('id', userId)
                 .single();
 
-            // 2. CHECK ROLE
             if (profile && profile.role === 'admission-admin') {
-                // --- ADMIN VIEW ---
-                console.log("Admin Access Detected");
+                console.log("Switching to Admin View...");
+                const adminNav = document.getElementById('nav-admin-admissions');
+                const studentNavs = document.querySelectorAll('.student-only');
                 
-                // Show Admin Link
                 if(adminNav) adminNav.classList.remove('hidden');
-                
-                // Hide ALL Student Links
                 studentNavs.forEach(el => el.classList.add('hidden'));
-
-                // FORCE Redirect to Admin Section
                 showSection('admin-admissions');
-                
-            } else {
-                // --- STUDENT VIEW ---
-                if(adminNav) adminNav.classList.add('hidden');
-                
-                // Show Student Links
-                studentNavs.forEach(el => el.classList.remove('hidden'));
-                
-                // Default to Home if on login
-                if(event === 'SIGNED_IN') showSection('home');
             }
-
         } catch (err) {
-            console.error("Error fetching user role:", err);
-            // Fallback to student view on error for safety
-            if(adminNav) adminNav.classList.add('hidden');
-            studentNavs.forEach(el => el.classList.remove('hidden'));
+            console.error("Role check failed (staying as student):", err);
         }
-    } else {
-        // LOGGED OUT
-        if(adminNav) adminNav.classList.add('hidden');
-        document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden'));
     }
-});
+
+    // --- LOGOUT FIX (Event Delegation) ---
+    // Keeps logout working even if elements redraw
+    document.body.addEventListener('click', (e) => {
+        if (e.target.closest('#sidebar-logout-btn')) {
+            e.preventDefault();
+            import('./auth.js').then(m => m.logout());
+        }
+    });
 
     document.getElementById('auth-action-btn')?.addEventListener('click', () => {
         const nameField = document.getElementById('full-name');

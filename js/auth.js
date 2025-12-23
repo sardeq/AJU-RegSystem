@@ -43,31 +43,37 @@ export async function logout() {
 
 export function updateAuthUI(session) {
     const body = document.body;
+    const authContainer = document.getElementById('auth-container');
+    const sidebar = document.getElementById('sidebar');
+
     if (session) {
         state.currentUser = session.user;
         body.classList.remove('auth-mode');
-        authContainer.classList.add('hidden');
-        sidebar.classList.remove('hidden');
+        
+        if(authContainer) authContainer.classList.add('hidden');
+        if(sidebar) sidebar.classList.remove('hidden');
         
         // Update Sidebar Profile
         const sideName = document.getElementById('sidebar-user-name');
-        if (sideName && session.user.user_metadata.full_name) {
+        if (sideName && session.user.user_metadata?.full_name) {
             sideName.textContent = session.user.user_metadata.full_name;
         }
 
-        loadDashboardData(session.user.id);
-        
-        // Show Home by default if not already somewhere
-        if(document.querySelector('.dashboard-view:not(.hidden)') === null) {
-            window.showSection('home');
+        // FIX: Add error handling for data load
+        if (session.user.id) {
+            // We don't await this so the UI updates immediately
+            loadDashboardData(session.user.id).catch(err => {
+                console.error("Dashboard data load failed:", err);
+            });
         }
 
     } else {
         state.currentUser = null;
         body.classList.add('auth-mode');
-        authContainer.classList.remove('hidden');
-        sidebar.classList.add('hidden');
-        // Hide all views
+        if(authContainer) authContainer.classList.remove('hidden');
+        if(sidebar) sidebar.classList.add('hidden');
+        
+        // Hide all dashboard views
         document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden'));
     }
 }
