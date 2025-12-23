@@ -47,37 +47,44 @@
             </div>
 
             <ul class="nav-links">
-                <li class="nav-item active" id="nav-home">
+                <li class="nav-item hidden" id="nav-admin-admissions">
+                    <a href="#" class="nav-link" onclick="showSection('admin-admissions')">
+                        <span class="nav-icon">🛡️</span> 
+                        <span data-i18n="nav_admin_admissions">Admissions</span>
+                    </a>
+                </li>
+
+                <li class="nav-item active student-only" id="nav-home">
                     <a href="#" class="nav-link" onclick="showSection('home')">
                         <span class="nav-icon">🏠</span> 
                         <span data-i18n="nav_home">Home</span>
                     </a>
                 </li>
-                <li class="nav-item" id="nav-reg">
+                <li class="nav-item student-only" id="nav-reg">
                     <a href="#" class="nav-link" onclick="showSection('registration')">
                         <span class="nav-icon">🎓</span> 
                         <span data-i18n="nav_reg">Registration</span>
                     </a>
                 </li>
-                <li class="nav-item" id="nav-sheet">
+                <li class="nav-item student-only" id="nav-sheet">
                     <a href="#" class="nav-link" onclick="showSection('sheet')">
                         <span class="nav-icon">📂</span> 
                         <span data-i18n="nav_sheet">COurse Sheet</span>
                     </a>
                 </li>
-                <li class="nav-item" id="nav-schedule">
+                <li class="nav-item student-only" id="nav-schedule">
                     <a href="#" class="nav-link" onclick="showSection('schedule')">
                         <span class="nav-icon">📅</span> 
                         <span data-i18n="lbl_my_schedule">My Schedule</span>
                     </a>
                 </li>
-                <li class="nav-item" id="nav-plan">
+                <li class="nav-item student-only" id="nav-plan">
                     <a href="#" class="nav-link" onclick="showSection('plan')">
                         <span class="nav-icon">🗺️</span> 
                         <span data-i18n="nav_plan">Student Plan</span>
                     </a>
                 </li>
-                <li class="nav-item" id="nav-exceptions">
+                <li class="nav-item student-only" id="nav-exceptions">
                     <a href="#" class="nav-link" onclick="showSection('exceptions')">
                         <span class="nav-icon">⚠️</span> 
                         <span data-i18n="nav_exceptions">Exceptions</span>
@@ -122,7 +129,107 @@
                 </p>
             </div>
 
-<div id="home-container" class="dashboard-view">
+            <div id="admin-admissions-container" class="dashboard-view hidden">
+                <div class="sch-modern-header">
+                    <div>
+                        <h2 class="section-title" data-i18n="admin_title">Admissions Management</h2>
+                        <span style="color:#888;">Review and process incoming student applications.</span>
+                    </div>
+                    <div class="header-stats-pill">
+                        <span id="admin-pending-count" style="color:var(--primary); font-weight:bold;">0</span> Pending
+                    </div>
+                </div>
+
+                <div class="sheet-stats-row" style="margin-bottom: 30px;">
+                    <div class="sheet-stat-card green-glow">
+                        <div class="ss-icon">📥</div>
+                        <div class="ss-info">
+                            <span class="ss-label">Total Received</span>
+                            <span class="ss-value" id="stat-total-apps">0</span>
+                        </div>
+                    </div>
+                    <div class="sheet-stat-card blue-glow">
+                        <div class="ss-icon">⚖️</div>
+                        <div class="ss-info">
+                            <span class="ss-label">Avg GPA</span>
+                            <span class="ss-value" id="stat-avg-gpa">--</span>
+                        </div>
+                    </div>
+                    <div class="sheet-stat-card purple-glow">
+                        <div class="ss-icon">🏢</div>
+                        <div class="ss-info">
+                            <span class="ss-label">Most Popular</span>
+                            <span class="ss-value" id="stat-pop-major">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reg-controls-bar">
+                    <div class="filter-pills">
+                        <button class="filter-pill active" onclick="filterApplications('pending')">Pending</button>
+                        <button class="filter-pill" onclick="filterApplications('accepted')">Accepted</button>
+                        <button class="filter-pill" onclick="filterApplications('rejected')">Rejected</button>
+                    </div>
+                    <div class="reg-search-group">
+                        <div class="reg-search-wrapper">
+                            <div class="search-icon-absolute">🔍</div>
+                            <input type="text" id="admin-search" placeholder="Search applicant name or ID...">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-apps-grid" class="reg-grid">
+                    </div>
+            </div>
+
+<div id="admin-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h2 id="adm-modal-name">Applicant Name</h2>
+            <button class="close-modal" onclick="closeAdminModal()">&times;</button>
+        </div>
+        <div class="pref-form">
+            <div class="sheet-stats-row">
+                <div class="ai-control-box">
+                    <div class="ai-box-label">High School GPA</div>
+                    <div class="ss-value" id="adm-modal-gpa" style="color:var(--primary);">--</div>
+                </div>
+                <div class="ai-control-box">
+                    <div class="ai-box-label">Desired Major</div>
+                    <div class="ss-value" id="adm-modal-major">--</div>
+                </div>
+                <div class="ai-control-box">
+                    <div class="ai-box-label">National ID</div>
+                    <div class="ss-value" id="adm-modal-nid">--</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top:20px; color:#aaa;">Documents</h3>
+            <div class="box-grid-2">
+                <a href="#" target="_blank" id="btn-view-id" class="radio-card" style="text-decoration:none;">
+                    <span class="emoji">🆔</span> View ID Card
+                </a>
+                <a href="#" target="_blank" id="btn-view-grades" class="radio-card" style="text-decoration:none;">
+                    <span class="emoji">📝</span> View Grades
+                </a>
+            </div>
+
+            <hr style="border-color:#333; margin: 20px 0;">
+
+            <div class="form-group">
+                <label class="ai-box-label">Admin Notes (Optional)</label>
+                <textarea id="adm-notes" class="modern-textarea" rows="2" placeholder="Reason for rejection or special notes..."></textarea>
+            </div>
+
+            <div class="box-grid-2" style="margin-top: 10px;">
+                <button onclick="processApplication('Rejected')" class="delete-btn" style="width:100%; padding:15px; border-radius:12px;">Reject Application</button>
+                <button onclick="processApplication('Accepted')" class="accept-btn" style="width:100%;">Accept & Create User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="home-container" class="dashboard-view hidden">
     
     <div class="home-top-bar">
         <div class="welcome-text">

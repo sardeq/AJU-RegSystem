@@ -1,0 +1,80 @@
+/* css/admin.css */
+
+.adm-card {
+    background: #0a0a0a;
+    border: 1px solid #222;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.adm-card:hover {
+    transform: translateY(-5px);
+    border-color: #444;
+}
+
+.adm-card.status-pending { border-left: 4px solid var(--accent-orange); }
+.adm-card.status-accepted { border-left: 4px solid var(--primary); }
+.adm-card.status-rejected { border-left: 4px solid var(--accent-red); }
+
+.adm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.adm-date {
+    font-size: 0.75rem;
+    color: #666;
+    background: #111;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.adm-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    margin: 5px 0;
+}
+
+.adm-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.adm-pill {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #222;
+    padding: 8px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.adm-pill span { display: block; font-size: 0.75rem; color: #888; }
+.adm-pill strong { display: block; color: var(--text-main); font-size: 0.95rem; }
+
+.adm-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.btn-adm-view {
+    background: #222;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-adm-view:hover { background: #333; }

@@ -8,11 +8,16 @@ import { loadStudentPlan } from './plan.js';
 import { loadCoursesSheetData, setupSheetListeners } from './courses-sheet.js';
 import { loadExceptionHistory, setupExceptionListeners } from './exceptions.js'; 
 import { setupAIListeners } from './ai.js'; 
+import { loadAdminDashboard } from './admin-admissions.js';
 
 // --- Navigation Handler ---
 window.showSection = function(sectionName) {
     document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+    if (sectionName === 'admin-admissions') {
+        loadAdminDashboard();
+    }
 
     const container = document.getElementById(sectionName === 'sheet' ? 'courses-sheet-container' : 
                                             sectionName === 'registration' ? 'registration-container' : 
@@ -100,11 +105,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Auth Logic ---
-    supabase.auth.onAuthStateChange((event, session) => {
-        state.currentUser = session?.user || null;
-        updateAuthUI(session);
-    });
+supabase.auth.onAuthStateChange(async (event, session) => {
+    state.currentUser = session?.user || null;
+    updateAuthUI(session);
+
+    const adminNav = document.getElementById('nav-admin-admissions');
+    const studentNavs = document.querySelectorAll('.student-only');
+
+    if (session?.user) {
+        try {
+            // 1. Fetch role
+            const { data: profile } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            // 2. CHECK ROLE
+            if (profile && profile.role === 'admission-admin') {
+                // --- ADMIN VIEW ---
+                console.log("Admin Access Detected");
+                
+                // Show Admin Link
+                if(adminNav) adminNav.classList.remove('hidden');
+                
+                // Hide ALL Student Links
+                studentNavs.forEach(el => el.classList.add('hidden'));
+
+                // FORCE Redirect to Admin Section
+                showSection('admin-admissions');
+                
+            } else {
+                // --- STUDENT VIEW ---
+                if(adminNav) adminNav.classList.add('hidden');
+                
+                // Show Student Links
+                studentNavs.forEach(el => el.classList.remove('hidden'));
+                
+                // Default to Home if on login
+                if(event === 'SIGNED_IN') showSection('home');
+            }
+
+        } catch (err) {
+            console.error("Error fetching user role:", err);
+            // Fallback to student view on error for safety
+            if(adminNav) adminNav.classList.add('hidden');
+            studentNavs.forEach(el => el.classList.remove('hidden'));
+        }
+    } else {
+        // LOGGED OUT
+        if(adminNav) adminNav.classList.add('hidden');
+        document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden'));
+    }
+});
 
     document.getElementById('auth-action-btn')?.addEventListener('click', () => {
         const nameField = document.getElementById('full-name');
