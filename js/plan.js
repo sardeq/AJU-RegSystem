@@ -5,11 +5,31 @@ import { state, ROOT_SE_ID } from './state.js';
 let currentScale = 1;
 let globalEdges = []; 
 
-// Groups for the side list
 const ELECTIVE_GROUPS = [
-    { id: 'elec_major', name: 'Major Electives', category: 'Major Elective', count: '12 Cr' },
-    { id: 'elec_uni', name: 'Uni Electives', category: 'University Elective', count: '6 Cr' },
-    { id: 'elec_supp', name: 'Support Electives', category: 'Support Compulsory', count: '3 Cr' }
+    { 
+        id: 'elec_major', 
+        name: 'Major Electives', 
+        category: 'Major Elective', 
+        count: '12 Cr',
+        icon: '⚡',
+        cssClass: 'stack-major'
+    },
+    { 
+        id: 'elec_uni', 
+        name: 'Uni Electives', 
+        category: 'University Elective', 
+        count: '6 Cr', 
+        icon: '🏛️',
+        cssClass: 'stack-uni'
+    },
+    { 
+        id: 'elec_supp', 
+        name: 'Support Electives', 
+        category: 'Support Compulsory', 
+        count: '3 Cr', 
+        icon: '🛠️',
+        cssClass: 'stack-supp'
+    }
 ];
 
 export async function loadStudentPlan(userId) {
@@ -273,34 +293,43 @@ function renderOrthogonalConnections(edges, nodes) {
 }
 
 function renderElectives(canvas, startX) {
-    const groupContainer = document.createElement('div');
-    groupContainer.className = 'elective-group-container';
-    groupContainer.style.left = `${startX}px`;
-    groupContainer.style.top = '120px'; 
+    // Create the container zone
+    const zone = document.createElement('div');
+    zone.className = 'elective-zone';
     
-    const title = document.createElement('div');
-    title.className = 'elective-section-title';
-    title.innerText = 'Electives';
-    groupContainer.appendChild(title);
+    // Position it relative to the tree width (startX)
+    // We add some vertical padding so it aligns nicely with the Root or the first row
+    zone.style.left = `${startX + 40}px`; 
+    zone.style.top = '100px'; 
+    
+    // Add the decorative "Bus Line" label
+    const label = document.createElement('div');
+    label.className = 'zone-label';
+    label.innerText = 'Elective Bank';
+    zone.appendChild(label);
 
     ELECTIVE_GROUPS.forEach(group => {
-        const btn = document.createElement('div');
-        btn.className = 'elective-card-btn';
-        btn.innerHTML = `
-            <div class="ecb-icon">⚡</div>
-            <div class="ecb-info">
-                <div class="ecb-title">${group.name}</div>
-                <div class="ecb-sub">${group.count}</div>
+        const stack = document.createElement('div');
+        stack.className = `elective-stack ${group.cssClass}`;
+        
+        stack.innerHTML = `
+            <div class="es-icon-box">${group.icon}</div>
+            <div class="es-content">
+                <h4>${group.name}</h4>
+                <span>${group.count} Required</span>
             </div>
-            <div class="ecb-arrow">→</div>
+            <div class="es-arrow">➔</div>
         `;
-        btn.onclick = () => openElectiveDrawer(group);
-        groupContainer.appendChild(btn);
+        
+        // Stop drag propagation so we can click cleanly
+        stack.onmousedown = (e) => e.stopPropagation();
+        stack.onclick = () => openElectiveDrawer(group);
+        
+        zone.appendChild(stack);
     });
 
-    canvas.appendChild(groupContainer);
+    canvas.appendChild(zone);
 }
-
 // --- Interactions ---
 
 function initDragLogic(wrapper, canvas) {
@@ -443,30 +472,51 @@ window.closePlanPopup = function() {
 async function openElectiveDrawer(group) {
     const drawer = document.getElementById('elective-drawer');
     const overlay = document.getElementById('elective-drawer-overlay');
-    const listContainer = document.getElementById('drawer-content');
-    const titleEl = document.getElementById('drawer-title');
+    const content = document.getElementById('drawer-content');
+    const title = document.getElementById('drawer-title');
     
     if(!drawer) return;
+
+    // Set Header
+    title.innerHTML = `
+        <span style="font-size:0.9rem; color:#888; display:block; margin-bottom:5px;">Module Group</span>
+        ${group.name}
+    `;
+    title.className = 'drawer-title-large'; // Apply new class
     
-    titleEl.textContent = group.name;
-    listContainer.innerHTML = '';
-    
+    content.innerHTML = ''; // Clear previous
+
+    // Filter Courses
     const relevantCourses = state.allCoursesData.filter(c => 
         c.category && c.category.toLowerCase().includes(group.category.toLowerCase())
     );
 
+    if(relevantCourses.length === 0) {
+        content.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">No courses found in this category.</div>';
+    }
+
     relevantCourses.forEach(course => {
+        // Check if user has passed (simple check based on state.userHistory)
+        const isPassed = state.userHistory?.some(h => 
+            h.sections?.course_code === course.course_code && h.status === 'COMPLETED'
+        );
+        
         const item = document.createElement('div');
         item.className = 'drawer-item';
+        // Add specific border color based on group
+        if(isPassed) item.style.borderColor = 'rgba(46, 204, 113, 0.5)';
         
         item.innerHTML = `
-            <div class="di-header">
-                <span class="di-code">${course.course_code}</span>
-                <span class="di-credits">${course.credit_hours} Cr</span>
+            <div class="di-check" style="background:${isPassed ? '#2ecc71' : 'transparent'}; border-color:${isPassed ? '#2ecc71' : '#444'}"></div>
+            <div class="di-content">
+                <div class="di-top">
+                    <span class="di-code">${course.course_code}</span>
+                    <span class="di-cr">${course.credit_hours} Cr</span>
+                </div>
+                <div class="di-name">${state.currentLang === 'ar' ? (course.course_name_ar || course.course_name_en) : course.course_name_en}</div>
             </div>
-            <div class="di-name">${course.course_name_en}</div>
         `;
-        listContainer.appendChild(item);
+        content.appendChild(item);
     });
 
     drawer.classList.add('open');
