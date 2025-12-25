@@ -256,46 +256,49 @@
     </div>
 
     <div class="stats-overview-row">
-        <div class="stat-widget">
-            <span class="widget-label">Current GPA</span>
-            <span id="stat-gpa" class="widget-value">--</span>
-            <div class="widget-trend down" style="color:var(--accent-red); font-size:0.8rem;">↓ -0.05</div>
+    <div class="stat-widget">
+        <span class="widget-label">Current GPA</span>
+        <span id="stat-gpa" class="widget-value">--</span>
+        <div class="widget-trend down" style="color:var(--accent-red); font-size:0.8rem;">↓ -0.05</div>
+    </div>
+    <div class="stat-widget">
+        <span class="widget-label">Hours Passed</span>
+        <span id="stat-hours-text" class="widget-value">--</span>
+        <span class="widget-sub">of 132 credits</span>
+    </div>
+</div>
+
+<div class="home-main-grid">
+    <div class="dashboard-card schedule-widget">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0;">Today's Schedule</h3>
+            <button class="mini-logout-btn" onclick="showSection('schedule')" style="width:auto; border:none; padding:0;">View Full</button>
         </div>
-        <div class="stat-widget">
-            <span class="widget-label">Hours Passed</span>
-            <span id="stat-hours-text" class="widget-value">--</span>
-            <span class="widget-sub">of 132 credits</span>
-        </div>
+        <div id="bento-schedule-list" class="bento-schedule-list"></div>
+    </div>
+
+    <div class="stat-column">
         <div class="stat-widget">
             <span class="widget-label">Class Rank</span>
             <span id="stat-rank" class="widget-value">--</span>
             <span class="widget-sub">Current Standing</span>
         </div>
-        <div class="stat-widget">
+        <div class="stat-widget" style="flex: 1;">
             <span class="widget-label">Registered Courses</span>
             <span id="stat-registered-count" class="widget-value">0</span>
             <span class="widget-sub" id="sch-credit-status">0 Credits</span>
         </div>
     </div>
 
-    <div class="home-main-grid">
-        <div class="dashboard-card schedule-widget">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="margin:0;">Today's Schedule</h3>
-                <button class="mini-logout-btn" onclick="showSection('schedule')" style="width:auto; border:none; padding:0;">View Full</button>
-            </div>
-            <div id="bento-schedule-list" class="bento-schedule-list"></div>
-        </div>
-
-        <div class="dashboard-card hero-widget">
-            <div class="hero-content">
-                <span class="badge-new" style="background:var(--primary); color:black; padding:4px 8px; border-radius:8px; font-weight:bold; font-size:0.8rem;">Registration Open</span>
-                <h2 style="margin:10px 0;">Fall 2025 Enrollment</h2>
-                <p style="color:#ccc; margin-bottom:20px;">Secure your seat in major compulsory courses before sections fill up.</p>
-                <button class="ai-header-btn" onclick="showSection('registration')">Enroll Now ✨</button>
-            </div>
+    <div class="dashboard-card hero-widget">
+        <div class="hero-content">
+            <span class="badge-new" style="background:var(--primary); color:black; padding:4px 8px; border-radius:8px; font-weight:bold; font-size:0.8rem;">Registration Open</span>
+            <h2 style="margin:10px 0;">Fall 2025 Enrollment</h2>
+            <p style="color:#ccc; margin-bottom:20px;">Secure your seat in major compulsory courses before sections fill up.</p>
+            <button class="ai-header-btn" onclick="showSection('registration')">Enroll Now ✨</button>
         </div>
     </div>
+</div>
 </div>
 
 <div id="registration-container" class="dashboard-view hidden">
