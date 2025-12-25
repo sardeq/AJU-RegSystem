@@ -21,8 +21,7 @@ export function setupAIListeners() {
         if (aiPrefModal) aiPrefModal.classList.remove('hidden');
     }
 
-    if (aiBtnReg) aiBtnReg.addEventListener('click', openAIModal);
-    // Note: If you have multiple buttons with class 'enhance-ai-btn', loop them
+if (aiBtnReg) aiBtnReg.addEventListener('click', openAIModal);
     document.querySelectorAll('.enhance-ai-btn').forEach(btn => {
         if(btn.id !== 'generate-schedule-btn') btn.addEventListener('click', openAIModal);
     });
@@ -55,16 +54,10 @@ async function handleAIGeneration() {
     const aiLoading = document.getElementById('ai-loading');
     const aiResults = document.getElementById('ai-results');
 
-    // 1. Get User Preferences
-    const intensity = document.querySelector('input[name="intensity"]:checked')?.value || 'Balanced';
-    const timePref = document.getElementById('time-pref').value;
     const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
     const targetCredits = parseInt(document.getElementById('credits-pref').value) || 15;
 
-    if (daysPref.length === 0) {
-        alert("Please select at least one day preference.");
-        return;
-    }
+    if (daysPref.length === 0) { alert("Please select days."); return; }
 
     aiPrefModal.classList.add('hidden');
     aiModal.classList.remove('hidden');
@@ -72,72 +65,62 @@ async function handleAIGeneration() {
     aiResults.innerHTML = ''; 
 
     try {
-        if (!state.currentUser) throw new Error("Please log in first.");
-        
-        // 2. Fetch Eligible Sections
         const context = await fetchStudentContext(state.currentUser.id);
         
-        // 3. Filter Sections by Time and Day Preferences locally before sending to AI
-        let filteredOptions = context.options.filter(sec => {
+        // Advanced Filtering: Attach time ranges to the options
+        let filteredOptions = context.options.map(sec => ({
+            ...sec,
+            timeRanges: parseScheduleToRanges(sec.schedule_text)
+        })).filter(sec => {
             const sched = sec.schedule_text || "";
-            // Day filtering
-            const matchesDay = daysPref.some(d => sched.includes(d));
-            if (!matchesDay) return false;
-
-            // Time filtering
-            if (timePref === 'Morning Only') return sched.includes('08:30') || sched.includes('09:30') || sched.includes('10:00');
-            if (timePref === 'Afternoon') return sched.includes('12:00') || sched.includes('13:00') || sched.includes('14:00');
-            
-            return true;
+            return daysPref.some(d => sched.includes(d));
         });
 
-        if (filteredOptions.length === 0) throw new Error("No courses match your day/time preferences.");
+        // Parse existing busy times into ranges once
+        const baseBusyRanges = context.busyTimes.flatMap(t => parseScheduleToRanges(t));
 
-        // 4. Generate 3 Distinct Plans locally (Fallback logic if Edge Function is down)
-        const plans = generateLocalPlans(filteredOptions, targetCredits, context.busyTimes);            
+        // Generate plans using the new overlap logic
+        const plans = generateLocalPlans(filteredOptions, targetCredits, baseBusyRanges);            
+        
         aiLoading.classList.add('hidden');
         renderPlans(plans);
 
     } catch (err) {
         aiLoading.classList.add('hidden');
-        aiResults.innerHTML = `<div style="padding:20px; text-align:center;">
-            <p style="color:#d32f2f; font-weight:bold;">Advisor Error</p>
-            <p style="color:#666;">${err.message}</p>
-        </div>`;
+        aiResults.innerHTML = `<p style="color:red; text-align:center;">${err.message}</p>`;
     }
 }
 
-function generateLocalPlans(options, target, baseBusyTimes = []) {
+function generateLocalPlans(options, target, baseBusyRanges = []) {
     const plans = [];
     const titles = ["Balanced Choice", "Quick Progress", "Major Focused"];
     
     for (let i = 0; i < 3; i++) {
         let currentCredits = 0;
         let selectedSections = [];
-        
-
-        let currentPlanBusyTimes = [...baseBusyTimes]; 
-        
+        let currentPlanRanges = [...baseBusyRanges]; 
         let usedCourseCodes = new Set();
 
         const shuffled = [...options].sort(() => 0.5 - Math.random());
 
         for (const sec of shuffled) {
             const courseHours = sec.courses?.credit_hours || 0;
-            const schedule = sec.schedule_text || "";
+            
+            // USE ADVANCED OVERLAP CHECK
+            const hasConflict = checkOverlap(sec.timeRanges, currentPlanRanges);
 
             if (currentCredits + courseHours <= target && 
                 !usedCourseCodes.has(sec.course_code) && 
-                !currentPlanBusyTimes.includes(schedule)) { 
+                !hasConflict) { 
                 
                 selectedSections.push({
                     section_id: sec.section_id,
                     code: sec.course_code,
                     name: sec.courses.course_name_en,
-                    time: schedule
+                    time: sec.schedule_text
                 });
 
-                currentPlanBusyTimes.push(schedule);
+                currentPlanRanges.push(...sec.timeRanges);
                 usedCourseCodes.add(sec.course_code);
                 currentCredits += courseHours;
             }
@@ -146,13 +129,54 @@ function generateLocalPlans(options, target, baseBusyTimes = []) {
         if (selectedSections.length > 0) {
             plans.push({
                 title: titles[i],
-                reasoning: `Recommended based on your ${titles[i].toLowerCase()} preference and ${currentCredits} credit target.`,
+                reasoning: `Recommended based on your preferences (${currentCredits} credits).`,
                 courses: selectedSections
             });
         }
     }
     return plans;
 }
+
+function parseScheduleToRanges(scheduleText) {
+    if (!scheduleText || typeof scheduleText !== 'string' || scheduleText.includes("TBA")) return [];
+    
+    const dayMap = { "sun": 0, "mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6 };
+    const lower = scheduleText.toLowerCase();
+    const timeMatch = lower.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+    
+    if (!timeMatch) return [];
+
+    const [_, startStr, endStr] = timeMatch;
+    const getMinutes = (time) => {
+        const parts = time.split(":").map(Number);
+        return parts[0] * 60 + parts[1];
+    };
+
+    const startMins = getMinutes(startStr);
+    const endMins = getMinutes(endStr);
+    const activeDays = [];
+
+    for (const day in dayMap) {
+        if (lower.includes(day)) activeDays.push(dayMap[day]);
+    }
+
+    return activeDays.map(dayIdx => ({
+        start: dayIdx * 1440 + startMins,
+        end: dayIdx * 1440 + endMins
+    }));
+}
+
+
+function checkOverlap(rangesA, rangesB) {
+    if(!rangesA || !rangesB || rangesA.length === 0 || rangesB.length === 0) return false;
+    for (const a of rangesA) {
+        for (const b of rangesB) {
+            if (a.start < b.end && a.end > b.start) return true;
+        }
+    }
+    return false;
+}
+
 
 export async function fetchStudentContext(userId) {
     // 1. Get the dynamic active semester first
