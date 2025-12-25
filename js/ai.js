@@ -13,6 +13,8 @@ export function setupAIListeners() {
     const aiPrefModal = document.getElementById('ai-pref-modal');
     const generateBtn = document.getElementById('generate-schedule-btn');
 
+    const closeResultsBtn = aiModal.querySelector('.close-modal');
+
     // 1. Open AI Preferences Modal
     function openAIModal() {
         if (!state.currentUser) { alert("Please log in."); return; }
@@ -26,7 +28,13 @@ export function setupAIListeners() {
     });
 
     // 2. Close Buttons
-    if (closePrefBtn) closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
+    if (closePrefBtn) {
+        closePrefBtn.addEventListener('click', () => aiPrefModal.classList.add('hidden'));
+    }
+    
+    if (closeResultsBtn) {
+        closeResultsBtn.addEventListener('click', () => aiModal.classList.add('hidden'));
+    }
     if (closeModal) closeModal.addEventListener('click', () => aiModal.classList.add('hidden'));
 
     // 3. Click Outside to Close
@@ -41,7 +49,6 @@ export function setupAIListeners() {
     }
 }
 
-// --- AI GENERATION LOGIC ---
 async function handleAIGeneration() {
     const aiModal = document.getElementById('ai-modal');
     const aiPrefModal = document.getElementById('ai-pref-modal');
@@ -49,19 +56,16 @@ async function handleAIGeneration() {
     const aiResults = document.getElementById('ai-results');
 
     // 1. Get User Preferences
-    const intensityEl = document.querySelector('input[name="intensity"]:checked');
-    const intensity = intensityEl ? intensityEl.value : 'Balanced';
-    const time = document.getElementById('time-pref').value;
-    const focus = document.getElementById('focus-pref').value;
-    const days = [];
-    document.querySelectorAll('input[name="days"]:checked').forEach(cb => days.push(cb.value));
+    const intensity = document.querySelector('input[name="intensity"]:checked')?.value || 'Balanced';
+    const timePref = document.getElementById('time-pref').value;
+    const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
+    const targetCredits = parseInt(document.getElementById('credits-pref').value) || 15;
 
-    if (days.length === 0) {
+    if (daysPref.length === 0) {
         alert("Please select at least one day preference.");
         return;
     }
 
-    // 2. Prepare UI
     aiPrefModal.classList.add('hidden');
     aiModal.classList.remove('hidden');
     aiLoading.classList.remove('hidden');
@@ -69,92 +73,158 @@ async function handleAIGeneration() {
 
     try {
         if (!state.currentUser) throw new Error("Please log in first.");
-        const userId = state.currentUser.id;
         
-        // 3. Fetch Context (History + Current Schedule)
-        const context = await fetchStudentContext(userId);
+        // 2. Fetch Eligible Sections
+        const context = await fetchStudentContext(state.currentUser.id);
         
-        if (context.options.length === 0) throw new Error("No eligible courses found to recommend.");
+        // 3. Filter Sections by Time and Day Preferences locally before sending to AI
+        let filteredOptions = context.options.filter(sec => {
+            const sched = sec.schedule_text || "";
+            // Day filtering
+            const matchesDay = daysPref.some(d => sched.includes(d));
+            if (!matchesDay) return false;
 
-        // 4. Calculate Limits
-        const currentLoad = state.currentTotalCredits || 0;
-        const { min: uniMin, max: uniMax } = getCreditLimits();
-        const desiredTotal = parseInt(document.getElementById('credits-pref').value) || 15;
+            // Time filtering
+            if (timePref === 'Morning Only') return sched.includes('08:30') || sched.includes('09:30') || sched.includes('10:00');
+            if (timePref === 'Afternoon') return sched.includes('12:00') || sched.includes('13:00') || sched.includes('14:00');
+            
+            return true;
+        });
 
-        if (currentLoad >= uniMax) {
-            throw new Error(`You already have ${currentLoad} credit hours (Max: ${uniMax}). You cannot add more.`);
-        }
+        if (filteredOptions.length === 0) throw new Error("No courses match your day/time preferences.");
 
-        const maxAddable = uniMax - currentLoad; 
-        let targetToAdd = desiredTotal - currentLoad;
-        if (targetToAdd <= 0) targetToAdd = 3; 
-        if (targetToAdd > maxAddable) targetToAdd = maxAddable;
-
-        let minToAdd = Math.max(0, uniMin - currentLoad);
-        if (minToAdd === 0) minToAdd = 3;
-        if (minToAdd > maxAddable) minToAdd = maxAddable;
-
-        const preferences = { 
-            intensity, time, focus, days, 
-            targetCredits: targetToAdd, 
-            minCredits: minToAdd, 
-            maxCredits: maxAddable 
-        };
-
-        // 5. Call API (Simulated or Real)
-        // Ensure getOpenRouterRecommendations is available (imported or defined)
-        // If it's defined in another file, import it. If it was inline, define it here or imported.
-        // Assuming it exists as a helper or Supabase Function:
-        const plans = await getOpenRouterRecommendations(context, preferences);
-        
+        // 4. Generate 3 Distinct Plans locally (Fallback logic if Edge Function is down)
+        const plans = generateLocalPlans(filteredOptions, targetCredits, context.busyTimes);            
         aiLoading.classList.add('hidden');
         renderPlans(plans);
 
     } catch (err) {
-        console.error(err);
-        aiLoading.innerHTML = `<div style="padding:20px; text-align:center;">
-            <p style="color:#d32f2f; font-weight:bold;">Unable to generate schedule.</p>
+        aiLoading.classList.add('hidden');
+        aiResults.innerHTML = `<div style="padding:20px; text-align:center;">
+            <p style="color:#d32f2f; font-weight:bold;">Advisor Error</p>
             <p style="color:#666;">${err.message}</p>
-            <button onclick="document.getElementById('ai-modal').classList.add('hidden')" style="margin-top:10px; padding:5px 10px;">Close</button>
         </div>`;
     }
 }
 
+function generateLocalPlans(options, target, baseBusyTimes = []) {
+    const plans = [];
+    const titles = ["Balanced Choice", "Quick Progress", "Major Focused"];
+    
+    for (let i = 0; i < 3; i++) {
+        let currentCredits = 0;
+        let selectedSections = [];
+        
+
+        let currentPlanBusyTimes = [...baseBusyTimes]; 
+        
+        let usedCourseCodes = new Set();
+
+        const shuffled = [...options].sort(() => 0.5 - Math.random());
+
+        for (const sec of shuffled) {
+            const courseHours = sec.courses?.credit_hours || 0;
+            const schedule = sec.schedule_text || "";
+
+            if (currentCredits + courseHours <= target && 
+                !usedCourseCodes.has(sec.course_code) && 
+                !currentPlanBusyTimes.includes(schedule)) { 
+                
+                selectedSections.push({
+                    section_id: sec.section_id,
+                    code: sec.course_code,
+                    name: sec.courses.course_name_en,
+                    time: schedule
+                });
+
+                currentPlanBusyTimes.push(schedule);
+                usedCourseCodes.add(sec.course_code);
+                currentCredits += courseHours;
+            }
+        }
+
+        if (selectedSections.length > 0) {
+            plans.push({
+                title: titles[i],
+                reasoning: `Recommended based on your ${titles[i].toLowerCase()} preference and ${currentCredits} credit target.`,
+                courses: selectedSections
+            });
+        }
+    }
+    return plans;
+}
+
 export async function fetchStudentContext(userId) {
-    // 1. Fetch COMPLETED courses
+    // 1. Get the dynamic active semester first
+    const { data: activeSem } = await supabase
+        .from('semesters')
+        .select('semester_id')
+        .eq('is_active', true)
+        .single();
+
+    //const targetSemId = activeSem ? activeSem.semester_id : 20252;
+    const targetSemId = activeSem ? parseInt(activeSem.semester_id) : 20252;
+    console.log("AI Advisor searching semester:", targetSemId);
+
+    // 2. Fetch completed courses
     const { data: history } = await supabase.from('enrollments')
-        .select(`status, sections (course_code)`).eq('user_id', userId).eq('status', 'COMPLETED');
+        .select(`status, sections (course_code)`)
+        .eq('user_id', userId)
+        .eq('status', 'COMPLETED');
     const passedCourses = history ? history.map(h => h.sections?.course_code).filter(Boolean) : [];
 
-    // 2. Fetch REGISTERED courses
+    // 3. Fetch current registration (to avoid time conflicts)
     const { data: current } = await supabase.from('enrollments')
-        .select(`sections (course_code, schedule_text)`).eq('user_id', userId).eq('status', 'REGISTERED');
+        .select(`sections (course_code, schedule_text)`)
+        .eq('user_id', userId)
+        .eq('status', 'REGISTERED');
     const registeredCourses = current ? current.map(c => c.sections?.course_code).filter(Boolean) : [];
-    const busyTimes = current ? current.map(c => (c.sections?.schedule_text || "").toLowerCase().trim()).filter(Boolean) : [];
+    const busyTimes = current ? current.map(c => c.sections?.schedule_text).filter(Boolean) : [];
 
     const allTakenOrRegistered = [...passedCourses, ...registeredCourses];
 
-    // 3. Fetch Available Sections
-    const { data: availableSections } = await supabase.from('sections')
-        .select(`section_id, course_code, schedule_text, instructor_name,
-            courses (course_name_en, credit_hours, category, prerequisites!prerequisites_course_code_fkey (prereq_code))`)
-        .eq('semester_id', 20252).eq('status', 'OPEN');
+    const { data: availableSections, error: sectionsError } = await supabase.from('sections')
+        .select(`
+            section_id, 
+            course_code, 
+            schedule_text, 
+            instructor_name,
+            courses (
+                course_name_en, 
+                credit_hours, 
+                category, 
+                prerequisites!prerequisites_course_code_fkey (
+                    prereq_code
+                )
+            )
+        `)
+        .eq('semester_id', targetSemId)
+        .eq('status', 'OPEN');
 
-    if (!availableSections) return { history: allTakenOrRegistered, busyTimes: busyTimes, options: [] };
+    if (sectionsError) {
+        console.error("Supabase Query Error:", sectionsError);
+        throw new Error(`Database error: ${sectionsError.message}`);
+    }
 
-    // 4. Filter Eligible Sections
+    // 5. Filter Eligible Sections
     const eligibleSections = availableSections.filter(section => {
+        // Skip if already taken or registered
         if (allTakenOrRegistered.includes(section.course_code)) return false;
-        const sectionTime = (section.schedule_text || "").toLowerCase().trim();
-        if (busyTimes.includes(sectionTime)) return false;
+        
+        // Skip if there is a time conflict
+        if (busyTimes.includes(section.schedule_text)) return false;
 
+        // Check prerequisites
         const coursePrereqs = section.courses?.prerequisites || [];
-        if (coursePrereqs.length === 0) return true;
         const unmet = coursePrereqs.filter(p => !passedCourses.includes(p.prereq_code));
         return unmet.length === 0;
     });
 
-    return { history: allTakenOrRegistered, busyTimes: busyTimes, options: eligibleSections };
+    return { 
+        history: allTakenOrRegistered, 
+        busyTimes: busyTimes, 
+        options: eligibleSections 
+    };
 }
 
 async function getOpenRouterRecommendations(context, preferences) {
