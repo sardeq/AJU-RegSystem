@@ -281,7 +281,7 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
 /* 6. The Big "Generate" Button */
 .enhance-ai-btn {
     width: 100%; padding: 18px;
-    background: linear-gradient(135deg, var(--primary-dim), var(--primary));
+    background: #00e676; 
     color: #000; border: none;
     border-radius: 50px;
     font-weight: 800; font-size: 1.1rem;
@@ -291,7 +291,7 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
     display: flex; justify-content: center; align-items: center; gap: 10px;
     margin-top: 15px;
 }
-.enhance-ai-btn:hover { transform: translateY(-3px) scale(1.02); }
+.enhance-ai-btn:hover { transform: translateY(-3px) scale(1.02); background: #00e676;  }
 
 
 /* --- MODAL FIXES --- */
@@ -450,7 +450,6 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
 }
 
 .accept-btn:hover {
-    background: var(--primary-dim);
     box-shadow: 0 5px 20px rgba(0, 230, 118, 0.2);
     transform: scale(1.02);
 }
