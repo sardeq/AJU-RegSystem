@@ -1,13 +1,14 @@
 :root {
     /* --- COLOR PALETTE --- */
-    --bg-body: #050505;       /* Deepest Black */
-    --bg-card: #0a0a0a;       /* Standard Card */
-    --bg-card-hover: #141414; /* Lighter Hover */
-    --bg-input: #0f0f0f;      
+    --bg-body: transparent; 
+    --bg-card: rgba(10, 10, 10, 0.5);       /* Half-transparent cards */
+    --bg-card-hover: rgba(30, 30, 30, 0.7); 
+    --bg-input: rgba(0, 0, 0, 0.4);
     
-    --primary: #00e676;       /* Neon Emerald */
-    --primary-dim: #00c853;   /* Darker Green */
-    --primary-glow: rgba(0, 230, 118, 0.15);
+    --primary: #00e676; 
+    --primary-glow: rgba(0, 230, 118, 0.3);
+    --sidebar-bg: rgba(5, 5, 5, 0.4);
+    --card-bg: rgba(255, 255, 255, 0.04);
     
     --accent-orange: #ff9100; /* Waitlist */
     --accent-red: #ff5252;    /* Danger/Errors */

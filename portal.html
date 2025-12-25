@@ -61,7 +61,7 @@
                         <span data-i18n="nav_home">Home</span>
                     </a>
                 </li>
-                <li class="nav-item student-only" id="nav-reg">
+                <li class="nav-item student-only" id="nav-registration">
                     <a href="#" class="nav-link" onclick="showSection('registration')">
                         <span class="nav-icon">🎓</span> 
                         <span data-i18n="nav_reg">Registration</span>
@@ -231,92 +231,70 @@
 </div>
 
 <div id="home-container" class="dashboard-view hidden">
-    
-    <div class="home-top-bar">
+    <div class="home-header-row">
         <div class="welcome-text">
             <h1>Welcome back, <span id="home-user-name">Student</span>! 👋</h1>
-            <p style="color:#888;">Here is what’s happening with your academic life today.</p>
+            <p>Academic Year 2025/2026 • Fall Semester</p>
+        </div>
+        
+        <div class="alerts-container">
+            <div class="alert-item warning">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-body">
+                    <strong>GPA Notice</strong>
+                    <span>Your current GPA is 60. Note: This is below the recommended threshold.</span>
+                </div>
+            </div>
+            <div class="alert-item recommendation">
+                <div class="alert-icon">✨</div>
+                <div class="alert-body">
+                    <strong>AI Recommendation</strong>
+                    <span>It's recommended to enroll in <b>Database Design and Development</b> to increase your GPA.</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="bento-grid">
-        
-        <div class="bento-col-schedule">
-            <div class="bento-card-header">
-                <span>Today's Schedule</span>
-                <small style="color:#666">[Month, Day]</small>
-            </div>
-            <div id="bento-schedule-list" class="bento-schedule-list">
-                <div style="text-align:center; padding:20px; color:#444;">Loading schedule...</div>
-            </div>
+    <div class="stats-overview-row">
+        <div class="stat-widget">
+            <span class="widget-label">Current GPA</span>
+            <span id="stat-gpa" class="widget-value">--</span>
+            <div class="widget-trend down" style="color:var(--accent-red); font-size:0.8rem;">↓ -0.05</div>
         </div>
-
-        <div class="bento-col-stats">
-            
-            <div class="stat-card-glass">
-                <div class="stat-top">
-                    <div class="icon-box-green">🎓</div>
-                    <span class="stat-pill-green">+0.2</span>
-                </div>
-                <div class="stat-bottom">
-                    <span id="stat-gpa" class="stat-value">--</span>
-                    <span class="stat-label">Current GPA</span>
-                </div>
-            </div>
-
-            <div class="stat-card-glass">
-                <div class="stat-top">
-                    <div class="icon-box-orange">⚡</div>
-                </div>
-                <div class="stat-bottom">
-                    <span id="stat-hours-text" class="stat-value">--</span>
-                    <span class="stat-label">Hours Passed</span>
-                </div>
-            </div>
-
+        <div class="stat-widget">
+            <span class="widget-label">Hours Passed</span>
+            <span id="stat-hours-text" class="widget-value">--</span>
+            <span class="widget-sub">of 132 credits</span>
         </div>
-
-        <div class="bento-hero">
-            <div class="hero-overlay"></div>
-            <div class="hero-content-new">
-                <span class="hero-badge">Announcement</span>
-                <h2 class="hero-title">Registration for Fall 2025 is now open!</h2>
-                <p class="hero-desc">Check your advising plan before registering for new courses.</p>
-                <div class="hero-btns">
-                    <button class="btn-white" onclick="showSection('registration')">Register Now</button>
-                    <button class="btn-outline" onclick="showSection('plan')">View Plan</button>
-                </div>
-            </div>
+        <div class="stat-widget">
+            <span class="widget-label">Class Rank</span>
+            <span id="stat-rank" class="widget-value">--</span>
+            <span class="widget-sub">Current Standing</span>
         </div>
-
+        <div class="stat-widget">
+            <span class="widget-label">Registered Courses</span>
+            <span id="stat-registered-count" class="widget-value">0</span>
+            <span class="widget-sub" id="sch-credit-status">0 Credits</span>
+        </div>
     </div>
 
-    <div class="bento-bottom-row">
-        
-        <div class="alert-card-long">
-            <div class="icon-circle-yellow">⚠️</div>
-            <div class="alert-content">
-                <strong>Outstanding Fees</strong>
-                <small>You have a pending payment of 150 JOD due next week.</small>
+    <div class="home-main-grid">
+        <div class="dashboard-card schedule-widget">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0;">Today's Schedule</h3>
+                <button class="mini-logout-btn" onclick="showSection('schedule')" style="width:auto; border:none; padding:0;">View Full</button>
             </div>
+            <div id="bento-schedule-list" class="bento-schedule-list"></div>
         </div>
 
-        <div class="mini-stat-card purple-gradient">
-            <div class="mini-icon">📊</div>
-            <div class="mini-details">
-                <span id="stat-rank" class="mini-val">--</span>
-                <span class="mini-label">Class Rank</span>
+        <div class="dashboard-card hero-widget">
+            <div class="hero-content">
+                <span class="badge-new" style="background:var(--primary); color:black; padding:4px 8px; border-radius:8px; font-weight:bold; font-size:0.8rem;">Registration Open</span>
+                <h2 style="margin:10px 0;">Fall 2025 Enrollment</h2>
+                <p style="color:#ccc; margin-bottom:20px;">Secure your seat in major compulsory courses before sections fill up.</p>
+                <button class="ai-header-btn" onclick="showSection('registration')">Enroll Now ✨</button>
             </div>
         </div>
-
-        <div class="mini-stat-card blue-gradient">
-            <div class="mini-icon">📚</div>
-            <div class="mini-details">
-                <span id="stat-registered-count" class="mini-val">0</span>
-                <span class="mini-label">Registered Courses</span>
-            </div>
-        </div>
-
     </div>
 </div>
 
