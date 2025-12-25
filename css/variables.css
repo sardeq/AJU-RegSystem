@@ -1,7 +1,9 @@
 :root {
     /* --- COLOR PALETTE --- */
     --bg-body: transparent; 
-    --bg-card: rgba(10, 10, 10, 0.5);       /* Half-transparent cards */
+    --bg-card: rgba(10, 10, 10, 0.6); 
+    --glass-blur: blur(12px);
+    --card-border: 1px solid rgba(255, 255, 255, 0.08);
     --bg-card-hover: rgba(30, 30, 30, 0.7); 
     --bg-input: rgba(0, 0, 0, 0.4);
     

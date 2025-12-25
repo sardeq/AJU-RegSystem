@@ -1,9 +1,4 @@
-/* --- SCHEDULE GRID --- */
-.sch-modern-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 25px; background: rgba(255,255,255,0.02);
-    padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
-}
+
 
 .sch-modern-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
@@ -55,10 +50,7 @@
 .timeline-semester-block { margin-left: 50px; margin-bottom: 35px; position: relative; }
 .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; }
 
-.h-card {
-    background: #0a0a0a; border: 1px solid #222; border-radius: 12px;
-    padding: 15px; border-left: 4px solid #444;
-}
+
 .h-card.pass { border-left-color: var(--primary); }
 .h-card.fail { border-left-color: var(--accent-red); }
 
@@ -103,4 +95,34 @@ html[dir="rtl"] .h-card.fail { border-right-color: var(--accent-red); }
 /* Flip the Grade Pill (since it uses float) */
 html[dir="rtl"] .hc-grade {
     float: left;
+}
+
+
+.sch-card-modern, .h-card {
+    background: var(--bg-card) !important;
+    backdrop-filter: var(--glass-blur);
+    border: var(--card-border) !important;
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+}
+
+.sch-modern-header {
+    background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    border: var(--card-border);
+    margin: 10px;
+    border: var(--card-border) !important;
+    border-radius: var(--radius-lg);
+    padding: 10px;
+}
+
+/* History Timeline specific card refinement */
+.h-card {
+    border-left: 4px solid #444 !important; /* Keep the status indicator */
+    padding: 10px;
+}
+
+.h-card:hover {
+    transform: translateX(5px);
+    background: var(--bg-card-hover) !important;
 }
