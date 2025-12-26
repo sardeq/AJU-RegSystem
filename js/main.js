@@ -9,30 +9,28 @@ import { loadCoursesSheetData, setupSheetListeners } from './courses-sheet.js';
 import { loadExceptionHistory, setupExceptionListeners } from './exceptions.js'; 
 import { setupAIListeners } from './ai.js'; 
 import { loadAdminDashboard } from './admin-admissions.js';
-import { loadAdminExceptions, loadAdminUsers } from './admin-management.js';
+import { loadAdminExceptions, loadAdminUsers , loadAdminHome} from './admin-management.js';
 
 // --- Navigation Handler ---
 window.showSection = function(sectionName) {
     document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-    if (sectionName === 'admin-courses') {
-        import('./admin-management.js').then(m => m.loadAdminCourses());
-    }
-
+    if (sectionName === 'admin-home') loadAdminHome();
+    if (sectionName === 'admin-courses') import('./admin-management.js').then(m => m.loadAdminCourses());
     if (sectionName === 'admin-admissions') loadAdminDashboard();
     if (sectionName === 'admin-exceptions') loadAdminExceptions();
     if (sectionName === 'admin-users') loadAdminUsers();
 
-    if (sectionName === 'admin-exceptions') loadAdminExceptions();
-    if (sectionName === 'admin-users') loadAdminUsers();
+    const containerId = (sectionName === 'sheet' ? 'courses-sheet-container' : 
+                         sectionName === 'registration' ? 'registration-container' : 
+                         sectionName + '-container');
 
-    const container = document.getElementById(sectionName === 'sheet' ? 'courses-sheet-container' : 
-                                            sectionName === 'registration' ? 'registration-container' : 
-                                            sectionName + '-container');
+    const container = document.getElementById(containerId);
     if(container) container.classList.remove('hidden');
     
-    const navItem = document.getElementById('nav-' + sectionName);
+    const navId = sectionName === 'admin-home' ? 'nav-home' : 'nav-' + sectionName;
+    const navItem = document.getElementById(navId);
     if(navItem) navItem.classList.add('active');
 
     // MOBILE FIX: Close sidebar automatically when a link is clicked on mobile
@@ -144,6 +142,7 @@ supabase.auth.onAuthStateChange((event, session) => {
             }
         }
     });
+    
 async function checkUserRole(userId) {
     try {
         const { data: profile, error } = await supabase
@@ -152,27 +151,43 @@ async function checkUserRole(userId) {
             .eq('id', userId)
             .single();
 
-        if (error) throw error; // Catch that 500 error if it happens again
+        if (error) throw error;
 
-        // 1. Hide EVERYTHING first to reset
+        // Reset all views
         document.querySelectorAll('.admin-only, .student-only, #nav-admin-admissions').forEach(el => el.classList.add('hidden'));
 
-        // 2. Show based on Role
-        if (profile.role === 'admin') {
+        // Logic split
+        if (profile.role === 'admin' || profile.role === 'admission-admin') {
+            
+            // 1. Show Admin Nav Items
             document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-            // Optionally default to an admin view
-            // showSection('admin-users'); 
-        } 
-        else if (profile.role === 'admission-admin') {
-            const admNav = document.getElementById('nav-admin-admissions');
-            if(admNav) admNav.classList.remove('hidden');
-            // Optionally default to admissions view
-            // showSection('admin-admissions'); 
-        } 
-        else {
-            // Default to Student
+            if (profile.role === 'admission-admin') {
+                 document.getElementById('nav-admin-admissions')?.classList.remove('hidden');
+            }
+
+            // 2. Hijack "Home" Button
+            // We change the onclick attribute of the Home link to point to admin-home
+            const homeLink = document.querySelector('#nav-home .nav-link');
+            if(homeLink) {
+                homeLink.setAttribute('onclick', "showSection('admin-home')");
+                // Also change the icon text if you want, e.g. "Admin Home"
+                homeLink.querySelector('span[data-i18n="nav_home"]').textContent = "Dashboard";
+            }
+            
+            // 3. Show Admin Home immediately
+            showSection('admin-home');
+
+        } else {
+            // Student Role
             document.querySelectorAll('.student-only').forEach(el => el.classList.remove('hidden'));
+            
+            // Ensure Home button points to student home
+            const homeLink = document.querySelector('#nav-home .nav-link');
+            if(homeLink) homeLink.setAttribute('onclick', "showSection('home')");
+            
+            showSection('home');
         }
+
     } catch (err) {
         console.error("Role check failed:", err);
     }

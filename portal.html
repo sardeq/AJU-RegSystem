@@ -450,6 +450,70 @@
 </div>
 </div>
 
+<div id="admin-home-container" class="dashboard-view hidden">
+    <div class="home-header-row">
+        <div class="welcome-text">
+            <h1>Admin Dashboard 🛡️</h1>
+            <p>System Overview & Quick Actions</p>
+        </div>
+        <div class="header-right">
+            <span class="badge badge-gray" id="admin-date-display">--</span>
+        </div>
+    </div>
+
+    <div class="sheet-stats-row">
+        <div class="sheet-stat-card green-glow" onclick="showSection('admin-admissions')" style="cursor:pointer;">
+            <div class="ss-icon">📥</div>
+            <div class="ss-info">
+                <span class="ss-label">Pending Admissions</span>
+                <span class="ss-value" id="ah-stat-admissions">0</span>
+            </div>
+        </div>
+        <div class="sheet-stat-card yellow-glow" onclick="showSection('admin-exceptions')" style="cursor:pointer; border-bottom: 2px solid var(--accent-orange);">
+            <div class="ss-icon">⚡</div>
+            <div class="ss-info">
+                <span class="ss-label">Pending Exceptions</span>
+                <span class="ss-value" id="ah-stat-exceptions">0</span>
+            </div>
+        </div>
+        <div class="sheet-stat-card blue-glow" onclick="showSection('admin-users')" style="cursor:pointer;">
+            <div class="ss-icon">👥</div>
+            <div class="ss-info">
+                <span class="ss-label">Total Users</span>
+                <span class="ss-value" id="ah-stat-users">0</span>
+            </div>
+        </div>
+        <div class="sheet-stat-card purple-glow" onclick="showSection('admin-courses')" style="cursor:pointer;">
+            <div class="ss-icon">📚</div>
+            <div class="ss-info">
+                <span class="ss-label">Open Sections</span>
+                <span class="ss-value" id="ah-stat-sections">0</span>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="section-title-sm" style="margin-top:30px; color:#888;">Quick Management</h3>
+    <div class="box-grid-3">
+        <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-admissions')">
+            <div class="ss-icon" style="background:var(--primary); color:black; margin-bottom:10px;">🛡️</div>
+            <h3>Review Applications</h3>
+            <p style="color:#888; font-size:0.9rem;">Process new student enrollments</p>
+        </div>
+
+        <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-courses')">
+            <div class="ss-icon" style="background:white; color:black; margin-bottom:10px;">✏️</div>
+            <h3>Manage Courses</h3>
+            <p style="color:#888; font-size:0.9rem;">Open/Close sections and edit details</p>
+        </div>
+
+        <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-users')">
+            <div class="ss-icon" style="background:var(--accent-blue); color:white; margin-bottom:10px;">👥</div>
+            <h3>User Directory</h3>
+            <p style="color:#888; font-size:0.9rem;">Edit roles, GPA, and student data</p>
+        </div>
+    </div>
+</div>
+
 <div id="registration-container" class="dashboard-view hidden">
     
     <div class="reg-controls-bar">

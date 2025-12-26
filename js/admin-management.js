@@ -249,7 +249,23 @@ window.saveSectionChanges = async () => {
     }
 };
 
-// ================= EXCEPTION MANAGEMENT (Existing) =================
+export async function loadAdminHome() {
+    // Set date
+    document.getElementById('admin-date-display').textContent = new Date().toLocaleDateString();
+
+    // Fetch stats in parallel for speed
+    const [adm, exc, usrs, secs] = await Promise.all([
+        supabase.from('admissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('exception_requests').select('request_id', { count: 'exact', head: true }).eq('status', 'PENDING'),
+        supabase.from('users').select('id', { count: 'exact', head: true }),
+        supabase.from('sections').select('section_id', { count: 'exact', head: true }).eq('status', 'OPEN')
+    ]);
+
+    document.getElementById('ah-stat-admissions').textContent = adm.count || 0;
+    document.getElementById('ah-stat-exceptions').textContent = exc.count || 0;
+    document.getElementById('ah-stat-users').textContent = usrs.count || 0;
+    document.getElementById('ah-stat-sections').textContent = secs.count || 0;
+}
 
 export async function loadAdminExceptions() {
     const list = document.getElementById('admin-exceptions-list');
@@ -257,10 +273,17 @@ export async function loadAdminExceptions() {
 
     const { data, error } = await supabase
         .from('exception_requests')
-        .select('*, user:users(full_name, gpa)') 
+        .select(`
+            *,
+            user:users!user_id (
+                full_name,
+                gpa
+            )
+        `)
         .eq('status', 'PENDING');
 
     if (error) {
+        console.error("Exceptions Load Error:", error);
         list.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
         return;
     }
@@ -269,6 +292,10 @@ export async function loadAdminExceptions() {
     document.getElementById('pending-exc-count').textContent = data.length;
 
     data.forEach(req => {
+        // Safe check for user object
+        const userName = req.user ? req.user.full_name : 'Unknown User';
+        const userGpa = req.user ? req.user.gpa : 'N/A';
+
         const card = document.createElement('div');
         card.className = 'adm-card status-pending'; 
         card.innerHTML = `
@@ -277,8 +304,8 @@ export async function loadAdminExceptions() {
                 <span class="adm-date">${req.course_code}</span>
             </div>
             <div class="rc-body">
-                <h3 class="adm-name">${req.user?.full_name || 'Unknown Student'}</h3>
-                <p style="font-size:0.85rem; color:var(--primary);">GPA: ${req.user?.gpa || 'N/A'}</p>
+                <h3 class="adm-name">${userName}</h3>
+                <p style="font-size:0.85rem; color:var(--primary);">GPA: ${userGpa}</p>
                 <p class="rc-desc" style="margin: 10px 0; font-style: italic; color:#bbb;">"${req.reason}"</p>
                 <textarea id="resp-${req.request_id}" placeholder="Reason for decision..." class="modern-textarea" style="margin-bottom:10px;"></textarea>
             </div>
@@ -290,7 +317,6 @@ export async function loadAdminExceptions() {
         list.appendChild(card);
     });
 }
-
 window.handleDecision = async function(requestId, decision) {
     const response = document.getElementById(`resp-${requestId}`).value;
     
