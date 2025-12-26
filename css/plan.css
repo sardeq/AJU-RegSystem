@@ -5,13 +5,20 @@
     width: 100%;
     height: 85vh;
     overflow: hidden;
-    /* 1. Deep Void Base */
-    background-color: #020202; 
+    
+    /* 1. Base Layer: Deep Void Green-Black */
+    background-color: #010502; 
+    
+    background-size: 50px 50px;
+    
     cursor: grab;
     border-radius: 20px;
+    
+    /* Inner shadow to give depth to the container */
     box-shadow: 
-        inset 0 0 50px rgba(0,0,0,1),
+        inset 0 0 80px rgba(0,0,0,1),
         0 0 0 1px rgba(255, 255, 255, 0.05);
+        
     user-select: none;
     touch-action: none;
 }
@@ -19,51 +26,77 @@
 /* The Animated Mesh Layer */
 .tree-background-ambient {
     position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     z-index: 0;
     pointer-events: none;
-    
-    /* Complex Gradient using Theme Colors */
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(88, 166, 255, 0.1) 0px, transparent 50%),
-        radial-gradient(at 98% 1%, rgba(163, 113, 247, 0.15) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(0, 0, 0, 0) 0px, transparent 50%),
-        radial-gradient(at 4% 96%, rgba(0, 230, 118, 0.1) 0px, transparent 50%),
-        radial-gradient(at 96% 96%, rgba(41, 121, 255, 0.15) 0px, transparent 50%);
-        
-    /* Heavy Blur to merge them into a smooth gradient */
-    filter: blur(80px);
-    opacity: 0.8;
-    
-    /* Slow rotation for living effect */
-    animation: aurora-shift 60s linear infinite;
+    overflow: hidden;
 }
 
 #tree-wrapper:active { cursor: grabbing; }
 
 
 .blob {
+    display: block !important; /* Force visible */
     position: absolute;
-    width: 600px;
-    height: 600px;
-    filter: blur(80px);
     border-radius: 50%;
-    opacity: 0.15;
-    animation: drift 20s infinite alternate ease-in-out;
+    filter: blur(80px); /* Heavy blur for "nebula" effect */
+    opacity: 0.4;
+    z-index: 0;
+    will-change: transform;
 }
 
-.blob, .blob-1, .blob-2, .blob-3 {
-    display: none;
+/* Blob 1: The Primary Green Glow */
+.blob-1 {
+    top: 10%; left: 10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0, 230, 118, 0.4) 0%, rgba(0,0,0,0) 70%);
+    animation: float-1 25s infinite alternate ease-in-out;
+}
+
+/* Blob 2: Deep Teal/Blue for Depth/Contrast */
+.blob-2 {
+    bottom: 20%; right: 10%;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0, 100, 80, 0.5) 0%, rgba(0,0,0,0) 70%);
+    animation: float-2 30s infinite alternate-reverse ease-in-out;
+}
+
+/* Blob 3: Bright Accent (Toxic Green) */
+.blob-3 {
+    top: 40%; left: 40%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(100, 255, 100, 0.2) 0%, rgba(0,0,0,0) 70%);
+    animation: float-3 20s infinite linear;
 }
 
 .tree-grid-overlay {
     display: none; 
 }
 
+@keyframes float-1 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(100px, 50px) scale(1.1); }
+}
+
+@keyframes float-2 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-80px, -40px) scale(0.9); }
+}
+
+@keyframes float-3 {
+    0% { transform: rotate(0deg) translate(50px) rotate(0deg); }
+    100% { transform: rotate(360deg) translate(50px) rotate(-360deg); }
+}
+
 @keyframes drift {
     from { transform: translate(0, 0) scale(1); }
     to { transform: translate(100px, 50px) scale(1.1); }
+}
+
+.is-interacting .blob {
+    opacity: 0.2; /* Dim background when dragging/zooming for performance */
+    transition: opacity 0.3s ease;
 }
 
 @keyframes aurora-shift {
