@@ -48,6 +48,29 @@
             </div>
 
             <ul class="nav-links">
+
+                <li class="nav-item hidden admin-only" id="nav-admin-exceptions">
+                    <a href="#" class="nav-link" onclick="showSection('admin-exceptions')">
+                        <span class="nav-icon">⚖️</span> 
+                        <span data-i18n="nav_admin_exceptions">Prereq Requests</span>
+                    </a>
+                </li>
+                <li class="nav-item hidden admin-only" id="nav-admin-users">
+                    <a href="#" class="nav-link" onclick="showSection('admin-users')">
+                        <span class="nav-icon">👥</span> 
+                        <span data-i18n="nav_admin_users">Manage Users</span>
+                    </a>
+                </li>
+
+                <li class="nav-item hidden admin-only" id="nav-admin-courses">
+    <a href="#" class="nav-link" onclick="showSection('admin-courses')">
+        <span class="nav-icon">📚</span> 
+        <span data-i18n="nav_admin_courses">Course Mgmt</span>
+    </a>
+</li>
+
+               
+
                 <li class="nav-item hidden" id="nav-admin-admissions">
                     <a href="#" class="nav-link" onclick="showSection('admin-admissions')">
                         <span class="nav-icon">🛡️</span> 
@@ -133,6 +156,45 @@
                     <a href="#" id="toggle-auth-mode" style="color: #4CAF50; text-decoration: none; font-weight: bold;" data-i18n="btn_signup">Sign Up</a>
                 </p>
             </div>
+
+             <div id="admin-exceptions-container" class="dashboard-view hidden">
+                    <div class="sch-modern-header">
+                        <h2 class="section-title">Prerequisite & Exception Overrides</h2>
+                        <div class="header-stats-pill"><span id="pending-exc-count">0</span> Pending</div>
+                    </div>
+                    <div id="admin-exceptions-list" class="admin-grid">
+                        </div>
+                </div>
+
+                <div id="admin-users-container" class="dashboard-view hidden">
+                    <div class="sch-modern-header">
+                        <h2 class="section-title">User Management</h2>
+                    </div>
+                    <div class="reg-controls-bar">
+                        <input type="text" id="user-search" placeholder="Search by name or Student ID..." class="modern-input">
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>GPA</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="admin-courses-container" class="dashboard-view hidden">
+    <div class="sch-modern-header">
+        <h2 class="section-title">Academic Sections Management</h2>
+        <button class="accept-btn" style="padding: 10px 20px;">+ Create New Section</button>
+    </div>
+    <div id="admin-courses-grid" class="reg-grid"></div>
+</div>
 
             <div id="admin-admissions-container" class="dashboard-view hidden">
                 <div class="sch-modern-header">
