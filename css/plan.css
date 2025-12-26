@@ -258,9 +258,9 @@
     position: absolute;
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    padding-left: 40px;
-    border-left: 2px dashed rgba(88, 166, 255, 0.3); /* Data Bus Line */
+    gap: 15px; /* Tighter gap for the new location */
+    padding-left: 0; /* Remove padding */
+    border-left: none; /* Remove the Data Bus Line */
     z-index: 10;
 }
 
@@ -276,6 +276,42 @@
     border-radius: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+.milestone-container {
+    position: absolute;
+    width: 600px;
+    height: 100px;
+    z-index: 10;
+}
+
+.milestone-card {
+    border: 1px solid rgba(241, 196, 15, 0.2) !important;
+    background: rgba(22, 27, 34, 0.9) !important;
+    width: 220px !important; /* Slightly wider for long titles */
+}
+
+.milestone-card.open {
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.1);
+}
+
+.milestone-card.locked {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.milestone-card .nc-name {
+    color: #f1c40f; /* Golden/Yellow for milestones */
+}
+
+/* Ensure the SVG connection is visible */
+.milestone-container svg line {
+    transition: stroke 0.3s;
+}
+
+.milestone-container:hover svg line {
+    stroke: #f1c40f;
+    stroke-dasharray: none;
 }
 
 /* The Holographic Stack Card */

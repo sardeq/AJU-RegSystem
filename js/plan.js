@@ -40,6 +40,14 @@ const ELECTIVE_GROUPS = [
         cssClass: 'stack-major'
     },
     { 
+        id: 'elec_free', 
+        name: 'Free Electives', 
+        category: 'Free Elective', 
+        count: '3 Cr', 
+        icon: '🛠️',
+        cssClass: 'stack-free'
+    },
+    { 
         id: 'elec_uni', 
         name: 'Uni Electives', 
         category: 'University Elective', 
@@ -105,7 +113,14 @@ export async function loadStudentPlan(userId) {
 
         renderOrthogonalConnections(layoutData.edges, layoutData.nodes);
         renderNodes(layoutData.nodes, passed, registered);
-        renderElectives(canvas, layoutData.width + 50); 
+        const rightMostX = Math.max(...layoutData.nodes.map(n => n.left));
+        renderElectives(canvas, rightMostX - 150, 580);
+
+        const totalPassedCredits = state.allCoursesData
+            .filter(c => passed.has(c.course_code))
+            .reduce((sum, c) => sum + (c.credit_hours || 0), 0);
+
+        renderSpecialMilestones(canvas, rightMostX - 300, 1050, totalPassedCredits);
 
         // 5. Center View
         centerView(wrapper, layoutData.width);
@@ -120,7 +135,56 @@ export async function loadStudentPlan(userId) {
     }
 }
 
-// --- OPTIMIZED ZOOM & PAN LOGIC ---
+function renderSpecialMilestones(canvas, x, y, currentCredits) {
+    const milestones = [
+        { 
+            id: 'TRAINING', 
+            name: 'On Site Training', 
+            req: 90, 
+            icon: '🏢' 
+        },
+        { 
+            id: 'GRAD_PROJ', 
+            name: 'Graduation Project', 
+            req: 110, 
+            icon: '🎓' 
+        }
+    ];
+
+    const container = document.createElement('div');
+    container.className = 'milestone-container';
+    container.style.left = `${x}px`;
+    container.style.top = `${y}px`;
+
+    // SVG for the horizontal connection
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("style", "position:absolute; width:100%; height:100%; pointer-events:none;");
+    svg.innerHTML = `<line x1="210" y1="40" x2="270" y2="40" stroke="#30363d" stroke-width="2" stroke-dasharray="4" />`;
+    container.appendChild(svg);
+
+    milestones.forEach((m, index) => {
+        const isMet = currentCredits >= m.req;
+        const card = document.createElement('div');
+        card.className = `node-card milestone-card ${isMet ? 'open' : 'locked'}`;
+        card.style.position = 'absolute';
+        card.style.left = `${index * 270}px`; // Horizontal spacing
+        card.style.top = '0px';
+
+        card.innerHTML = `
+            <div class="nc-status-bar" style="background: ${isMet ? '#f1c40f' : '#30363d'}"></div>
+            <div class="nc-content">
+                <div class="nc-name">${m.name}</div>
+                <div class="nc-code" style="color:var(--accent-orange)">Req: ${m.req} Credits</div>
+            </div>
+            <div class="nc-icon-wrapper">
+                <span class="nc-icon">${isMet ? m.icon : '🔒'}</span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    canvas.appendChild(container);
+}
 
 function startRenderLoop() {
     const canvas = document.getElementById('plan-tree-canvas');
@@ -418,13 +482,13 @@ function renderOrthogonalConnections(edges, nodes) {
     container.appendChild(svg);
 }
 
-function renderElectives(canvas, startX) {
+function renderElectives(canvas, startX, startY = 100) {
     const zone = document.createElement('div');
     zone.className = 'elective-zone';
     
     // Position it relative to the tree width (startX)
-    zone.style.left = `${startX + 40}px`; 
-    zone.style.top = '100px'; 
+    zone.style.left = `${startX}px`; 
+    zone.style.top = `${startY}px`;
     
     const label = document.createElement('div');
     label.className = 'zone-label';
