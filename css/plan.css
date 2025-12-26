@@ -5,19 +5,73 @@
     width: 100%;
     height: 85vh;
     overflow: hidden;
-    background-color: #0d1117; 
-    background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+    background-color: #05070a; /* Deeper black for better contrast */
     cursor: grab;
-    border-radius: 12px;
-    box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+    border-radius: 20px;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
     user-select: none;
     touch-action: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* The Animated Mesh Layer */
+.tree-background-ambient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 #tree-wrapper:active { cursor: grabbing; }
+
+
+.blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    filter: blur(80px);
+    border-radius: 50%;
+    opacity: 0.15;
+    animation: drift 20s infinite alternate ease-in-out;
+}
+
+.blob-1 {
+    background: radial-gradient(circle, #58a6ff, transparent 70%);
+    top: -10%; left: -10%;
+}
+
+.blob-2 {
+    background: radial-gradient(circle, #a371f7, transparent 70%);
+    bottom: -10%; right: -10%;
+    animation-delay: -5s;
+    animation-duration: 25s;
+}
+
+.blob-3 {
+    background: radial-gradient(circle, #00e676, transparent 70%);
+    top: 40%; left: 30%;
+    width: 400px; height: 400px;
+    opacity: 0.1;
+    animation-duration: 30s;
+}
+
+.tree-grid-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-image: 
+        linear-gradient(rgba(88, 166, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88, 166, 255, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+    pointer-events: none;
+}
+
+@keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(100px, 50px) scale(1.1); }
+}
 
 
 .is-interacting .node-card,
@@ -39,6 +93,7 @@
     transform-origin: 0 0;
     will-change: transform;
     transform: translateZ(0); 
+    z-index: 2;
 }
 
 /* --- Connectors --- */
@@ -92,10 +147,9 @@
 .node-card {
     position: absolute;
     width: 200px; height: 75px;
-    /* Reduced transparency slightly for performance */
-    background: #161b22; 
+    background: rgba(22, 27, 34, 0.7);
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 10; cursor: pointer;
     
     /* FAST transitions only */
@@ -106,6 +160,14 @@
     
     /* Hardware acceleration for individual nodes */
     transform: translateZ(0);
+}
+
+.node-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    pointer-events: none;
 }
 
 .node-card:hover {
