@@ -39,7 +39,10 @@ export async function loadExceptionHistory(userId) {
                         <span class="exc-code-badge">${req.course_code}</span>
                         <span style="color:#666; font-size:0.85rem;">${date}</span>
                     </div>
-                    <span class="exc-status-badge">${req.status}</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="exc-status-badge">${req.status}</span>
+                        <button class="exc-delete-btn" onclick="deleteException('${req.request_id}')" title="Delete Request">×</button>
+                    </div>
                 </div>
                 <div class="exc-details-row">
                     <span style="display:flex; align-items:center; gap:6px;">${icon} ${typeLabel}</span>
@@ -54,7 +57,25 @@ export async function loadExceptionHistory(userId) {
     }
 }
 
-// --- FIX 3: SEARCH LOGIC RESTORED ---
+// New Delete Function
+window.deleteException = async function(requestId) {
+    if (!confirm("Are you sure you want to delete this request? This action cannot be undone.")) return;
+
+    try {
+        const { error } = await supabase
+            .from('exception_requests')
+            .delete()
+            .eq('request_id', requestId);
+
+        if (error) throw error;
+
+        if (state.currentUser) {
+            loadExceptionHistory(state.currentUser.id);
+        }
+    } catch (err) {
+        alert("Error deleting request: " + err.message);
+    }
+};
 
 // 1. Fetch data if missing
 async function fetchAllCoursesForSearch() {
