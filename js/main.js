@@ -146,30 +146,31 @@ supabase.auth.onAuthStateChange((event, session) => {
     });
 async function checkUserRole(userId) {
     try {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
             .from('users')
             .select('role')
             .eq('id', userId)
             .single();
 
-        if (!profile) return;
+        if (error) throw error; // Catch that 500 error if it happens again
 
-        // Reset visibility
+        // 1. Hide EVERYTHING first to reset
         document.querySelectorAll('.admin-only, .student-only, #nav-admin-admissions').forEach(el => el.classList.add('hidden'));
 
+        // 2. Show based on Role
         if (profile.role === 'admin') {
-            // System Admin: Overrides, Users, Courses
             document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-            showSection('admin-exceptions');
+            // Optionally default to an admin view
+            // showSection('admin-users'); 
         } 
         else if (profile.role === 'admission-admin') {
-            // Admission Admin: Only New Applications
             const admNav = document.getElementById('nav-admin-admissions');
             if(admNav) admNav.classList.remove('hidden');
-            showSection('admin-admissions');
+            // Optionally default to admissions view
+            // showSection('admin-admissions'); 
         } 
         else {
-            // Regular Student
+            // Default to Student
             document.querySelectorAll('.student-only').forEach(el => el.classList.remove('hidden'));
         }
     } catch (err) {
@@ -177,10 +178,6 @@ async function checkUserRole(userId) {
     }
 }
 
-// Update showSection to handle the new loader
-if (sectionName === 'admin-courses') {
-    import('./admin-management.js').then(m => m.loadAdminCourses());
-}
 
     document.body.addEventListener('click', (e) => {
         if (e.target.closest('#sidebar-logout-btn')) {

@@ -167,33 +167,116 @@
                 </div>
 
                 <div id="admin-users-container" class="dashboard-view hidden">
-                    <div class="sch-modern-header">
-                        <h2 class="section-title">User Management</h2>
-                    </div>
-                    <div class="reg-controls-bar">
-                        <input type="text" id="user-search" placeholder="Search by name or Student ID..." class="modern-input">
-                    </div>
-                    <div class="table-container">
-                        <table class="modern-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Role</th>
-                                    <th>GPA</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-users-table"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div id="admin-courses-container" class="dashboard-view hidden">
     <div class="sch-modern-header">
-        <h2 class="section-title">Academic Sections Management</h2>
-        <button class="accept-btn" style="padding: 10px 20px;">+ Create New Section</button>
+        <h2 class="section-title">User Management</h2>
+        <div class="header-stats-pill"><span id="total-users-count">0</span> Users</div>
     </div>
+    
+    <div class="reg-controls-bar">
+        <div class="filter-pills">
+            <button class="filter-pill active" onclick="filterUsers('all')">All</button>
+            <button class="filter-pill" onclick="filterUsers('student')">Students</button>
+            <button class="filter-pill" onclick="filterUsers('admin')">Admins</button>
+            <button class="filter-pill" onclick="filterUsers('instructor')">Instructors</button>
+        </div>
+        <div class="reg-search-group">
+            <input type="text" id="user-search-input" placeholder="Search name or ID..." class="modern-input" onkeyup="searchUsers()">
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th>Name / ID</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>GPA</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="admin-users-table"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="admin-courses-container" class="dashboard-view hidden">
+    <div class="sch-modern-header">
+        <h2 class="section-title">Academic Sections</h2>
+        <button class="accept-btn" onclick="openSectionModal()">+ Create New Section</button>
+    </div>
+
+    <div class="reg-controls-bar">
+        <div class="filter-pills">
+            <button class="filter-pill active" onclick="filterSections('all')">All</button>
+            <button class="filter-pill" onclick="filterSections('OPEN')">Open</button>
+            <button class="filter-pill" onclick="filterSections('CLOSED')">Closed</button>
+        </div>
+        <div class="reg-search-group">
+            <input type="text" id="section-search-input" placeholder="Search course code..." class="modern-input" onkeyup="searchSections()">
+        </div>
+    </div>
+
     <div id="admin-courses-grid" class="reg-grid"></div>
+</div>
+
+<div id="edit-user-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 400px;">
+        <h3>Edit User</h3>
+        <input type="hidden" id="edit-user-id">
+        
+        <label class="form-label-modern">Full Name</label>
+        <input type="text" id="edit-user-name" class="modern-input">
+        
+        <label class="form-label-modern">Role</label>
+        <select id="edit-user-role" class="modern-input">
+            <option value="student">Student</option>
+            <option value="admin">Admin</option>
+            <option value="admission-admin">Admission Admin</option>
+            <option value="instructor">Instructor</option>
+        </select>
+
+        <label class="form-label-modern">GPA</label>
+        <input type="number" id="edit-user-gpa" class="modern-input" step="0.01">
+
+        <div class="box-grid-2" style="margin-top:20px;">
+            <button onclick="closeEditUserModal()" class="delete-btn">Cancel</button>
+            <button onclick="saveUserChanges()" class="accept-btn">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<div id="edit-section-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+        <h3 id="sec-modal-title">Edit Section</h3>
+        <input type="hidden" id="edit-sec-id"> <label class="form-label-modern">Course Code</label>
+        <input type="text" id="edit-sec-code" class="modern-input" placeholder="e.g. 311330">
+
+        <div class="box-grid-2">
+            <div>
+                <label class="form-label-modern">Section No.</label>
+                <input type="number" id="edit-sec-num" class="modern-input">
+            </div>
+            <div>
+                 <label class="form-label-modern">Capacity</label>
+                 <input type="number" id="edit-sec-cap" class="modern-input">
+            </div>
+        </div>
+
+        <label class="form-label-modern">Schedule Text</label>
+        <input type="text" id="edit-sec-sch" class="modern-input" placeholder="e.g. Mon/Wed 09:30-11:00">
+
+        <label class="form-label-modern">Room</label>
+        <input type="text" id="edit-sec-room" class="modern-input">
+        
+        <label class="form-label-modern">Instructor</label>
+        <input type="text" id="edit-sec-instr" class="modern-input">
+
+        <div class="box-grid-2" style="margin-top:20px;">
+            <button onclick="closeSectionModal()" class="delete-btn">Cancel</button>
+            <button onclick="saveSectionChanges()" class="accept-btn">Save Section</button>
+        </div>
+    </div>
 </div>
 
             <div id="admin-admissions-container" class="dashboard-view hidden">
