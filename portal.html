@@ -381,9 +381,31 @@
 
 <div id="home-container" class="dashboard-view hidden">
     <div class="home-header-row">
-        <div class="welcome-text">
-            <h1>Welcome back, <span id="home-user-name">Student</span>! 👋</h1>
-            <p>Academic Year 2025/2026 • Fall Semester</p>
+        <div class="user-header-card">
+            <div class="uhc-avatar-container">
+                <img src="https://ui-avatars.com/api/?name=Student&background=00E676&color=000" id="header-avatar-img" alt="Profile" class="uhc-avatar">
+            </div>
+            
+            <div class="uhc-info-block">
+                <h1 id="header-student-name" class="uhc-name">Loading Student...</h1>
+                
+                <div class="uhc-meta-badges">
+                    <div class="uhc-badge">
+                        <span class="uhc-icon">🆔</span>
+                        <span id="header-student-id">--</span>
+                    </div>
+
+                    <div class="uhc-badge">
+                        <span class="uhc-icon">🎓</span>
+                        <span id="header-student-major">--</span>
+                    </div>
+
+                    <div class="uhc-badge">
+                        <span class="uhc-icon">📜</span>
+                        <span id="header-student-degree">--</span>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="alerts-container">

@@ -8,9 +8,23 @@ export async function loadDashboardData(userId) {
             .from('users').select('*').eq('id', userId).single();
 
         if (profile) {
-            // Update Home Greeting
-            const homeName = document.getElementById('home-user-name');
-            if(homeName) homeName.textContent = profile.full_name || "Student";
+
+            const hName = document.getElementById('header-student-name');
+            const hId = document.getElementById('header-student-id');
+            const hMajor = document.getElementById('header-student-major');
+            const hDegree = document.getElementById('header-student-degree');
+            const hImg = document.getElementById('header-avatar-img');
+
+            if(hName) hName.textContent = profile.full_name || "Student";
+
+            if(hId) hId.textContent = profile.id ? `ID: ${profile.id.substring(0, 8)}...` : "--";
+
+            if(hMajor) hMajor.textContent = profile.major || "Major Not Set";
+            if(hDegree) hDegree.textContent = profile.degree || "Degree Not Set";
+
+            if(hImg && profile.full_name) {
+                hImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=00E676&color=000&size=128`;
+            }
             
             // FIX: Update Sidebar Name as well
             const sideName = document.getElementById('sidebar-user-name');

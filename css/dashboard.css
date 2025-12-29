@@ -273,3 +273,106 @@ html[dir="rtl"] .bcc-time-pill { right: auto; left: 12px; }
         grid-column: span 1;
     }
 }
+
+
+/* --- New User Header Card Styling --- */
+.user-header-card {
+    background: var(--bg-card); /* Matches your other widgets */
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    flex: 1; /* Takes remaining width in the row */
+    min-height: 120px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle background glow effect */
+.user-header-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -10%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0, 230, 118, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.uhc-avatar-container {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.uhc-avatar {
+    width: 75px;
+    height: 75px;
+    border-radius: 20px; /* Squircle shape matching your modern theme */
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    object-fit: cover;
+    background: #222;
+}
+
+.uhc-info-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.uhc-name {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.1;
+}
+
+.uhc-meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.uhc-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: #ccc;
+    font-family: 'Cairo', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.uhc-badge:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.uhc-icon {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .user-header-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    .uhc-meta-badges {
+        justify-content: center;
+    }
+}
