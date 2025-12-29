@@ -6,6 +6,10 @@ let allSections = [];
 let currentUserFilter = 'all';
 let currentSectionFilter = 'all';
 
+let currentExceptionReqId = null;
+let currentExceptionUserId = null;
+let selectedSectionId = null;
+
 // ================= USER MANAGEMENT =================
 
 export async function loadAdminUsers() {
@@ -292,8 +296,9 @@ export async function loadAdminExceptions() {
     document.getElementById('pending-exc-count').textContent = data.length;
 
     data.forEach(req => {
-        // Safe check for user object
         const userName = req.user ? req.user.full_name : 'Unknown User';
+        const userId = req.user_id; // Get ID
+        const courseCode = req.course_code; // Get Course Code
         const userGpa = req.user ? req.user.gpa : 'N/A';
 
         const card = document.createElement('div');
@@ -310,27 +315,164 @@ export async function loadAdminExceptions() {
                 <textarea id="resp-${req.request_id}" placeholder="Reason for decision..." class="modern-textarea" style="margin-bottom:10px;"></textarea>
             </div>
             <div class="box-grid-2">
-                <button onclick="handleDecision(${req.request_id}, 'REJECTED')" class="delete-btn">Reject</button>
-                <button onclick="handleDecision(${req.request_id}, 'APPROVED')" class="accept-btn">Approve</button>
+                <button onclick="handleDecision(${req.request_id}, 'REJECTED', '${userId}', '${courseCode}', '${userName}')" class="delete-btn">Reject</button>
+                <button onclick="handleDecision(${req.request_id}, 'APPROVED', '${userId}', '${courseCode}', '${userName}')" class="accept-btn">Approve & Enroll</button>
             </div>
         `;
         list.appendChild(card);
     });
 }
-window.handleDecision = async function(requestId, decision) {
-    const response = document.getElementById(`resp-${requestId}`).value;
-    
-    const { error } = await supabase
-        .from('exception_requests')
-        .update({ 
-            status: decision, 
-            admin_response: response,
-        })
-        .eq('request_id', requestId);
+window.handleDecision = async function(requestId, decision, userId, courseCode, studentName) {
+    // 1. If REJECTED, process immediately as before
+    if (decision === 'REJECTED') {
+        const response = document.getElementById(`resp-${requestId}`)?.value || "Request rejected.";
+        
+        if(!confirm("Reject this request?")) return;
 
-    if (error) alert("Error: " + error.message);
-    else {
-        alert(`Request ${decision.toLowerCase()}!`);
-        loadAdminExceptions();
+        const { error } = await supabase
+            .from('exception_requests')
+            .update({ status: 'REJECTED', admin_response: response })
+            .eq('request_id', requestId);
+
+        if (error) alert("Error: " + error.message);
+        else {
+            loadAdminExceptions();
+        }
+        return;
+    }
+
+    // 2. If APPROVED, Open the Enrollment Modal
+    if (decision === 'APPROVED') {
+        currentExceptionReqId = requestId;
+        currentExceptionUserId = userId;
+        const responseVal = document.getElementById(`resp-${requestId}`)?.value;
+        if(responseVal) document.getElementById('adm-enroll-response').value = responseVal;
+        
+        // Update UI Text
+        document.getElementById('adm-enroll-student-name').textContent = studentName || 'Student';
+        
+        // Load Sections for this course
+        openAdminEnrollModal(courseCode);
+    }
+};
+
+async function openAdminEnrollModal(courseCode) {
+    const modal = document.getElementById('admin-enroll-modal');
+    const tbody = document.getElementById('admin-enroll-table-body');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner"></div></td></tr>';
+    
+    modal.classList.remove('hidden');
+
+    try {
+        // Fetch active sections for this course
+        const { data: sections, error } = await supabase
+            .from('sections')
+            .select('*')
+            .eq('course_code', courseCode)
+            .eq('status', 'OPEN'); // Optional: Remove this if admin can override CLOSED sections
+
+        if (error) throw error;
+
+        tbody.innerHTML = '';
+        
+        if (!sections || sections.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px;">No open sections found for this course.</td></tr>';
+            return;
+        }
+
+        sections.forEach(sec => {
+            const tr = document.createElement('tr');
+            const isFull = (sec.enrolled_count || 0) >= (sec.capacity || 0);
+            const rowStyle = isFull ? 'color: #aaa;' : '';
+            
+            tr.innerHTML = `
+                <td style="${rowStyle}"><strong>${sec.section_number}</strong></td>
+                <td style="${rowStyle} font-size:0.85rem;">${sec.schedule_text || 'TBA'}</td>
+                <td style="${rowStyle}">${sec.instructor_name || 'Staff'}</td>
+                <td style="${rowStyle}">
+                    ${sec.enrolled_count}/${sec.capacity}
+                    ${isFull ? '<span class="badge badge-red" style="margin-left:5px">Full</span>' : ''}
+                </td>
+                <td>
+                    <label class="radio-card" style="padding: 5px; min-height:auto; border:none; background:transparent;">
+                        <input type="radio" name="admin-sec-select" value="${sec.section_id}" onchange="selectAdminSection(${sec.section_id})">
+                        <span class="emoji" style="font-size:1.2rem; margin:0;">🔘</span>
+                    </label>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="5" style="color:red">Error loading sections</td></tr>`;
+    }
+}
+
+window.selectAdminSection = (id) => {
+    selectedSectionId = id;
+};
+
+window.closeAdminEnrollModal = () => {
+    document.getElementById('admin-enroll-modal').classList.add('hidden');
+    selectedSectionId = null;
+    currentExceptionReqId = null;
+    currentExceptionUserId = null;
+};
+
+window.confirmAdminEnrollment = async () => {
+    if (!selectedSectionId) {
+        alert("Please select a section to enroll the student.");
+        return;
+    }
+
+    const adminResponse = document.getElementById('adm-enroll-response').value || "Approved.";
+    const btn = document.querySelector('#admin-enroll-modal .accept-btn');
+    const originalText = btn.textContent;
+    btn.textContent = "Processing...";
+    btn.disabled = true;
+
+    try {
+        // 1. Insert Enrollment Record
+        const { error: enrollError } = await supabase
+            .from('enrollments')
+            .insert([{
+                user_id: currentExceptionUserId,
+                section_id: selectedSectionId,
+                status: 'REGISTERED' // Admin force register
+            }]);
+
+        if (enrollError) {
+            // Handle duplicate key (already registered)
+            if(enrollError.code === '23505') { 
+                alert("Student is already registered for this course. Exception will be marked approved.");
+            } else {
+                throw enrollError;
+            }
+        }
+
+        // 2. Update Exception Request Status
+        const { error: excError } = await supabase
+            .from('exception_requests')
+            .update({ 
+                status: 'APPROVED', 
+                admin_response: adminResponse 
+            })
+            .eq('request_id', currentExceptionReqId);
+
+        if (excError) throw excError;
+
+        // 3. Increment Section Count (Optional trigger usually handles this, but good to ensure)
+        // Note: Ideally, you have a Database Trigger for this. If not, standard SQL RPC needed.
+
+        alert("✅ Student Enrolled and Request Approved!");
+        closeAdminEnrollModal();
+        loadAdminExceptions(); // Refresh the main list
+
+    } catch (err) {
+        alert("Operation Failed: " + err.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
     }
 };
