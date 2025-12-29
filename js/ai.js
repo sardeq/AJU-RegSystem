@@ -1,4 +1,3 @@
-// ai.js
 import { supabase } from './config.js';
 import { state } from './state.js';
 import { getCreditLimits } from './utils.js';
@@ -6,7 +5,6 @@ import { getCreditLimits } from './utils.js';
 // --- MAIN SETUP FUNCTION ---
 export function setupAIListeners() {
     const aiBtnReg = document.getElementById('ai-enhance-btn-reg');
-    const aiBtnHome = document.querySelector('.enhance-ai-btn'); // Or specific ID if present
     const closePrefBtn = document.getElementById('close-pref-btn');
     const closeModal = document.querySelector('.close-modal');
     const aiModal = document.getElementById('ai-modal');
@@ -21,7 +19,7 @@ export function setupAIListeners() {
         if (aiPrefModal) aiPrefModal.classList.remove('hidden');
     }
 
-if (aiBtnReg) aiBtnReg.addEventListener('click', openAIModal);
+    if (aiBtnReg) aiBtnReg.addEventListener('click', openAIModal);
     document.querySelectorAll('.enhance-ai-btn').forEach(btn => {
         if(btn.id !== 'generate-schedule-btn') btn.addEventListener('click', openAIModal);
     });
@@ -55,7 +53,9 @@ async function handleAIGeneration() {
     const aiResults = document.getElementById('ai-results');
 
     const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
-    const targetCredits = parseInt(document.getElementById('credits-pref').value) || 15;
+    
+    // 1. Get User Input
+    let userTargetTotal = parseInt(document.getElementById('credits-pref').value) || 15;
 
     if (daysPref.length === 0) { alert("Please select days."); return; }
 
@@ -66,6 +66,32 @@ async function handleAIGeneration() {
 
     try {
         const context = await fetchStudentContext(state.currentUser.id);
+        
+        // --- NEW LIMIT LOGIC ---
+        const TOTAL_REQ_HOURS = 132;
+        const passedHours = context.totalPassedCredits || 0;
+        const currentRegistered = context.totalRegisteredCredits || 0;
+        
+        const remainingHours = TOTAL_REQ_HOURS - passedHours;
+        const isGraduate = remainingHours <= 21;
+        
+        // Determine Hard Limit
+        const hardLimit = isGraduate ? 21 : 18;
+
+        // Clamp user target to the hard limit
+        if (userTargetTotal > hardLimit) {
+            userTargetTotal = hardLimit;
+            // Optional: Notify user
+            console.warn(`Target adjusted to ${hardLimit} based on academic status.`);
+        }
+
+        // Calculate how many NEW credits we can add
+        // If user wants 15 total, and has 6 registered, we generate 9.
+        const creditsNeeded = userTargetTotal - currentRegistered;
+
+        if (creditsNeeded <= 0) {
+            throw new Error(`You have ${currentRegistered} credits registered. Your limit is ${hardLimit}. Cannot add more courses.`);
+        }
         
         // Advanced Filtering: Attach time ranges to the options
         let filteredOptions = context.options.map(sec => ({
@@ -79,24 +105,32 @@ async function handleAIGeneration() {
         // Parse existing busy times into ranges once
         const baseBusyRanges = context.busyTimes.flatMap(t => parseScheduleToRanges(t));
 
-        // Generate plans using the new overlap logic
-        const plans = generateLocalPlans(filteredOptions, targetCredits, baseBusyRanges);            
+        // Generate plans using the calculated creditsNeeded
+        // We pass 'creditsNeeded' as the target for the generator
+        const plans = generateLocalPlans(filteredOptions, creditsNeeded, baseBusyRanges);            
         
         aiLoading.classList.add('hidden');
-        renderPlans(plans);
+        
+        // Pass info to render so user sees why they got these courses
+        renderPlans(plans, userTargetTotal, currentRegistered);
 
     } catch (err) {
         aiLoading.classList.add('hidden');
-        aiResults.innerHTML = `<p style="color:red; text-align:center;">${err.message}</p>`;
+        aiResults.innerHTML = `<div style="text-align:center; padding:20px;">
+            <p style="color:#e53935; font-weight:bold; margin-bottom:10px;">⚠️ Limit Reached</p>
+            <p>${err.message}</p>
+        </div>`;
     }
 }
 
-function generateLocalPlans(options, target, baseBusyRanges = []) {
+function generateLocalPlans(options, targetToAdd, baseBusyRanges = []) {
     const plans = [];
     const titles = ["Balanced Choice", "Quick Progress", "Major Focused"];
     
+    // We try to fill 'targetToAdd' credits
+    
     for (let i = 0; i < 3; i++) {
-        let currentCredits = 0;
+        let addedCredits = 0;
         let selectedSections = [];
         let currentPlanRanges = [...baseBusyRanges]; 
         let usedCourseCodes = new Set();
@@ -106,31 +140,36 @@ function generateLocalPlans(options, target, baseBusyRanges = []) {
         for (const sec of shuffled) {
             const courseHours = sec.courses?.credit_hours || 0;
             
+            // Check if adding this course exceeds the target amount to add
+            if (addedCredits + courseHours > targetToAdd) continue;
+
+            // Check if course code is already used in this plan
+            if (usedCourseCodes.has(sec.course_code)) continue;
+
             // USE ADVANCED OVERLAP CHECK
             const hasConflict = checkOverlap(sec.timeRanges, currentPlanRanges);
 
-            if (currentCredits + courseHours <= target && 
-                !usedCourseCodes.has(sec.course_code) && 
-                !hasConflict) { 
-                
+            if (!hasConflict) { 
                 selectedSections.push({
                     section_id: sec.section_id,
                     code: sec.course_code,
                     name: sec.courses.course_name_en,
-                    time: sec.schedule_text
+                    time: sec.schedule_text,
+                    credits: courseHours
                 });
 
                 currentPlanRanges.push(...sec.timeRanges);
                 usedCourseCodes.add(sec.course_code);
-                currentCredits += courseHours;
+                addedCredits += courseHours;
             }
         }
 
         if (selectedSections.length > 0) {
             plans.push({
                 title: titles[i],
-                reasoning: `Recommended based on your preferences (${currentCredits} credits).`,
-                courses: selectedSections
+                reasoning: `Added ${addedCredits} credits to your schedule.`,
+                courses: selectedSections,
+                totalAdded: addedCredits
             });
         }
     }
@@ -186,24 +225,47 @@ export async function fetchStudentContext(userId) {
         .eq('is_active', true)
         .single();
 
-    //const targetSemId = activeSem ? activeSem.semester_id : 20252;
     const targetSemId = activeSem ? parseInt(activeSem.semester_id) : 20252;
     console.log("AI Advisor searching semester:", targetSemId);
 
-    // 2. Fetch completed courses
+    // 2. Fetch completed courses WITH CREDITS
     const { data: history } = await supabase.from('enrollments')
-        .select(`status, sections (course_code)`)
+        .select(`
+            status, 
+            sections (
+                course_code,
+                courses (credit_hours)
+            )
+        `)
         .eq('user_id', userId)
         .eq('status', 'COMPLETED');
+    
     const passedCourses = history ? history.map(h => h.sections?.course_code).filter(Boolean) : [];
+    
+    // Sum Passed Credits
+    const totalPassedCredits = history ? history.reduce((sum, h) => {
+        return sum + (h.sections?.courses?.credit_hours || 0);
+    }, 0) : 0;
 
-    // 3. Fetch current registration (to avoid time conflicts)
+    // 3. Fetch current registration (to avoid time conflicts and count load)
     const { data: current } = await supabase.from('enrollments')
-        .select(`sections (course_code, schedule_text)`)
+        .select(`
+            sections (
+                course_code, 
+                schedule_text,
+                courses (credit_hours)
+            )
+        `)
         .eq('user_id', userId)
         .eq('status', 'REGISTERED');
+        
     const registeredCourses = current ? current.map(c => c.sections?.course_code).filter(Boolean) : [];
     const busyTimes = current ? current.map(c => c.sections?.schedule_text).filter(Boolean) : [];
+    
+    // Sum Registered Credits
+    const totalRegisteredCredits = current ? current.reduce((sum, c) => {
+        return sum + (c.sections?.courses?.credit_hours || 0);
+    }, 0) : 0;
 
     const allTakenOrRegistered = [...passedCourses, ...registeredCourses];
 
@@ -235,7 +297,7 @@ export async function fetchStudentContext(userId) {
         // Skip if already taken or registered
         if (allTakenOrRegistered.includes(section.course_code)) return false;
         
-        // Skip if there is a time conflict
+        // Skip if there is a time conflict with CURRENT schedule
         if (busyTimes.includes(section.schedule_text)) return false;
 
         // Check prerequisites
@@ -246,41 +308,17 @@ export async function fetchStudentContext(userId) {
 
     return { 
         history: allTakenOrRegistered, 
+        totalPassedCredits, // Return passed credits
+        totalRegisteredCredits, // Return currently registered credits
         busyTimes: busyTimes, 
         options: eligibleSections 
     };
 }
 
-async function getOpenRouterRecommendations(context, preferences) {
-    const { data, error } = await supabase.functions.invoke('generate-schedule', {
-        body: { context, preferences }
-    });
-
-    if (error) {
-        let customMessage = "AI Advisor Failed";
-        
-        if (error.context && typeof error.context.json === 'function') {
-            try {
-                const body = await error.context.json();
-                if (body && body.error) customMessage = body.error;
-            } catch (e) {
-                console.error("Could not parse error body", e);
-            }
-        } else if (error.message) {
-            customMessage = error.message;
-        }
-
-        console.error("Full AI Error Object:", error);
-        throw new Error(customMessage);
-    }
-    
-    return data;
-}
-
-function renderPlans(plans) {
+function renderPlans(plans, targetTotal, currentRegistered) {
     const aiResults = document.getElementById('ai-results');
     if (!plans || plans.length === 0) {
-        aiResults.innerHTML = '<p>No valid plans generated.</p>';
+        aiResults.innerHTML = '<p>No valid plans generated. You might be out of available options for these times.</p>';
         return;
     }
 
@@ -289,16 +327,17 @@ function renderPlans(plans) {
         card.className = 'schedule-card';
         
         let coursesHtml = plan.courses.map(c => 
-            `<li><span>${c.code} - ${c.name}</span><small>${c.time}</small></li>`
+            `<li><span>${c.code} - ${c.name}</span><small>${c.time} (${c.credits} Cr)</small></li>`
         ).join('');
 
         const safeData = encodeURIComponent(JSON.stringify(plan.courses));
+        const newTotal = currentRegistered + plan.totalAdded;
 
         card.innerHTML = `
             <span class="card-tag">${plan.title}</span>
-            <p class="card-reasoning">${plan.reasoning}</p>
+            <p class="card-reasoning">${plan.reasoning} <br> <span style="font-size:0.85em; color:#666;">Total Load: ${newTotal} / ${targetTotal} Cr</span></p>
             <ul class="card-courses">${coursesHtml}</ul>
-            <button class="accept-btn" onclick="applySchedule('${safeData}')">Accept Schedule</button>
+            <button class="accept-btn" onclick="applySchedule('${safeData}')">Register These Courses</button>
         `;
         aiResults.appendChild(card);
     });
