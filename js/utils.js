@@ -134,6 +134,8 @@ export const translations = {
         wl_success_desc: "You have been added to the waiting list for this section.",
         lbl_current_pos: "Current Position",
         btn_done: "Done",
+        nav_admin_home: "Dashboard", // New Key
+        nav_admin_admissions: "Admissions",
 
         // Sidebar Badge
         lbl_in_line: "in Line"
@@ -273,7 +275,10 @@ export const translations = {
         btn_done: "تم",
 
         // Sidebar Badge
-        lbl_in_line: "في الانتظار"
+        lbl_in_line: "في الانتظار",
+
+        nav_admin_home: "لوحة التحكم", // New Key
+        nav_admin_admissions: "القبول والتسجيل",
 
     }
 };

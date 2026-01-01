@@ -48,28 +48,33 @@
             </div>
 
             <ul class="nav-links">
+                <li class="nav-item hidden" id="nav-admin-home">
+                    <a href="#" class="nav-link" onclick="showSection('admin-home')">
+                        <span class="nav-icon">📊</span> 
+                        <span data-i18n="nav_admin_home">Dashboard</span>
+                    </a>
+                </li>
 
-                <li class="nav-item hidden admin-only" id="nav-admin-exceptions">
+                <li class="nav-item hidden" id="nav-admin-exceptions">
                     <a href="#" class="nav-link" onclick="showSection('admin-exceptions')">
                         <span class="nav-icon">⚖️</span> 
                         <span data-i18n="nav_admin_exceptions">Prereq Requests</span>
                     </a>
                 </li>
-                <li class="nav-item hidden admin-only" id="nav-admin-users">
+
+                <li class="nav-item hidden" id="nav-admin-users">
                     <a href="#" class="nav-link" onclick="showSection('admin-users')">
                         <span class="nav-icon">👥</span> 
                         <span data-i18n="nav_admin_users">Manage Users</span>
                     </a>
                 </li>
 
-                <li class="nav-item hidden admin-only" id="nav-admin-courses">
-    <a href="#" class="nav-link" onclick="showSection('admin-courses')">
-        <span class="nav-icon">📚</span> 
-        <span data-i18n="nav_admin_courses">Course Mgmt</span>
-    </a>
-</li>
-
-               
+                <li class="nav-item hidden" id="nav-admin-courses">
+                    <a href="#" class="nav-link" onclick="showSection('admin-courses')">
+                        <span class="nav-icon">📚</span> 
+                        <span data-i18n="nav_admin_courses">Course Mgmt</span>
+                    </a>
+                </li>
 
                 <li class="nav-item hidden" id="nav-admin-admissions">
                     <a href="#" class="nav-link" onclick="showSection('admin-admissions')">

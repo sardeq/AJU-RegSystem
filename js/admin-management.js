@@ -322,6 +322,8 @@ export async function loadAdminExceptions() {
         list.appendChild(card);
     });
 }
+
+
 window.handleDecision = async function(requestId, decision, userId, courseCode, studentName) {
     // 1. If REJECTED, process immediately as before
     if (decision === 'REJECTED') {

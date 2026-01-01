@@ -75,9 +75,13 @@ function renderBentoSchedule(enrollments) {
     }
 
     // FIX: Filter for "Today"
-    const dayIndex = new Date().getDay(); // 0=Sun, 1=Mon, etc.
+    const now = new Date();
+    const dayIndex = now.getDay(); // 0=Sun, 1=Mon, etc.
     const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const currentDayStr = daysMap[dayIndex];
+    
+    // Time checking variables
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
     const todayCourses = enrollments.filter(item => {
         const scheduleText = item.sections?.schedule_text || "";
@@ -97,13 +101,48 @@ function renderBentoSchedule(enrollments) {
     todayCourses.forEach(item => {
         const sec = item.sections;
         const name = state.currentLang === 'ar' ? sec.courses.course_name_ar : sec.courses.course_name_en;
-        const timeMatch = (sec.schedule_text || "").match(/\d{1,2}:\d{2}/);
-        const time = timeMatch ? timeMatch[0] : "TBA";
+        
+        // Parse time range (e.g. "11:30-13:00")
+        const timeRangeMatch = (sec.schedule_text || "").match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+        
+        let timeDisplay = "TBA";
+        let isLive = false;
+
+        if (timeRangeMatch) {
+            const startStr = timeRangeMatch[1];
+            const endStr = timeRangeMatch[2];
+            timeDisplay = startStr; // Display start time
+
+            // Convert schedule times to minutes for comparison
+            const [sH, sM] = startStr.split(':').map(Number);
+            const [eH, eM] = endStr.split(':').map(Number);
+            
+            const startVal = sH * 60 + sM;
+            const endVal = eH * 60 + eM;
+
+            // Check if NOW is between Start and End
+            if (currentMinutes >= startVal && currentMinutes <= endVal) {
+                isLive = true;
+            }
+        }
 
         const div = document.createElement('div');
         div.className = 'bento-class-card';
+        
+        // Add specific class for live items to allow extra CSS styling (like a green border)
+        if (isLive) {
+            div.style.borderLeftColor = "#ff5252"; // Red border for 'Recording/Live' feel
+            div.style.background = "rgba(255, 82, 82, 0.05)";
+        }
+
         div.innerHTML = `
-            <span class="bcc-time-pill">${time}</span>
+            ${isLive 
+                ? `<span class="bcc-time-pill" style="background:#ff5252; color:white; box-shadow: 0 0 10px rgba(255,82,82,0.4);">
+                     <span style="display:inline-block; width:6px; height:6px; background:white; border-radius:50%; margin-right:4px; vertical-align:middle;"></span>
+                     TAKING NOW
+                   </span>` 
+                : `<span class="bcc-time-pill">${timeDisplay}</span>`
+            }
             <span class="bcc-title">${name}</span>
             <span class="bcc-prof">Sec ${sec.section_number} • ${sec.room_number || 'Room TBA'}</span>
         `;

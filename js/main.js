@@ -153,38 +153,49 @@ async function checkUserRole(userId) {
 
         if (error) throw error;
 
-        // Reset all views
-        document.querySelectorAll('.admin-only, .student-only, #nav-admin-admissions').forEach(el => el.classList.add('hidden'));
+        // 1. Reset: Hide ALL navigation items first
+        const allNavIds = [
+            'nav-home', 'nav-registration', 'nav-sheet', 'nav-schedule', 'nav-plan', 'nav-exceptions', // Student
+            'nav-admin-home', 'nav-admin-users', 'nav-admin-courses', 'nav-admin-exceptions', 'nav-admin-admissions' // Admin
+        ];
+        allNavIds.forEach(id => document.getElementById(id)?.classList.add('hidden'));
 
-        // Logic split
-        if (profile.role === 'admin' || profile.role === 'admission-admin') {
+        // 2. Role-Based Visibility Logic
+        if (profile.role === 'admission-admin') {
+            // --- ADMISSION ADMIN ---
+            // Requirement: "Only see admissions"
+            document.getElementById('nav-admin-admissions').classList.remove('hidden');
             
-            // 1. Show Admin Nav Items
-            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-            if (profile.role === 'admission-admin') {
-                 document.getElementById('nav-admin-admissions')?.classList.remove('hidden');
-            }
+            // Default view for this role
+            showSection('admin-admissions');
 
-            // 2. Hijack "Home" Button
-            // We change the onclick attribute of the Home link to point to admin-home
-            const homeLink = document.querySelector('#nav-home .nav-link');
-            if(homeLink) {
-                homeLink.setAttribute('onclick', "showSection('admin-home')");
-                // Also change the icon text if you want, e.g. "Admin Home"
-                homeLink.querySelector('span[data-i18n="nav_home"]').textContent = "Dashboard";
-            }
-            
-            // 3. Show Admin Home immediately
+        } else if (profile.role === 'admin') {
+            // --- NORMAL ADMIN ---
+            // Requirement: See Admin Home, Users, Courses, Exceptions. NOT Admissions.
+            document.getElementById('nav-admin-home').classList.remove('hidden');
+            document.getElementById('nav-admin-users').classList.remove('hidden');
+            document.getElementById('nav-admin-courses').classList.remove('hidden');
+            document.getElementById('nav-admin-exceptions').classList.remove('hidden');
+
+            // Default view for this role
             showSection('admin-home');
 
         } else {
-            // Student Role
-            document.querySelectorAll('.student-only').forEach(el => el.classList.remove('hidden'));
-            
-            // Ensure Home button points to student home
+            // --- STUDENT ---
+            document.getElementById('nav-home').classList.remove('hidden');
+            document.getElementById('nav-registration').classList.remove('hidden');
+            document.getElementById('nav-sheet').classList.remove('hidden');
+            document.getElementById('nav-schedule').classList.remove('hidden');
+            document.getElementById('nav-plan').classList.remove('hidden');
+            document.getElementById('nav-exceptions').classList.remove('hidden');
+
+            // Ensure the Home link acts normally for students
             const homeLink = document.querySelector('#nav-home .nav-link');
-            if(homeLink) homeLink.setAttribute('onclick', "showSection('home')");
-            
+            if(homeLink) {
+                homeLink.setAttribute('onclick', "showSection('home')");
+                homeLink.querySelector('span[data-i18n="nav_home"]').textContent = "Home"; // Reset text if it was changed
+            }
+
             showSection('home');
         }
 
@@ -192,7 +203,6 @@ async function checkUserRole(userId) {
         console.error("Role check failed:", err);
     }
 }
-
 
     document.body.addEventListener('click', (e) => {
         if (e.target.closest('#sidebar-logout-btn')) {
