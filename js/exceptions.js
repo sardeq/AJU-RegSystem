@@ -198,14 +198,15 @@ window.submitException = async function() {
     }
 };
 
-window.updateExcType = function(val) {
+// Exported Function + Window Assignment
+export function updateExcType(val) {
     const select = document.getElementById('exc-type');
     if(select) select.value = val;
     
-    // Toggle UI visibility
     const altGroup = document.getElementById('alt-course-group');
     if(altGroup) {
         if(val === 'PREREQ') altGroup.classList.add('hidden');
         else altGroup.classList.remove('hidden');
     }
 }
+window.updateExcType = updateExcType;
