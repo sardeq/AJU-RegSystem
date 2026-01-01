@@ -199,6 +199,13 @@ export const translations = {
         card_man_courses_desc: "Open/Close sections and edit details",
         card_user_dir: "User Directory",
         card_user_dir_desc: "Edit roles, GPA, and student data",
+
+        modal_limit_title: "Action Required: Credit Limit Exceeded",
+        modal_limit_desc: "Your request was approved, but you don't have enough credit space.",
+        lbl_time_remaining: "Time Remaining to Enroll:",
+        btn_drop_courses: "Go to Schedule to Drop",
+        btn_accept_enroll: "I have space, Enroll Now",
+        btn_deny_req: "Deny Request",
     },
     
     ar: {
@@ -399,6 +406,13 @@ export const translations = {
         card_man_courses_desc: "فتح/إغلاق وتعديل الشعب",
         card_user_dir: "دليل المستخدمين",
         card_user_dir_desc: "تعديل الأدوار والمعدلات",
+
+        modal_limit_title: "إجراء مطلوب: تجاوز الحد الأقصى للساعات",
+        modal_limit_desc: "تمت الموافقة على طلبك، ولكن ليس لديك مساحة ساعات كافية.",
+        lbl_time_remaining: "الوقت المتبقي للتسجيل:",
+        btn_drop_courses: "الذهاب للجدول للحذف",
+        btn_accept_enroll: "لدي مساحة، سجل الآن",
+        btn_deny_req: "رفض الطلب",
     }
 };
 

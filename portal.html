@@ -811,6 +811,45 @@
                 </div>
             </div>
 
+
+            <div id="credit-limit-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px; border: 1px solid var(--accent-orange);">
+            <div class="modal-header">
+                <h3 style="color: var(--accent-orange);">⚠️ <span data-i18n="modal_limit_title">Action Required</span></h3>
+            </div>
+            
+            <div style="padding: 10px 0;">
+                <p data-i18n="modal_limit_desc">Your request was approved, but you don't have enough credit space to enroll.</p>
+                
+                <div class="sheet-stats-row" style="margin: 20px 0;">
+                    <div class="sheet-stat-card">
+                        <span style="font-size:0.8rem; color:#888;">Request Type</span>
+                        <strong id="clm-type" style="color:white; font-size:1.1rem;">--</strong>
+                    </div>
+                    <div class="sheet-stat-card">
+                        <span style="font-size:0.8rem; color:#888;" data-i18n="lbl_time_remaining">Time Remaining</span>
+                        <strong id="clm-timer" style="color:var(--accent-red); font-size:1.1rem;">--:--</strong>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.9em; color: #ccc;">
+                    Please <strong>drop courses</strong> from your schedule to free up space, then click "Enroll Now".
+                </p>
+            </div>
+
+            <input type="hidden" id="clm-req-id">
+            <input type="hidden" id="clm-req-type"> <input type="hidden" id="clm-course-code">
+
+            <div class="box-grid-2" style="margin-top:20px;">
+                <button onclick="showSection('schedule'); document.getElementById('credit-limit-modal').classList.add('hidden');" class="delete-btn" style="background: #333; color:white;" data-i18n="btn_drop_courses">Go to Schedule</button>
+                <button onclick="attemptFinalEnrollment()" class="accept-btn" data-i18n="btn_accept_enroll">Enroll Now</button>
+            </div>
+            <div style="margin-top: 10px;">
+                 <button onclick="denyRequest()" style="width:100%; background:transparent; border:none; color:#666; cursor:pointer;" data-i18n="btn_deny_req">Deny Request (Cancel)</button>
+            </div>
+        </div>
+    </div>
+
     <div id="ai-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -963,6 +1002,10 @@
             <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;" data-i18n="adm_enroll_desc">
                 Approving this exception will automatically register the student into the selected section.
             </p>
+            
+            <div style="margin-bottom:10px;">
+                Student: <strong id="adm-enroll-student-name" style="color:var(--primary);">--</strong>
+            </div>
 
             <div class="table-container" style="max-height: 300px; overflow-y: auto;">
                 <table class="modern-table">

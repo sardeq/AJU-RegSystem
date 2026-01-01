@@ -1,4 +1,5 @@
 import { supabase } from './config.js';
+import { getCreditLimits } from './utils.js'; // Import helper
 
 // --- Global State for Admin ---
 let allUsers = [];
@@ -351,7 +352,9 @@ window.handleDecision = async function(requestId, decision, userId, courseCode, 
         if(responseVal) document.getElementById('adm-enroll-response').value = responseVal;
         
         // Update UI Text
-        document.getElementById('adm-enroll-student-name').textContent = studentName || 'Student';
+        // SAFE CHECK HERE
+        const nameEl = document.getElementById('adm-enroll-student-name');
+        if(nameEl) nameEl.textContent = studentName || 'Student';
         
         // Load Sections for this course
         openAdminEnrollModal(courseCode);
@@ -431,47 +434,76 @@ window.confirmAdminEnrollment = async () => {
     const adminResponse = document.getElementById('adm-enroll-response').value || "Approved.";
     const btn = document.querySelector('#admin-enroll-modal .accept-btn');
     const originalText = btn.textContent;
-    btn.textContent = "Processing...";
+    btn.textContent = "Checking Credits...";
     btn.disabled = true;
 
     try {
-        // 1. Insert Enrollment Record
-        const { error: enrollError } = await supabase
-            .from('enrollments')
-            .insert([{
-                user_id: currentExceptionUserId,
-                section_id: selectedSectionId,
-                status: 'REGISTERED' // Admin force register
-            }]);
+        // 1. Fetch Student Profile & Current Enrollments
+        const [userRes, enrollRes, sectionRes] = await Promise.all([
+            supabase.from('users').select('*').eq('id', currentExceptionUserId).single(),
+            supabase.from('enrollments').select('sections(courses(credit_hours))').eq('user_id', currentExceptionUserId).eq('status', 'REGISTERED'),
+            supabase.from('sections').select('courses(credit_hours)').eq('section_id', selectedSectionId).single()
+        ]);
 
-        if (enrollError) {
-            // Handle duplicate key (already registered)
-            if(enrollError.code === '23505') { 
-                alert("Student is already registered for this course. Exception will be marked approved.");
-            } else {
-                throw enrollError;
+        if (userRes.error) throw userRes.error;
+        
+        // 2. Calculate Totals
+        const currentCredits = enrollRes.data.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0);
+        const newCredits = sectionRes.data.courses.credit_hours;
+        const totalProjected = currentCredits + newCredits;
+        
+        // 3. Get Limits for THIS specific student
+        const { max } = getCreditLimits(userRes.data);
+
+        // 4. LOGIC BRANCH
+        if (totalProjected > max) {
+            // --- CASE A: OVER LIMIT ---
+            // Do NOT enroll. Update Request to 'ACTION_REQUIRED'
+            
+            const { error: updateError } = await supabase
+                .from('exception_requests')
+                .update({ 
+                    status: 'ACTION_REQUIRED', 
+                    admin_response: adminResponse,
+                    approved_at: new Date().toISOString(), // Start the clock (though exceptions are infinite, waitlists use this)
+                    // We might need to store the target section ID if not already in request
+                    // For this logic, we assume the student picks the section later or we store it in a note/column
+                })
+                .eq('request_id', currentExceptionReqId);
+
+            if (updateError) throw updateError;
+            
+            alert(`⚠️ Student is over credit limit (${totalProjected} > ${max}).\nRequest marked as 'Action Required'. The student has been notified to drop courses.`);
+
+        } else {
+            // --- CASE B: SPACE AVAILABLE ---
+            // Enroll Immediately
+            const { error: enrollError } = await supabase
+                .from('enrollments')
+                .insert([{
+                    user_id: currentExceptionUserId,
+                    section_id: selectedSectionId,
+                    status: 'REGISTERED'
+                }]);
+
+            if (enrollError) {
+                if(enrollError.code === '23505') alert("Student already registered.");
+                else throw enrollError;
             }
+
+            // Close out request
+            await supabase.from('exception_requests')
+                .update({ status: 'APPROVED', admin_response: adminResponse, approved_at: new Date().toISOString() })
+                .eq('request_id', currentExceptionReqId);
+
+            alert("✅ Student Enrolled Successfully!");
         }
 
-        // 2. Update Exception Request Status
-        const { error: excError } = await supabase
-            .from('exception_requests')
-            .update({ 
-                status: 'APPROVED', 
-                admin_response: adminResponse 
-            })
-            .eq('request_id', currentExceptionReqId);
-
-        if (excError) throw excError;
-
-        // 3. Increment Section Count (Optional trigger usually handles this, but good to ensure)
-        // Note: Ideally, you have a Database Trigger for this. If not, standard SQL RPC needed.
-
-        alert("✅ Student Enrolled and Request Approved!");
         closeAdminEnrollModal();
-        loadAdminExceptions(); // Refresh the main list
+        import('./admin-management.js').then(m => m.loadAdminExceptions());
 
     } catch (err) {
+        console.error(err);
         alert("Operation Failed: " + err.message);
     } finally {
         btn.textContent = originalText;

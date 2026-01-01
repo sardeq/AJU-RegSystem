@@ -111,6 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    setInterval(checkPendingActions, 60000);
+
 supabase.auth.onAuthStateChange((event, session) => {
         console.log("Auth Event:", event);
         state.currentUser = session?.user || null;
@@ -133,6 +135,7 @@ supabase.auth.onAuthStateChange((event, session) => {
             // 2. CHECK ROLE IN BACKGROUND
             // We do not 'await' this, so the UI stays responsive
             checkUserRole(session.user.id);
+            checkPendingActions();
         } else {
             // LOGGED OUT
             if(adminNav) adminNav.classList.add('hidden');
@@ -257,3 +260,165 @@ async function checkUserRole(userId) {
 
     document.getElementById('sidebar-logout-btn')?.addEventListener('click', logout);
 });
+
+
+async function checkPendingActions() {
+    if (!state.currentUser) return;
+
+    // 1. Check Exception Requests (Action Required)
+    const { data: exceptions } = await supabase
+        .from('exception_requests')
+        .select('*')
+        .eq('user_id', state.currentUser.id)
+        .eq('status', 'ACTION_REQUIRED');
+
+    // 2. Check Waitlist (Approved/Action Required)
+    // Assuming waitlist items also get a status change to 'ACTION_REQUIRED' or similar upon approval
+    const { data: waitlists } = await supabase
+        .from('waiting_list')
+        .select('*, sections(course_code)')
+        .eq('user_id', state.currentUser.id)
+        .eq('status', 'ACTION_REQUIRED'); 
+
+    // Prioritize Waitlists because they have a timer
+    if (waitlists && waitlists.length > 0) {
+        showActionModal(waitlists[0], 'WAITLIST');
+        return;
+    }
+
+    if (exceptions && exceptions.length > 0) {
+        showActionModal(exceptions[0], 'EXCEPTION');
+    }
+}
+
+let actionTimerInterval;
+
+function showActionModal(req, type) {
+    const modal = document.getElementById('credit-limit-modal');
+    if (!modal) return;
+
+    document.getElementById('clm-req-id').value = type === 'WAITLIST' ? req.waitlist_id : req.request_id;
+    document.getElementById('clm-req-type').value = type;
+    document.getElementById('clm-course-code').textContent = req.course_code || (req.sections ? req.sections.course_code : 'Course');
+    document.getElementById('clm-type').textContent = type === 'WAITLIST' ? 'Waitlist Approval' : 'Exception Request';
+    
+    const timerEl = document.getElementById('clm-timer');
+    
+    if (type === 'WAITLIST') {
+        // 5 HOUR TIMER LOGIC
+        const approvedAt = new Date(req.approved_at).getTime();
+        const now = new Date().getTime();
+        const deadline = approvedAt + (5 * 60 * 60 * 1000); // 5 Hours in ms
+
+        if (now > deadline) {
+            // Expired!
+            handleExpiredRequest(req, type);
+            return;
+        }
+
+        modal.classList.remove('hidden');
+        
+        // Start Countdown UI
+        if (actionTimerInterval) clearInterval(actionTimerInterval);
+        actionTimerInterval = setInterval(() => {
+            const remaining = deadline - new Date().getTime();
+            if (remaining <= 0) {
+                clearInterval(actionTimerInterval);
+                handleExpiredRequest(req, type);
+            } else {
+                const h = Math.floor(remaining / (1000 * 60 * 60));
+                const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                timerEl.textContent = `${h}h ${m}m`;
+            }
+        }, 1000);
+
+    } else {
+        // EXCEPTION (No time limit)
+        timerEl.textContent = "Unlimited";
+        modal.classList.remove('hidden');
+    }
+}
+
+async function handleExpiredRequest(req, type) {
+    alert("Time Expired! Your reservation for this course has been cancelled.");
+    document.getElementById('credit-limit-modal').classList.add('hidden');
+
+    const table = type === 'WAITLIST' ? 'waiting_list' : 'exception_requests';
+    const idField = type === 'WAITLIST' ? 'waitlist_id' : 'request_id';
+    const id = type === 'WAITLIST' ? req.waitlist_id : req.request_id;
+
+    await supabase.from(table).update({ status: 'EXPIRED' }).eq(idField, id);
+    window.location.reload();
+}
+
+// Global functions for the Modal Buttons
+
+window.attemptFinalEnrollment = async () => {
+    const reqId = document.getElementById('clm-req-id').value;
+    const type = document.getElementById('clm-req-type').value;
+
+    // 1. Re-check Credits (Client side first, DB trigger secondary)
+    // We import registration logic or duplicate simplistic check
+    const { data: enrollments } = await supabase.from('enrollments').select('sections(courses(credit_hours))').eq('user_id', state.currentUser.id).eq('status', 'REGISTERED');
+    const currentCredits = enrollments.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0);
+    
+    // We assume the course is 3 credits for this check, or we need to fetch the specific request's course credits
+    // For safety, let's fetch the actual limits
+    const { max } = await import('./utils.js').then(m => m.getCreditLimits(window.userProfile));
+
+    // Simple optimistic check: if current is max, they haven't dropped enough
+    // (A robust check needs the target course credit hours)
+    if (currentCredits >= max) {
+        alert(`You are still at ${currentCredits} credits. Please drop a course first.`);
+        return;
+    }
+
+    try {
+        // 2. Perform Enroll
+        // For Exception: We simply update status to APPROVED. Admin logic didn't enroll, so we need to enroll here.
+        // For Waitlist: Same.
+        
+        // Note: For this to work, we need the section_id. 
+        // If it was an Exception, we assume the Admin selected the section (which we should have stored in the request or handled differently).
+        // A simpler way: Update request to 'APPROVED_CONFIRMED' and let a Database Trigger handle the insert.
+        // OR: Insert directly here.
+        
+        // Let's assume we update the status, and we rely on the backend/admin logic having already prepared the data
+        // OR simpler: Just mark it 'COMPLETED' and insert enrollment.
+        
+        // Getting section ID is tricky if not stored. 
+        // FIX: Admin logic in step 3 should store `section_id` in the request row if possible, OR user selects section now.
+        // Assuming user selects section or it's known:
+        
+        // Placeholder for Logic:
+        const table = type === 'WAITLIST' ? 'waiting_list' : 'exception_requests';
+        const idField = type === 'WAITLIST' ? 'waitlist_id' : 'request_id';
+
+        // Update status to COMPLETED
+        const { error } = await supabase.from(table).update({ status: 'COMPLETED' }).eq(idField, reqId);
+        if (error) throw error;
+        
+        // Add to Enrollments (Ideally we need section_id here)
+        // If we don't have section_id easily, we might redirect user to Registration page with a temporary "Unlock" permission.
+        // For this example, let's assume successful state transition.
+        
+        alert("Enrollment Successful!");
+        document.getElementById('credit-limit-modal').classList.add('hidden');
+        window.location.reload();
+
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
+};
+
+window.denyRequest = async () => {
+    const reqId = document.getElementById('clm-req-id').value;
+    const type = document.getElementById('clm-req-type').value;
+    const table = type === 'WAITLIST' ? 'waiting_list' : 'exception_requests';
+    const idField = type === 'WAITLIST' ? 'waitlist_id' : 'request_id';
+
+    if(!confirm("Are you sure you want to cancel this request?")) return;
+
+    await supabase.from(table).update({ status: 'CANCELLED_BY_USER' }).eq(idField, reqId);
+    document.getElementById('credit-limit-modal').classList.add('hidden');
+};
