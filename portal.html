@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal</title>
-
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/auth.css">
@@ -31,7 +30,6 @@
                 <span class="notif-dot-header" style="position:absolute; top:10px; right:10px; width:8px; height:8px; background:red; border-radius:50%;"></span>
             </button>
             <button class="icon-btn student-only" onclick="showSection('schedule')" title="Smart Schedule">📅</button>
-            
             <button class="icon-btn lang-btn">🌐</button>
         </div>
     </header>
@@ -54,28 +52,24 @@
                         <span data-i18n="nav_admin_home">Dashboard</span>
                     </a>
                 </li>
-
                 <li class="nav-item hidden" id="nav-admin-exceptions">
                     <a href="#" class="nav-link" onclick="showSection('admin-exceptions')">
                         <span class="nav-icon">⚖️</span> 
                         <span data-i18n="nav_admin_exceptions">Prereq Requests</span>
                     </a>
                 </li>
-
                 <li class="nav-item hidden" id="nav-admin-users">
                     <a href="#" class="nav-link" onclick="showSection('admin-users')">
                         <span class="nav-icon">👥</span> 
                         <span data-i18n="nav_admin_users">Manage Users</span>
                     </a>
                 </li>
-
                 <li class="nav-item hidden" id="nav-admin-courses">
                     <a href="#" class="nav-link" onclick="showSection('admin-courses')">
                         <span class="nav-icon">📚</span> 
                         <span data-i18n="nav_admin_courses">Course Mgmt</span>
                     </a>
                 </li>
-
                 <li class="nav-item hidden" id="nav-admin-admissions">
                     <a href="#" class="nav-link" onclick="showSection('admin-admissions')">
                         <span class="nav-icon">🛡️</span> 
@@ -98,7 +92,7 @@
                 <li class="nav-item student-only" id="nav-sheet">
                     <a href="#" class="nav-link" onclick="showSection('sheet')">
                         <span class="nav-icon">📂</span> 
-                        <span data-i18n="nav_sheet">COurse Sheet</span>
+                        <span data-i18n="nav_sheet">Courses Sheet</span>
                     </a>
                 </li>
                 <li class="nav-item student-only" id="nav-schedule">
@@ -129,8 +123,8 @@
                         <span class="online-indicator"></span>
                     </div>
                     <div class="user-info">
-                        <span id="sidebar-user-name" class="u-name">Sadeq Odeh</span>
-                        <span id="sidebar-user-id" class="u-id">ID: 202110452</span>
+                        <span id="sidebar-user-name" class="u-name">Student Name</span>
+                        <span id="sidebar-user-id" class="u-id">ID: --</span>
                     </div>
                     <button id="sidebar-logout-btn" class="mini-logout-btn" title="Logout">
                         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
@@ -162,136 +156,135 @@
                 </p>
             </div>
 
-             <div id="admin-exceptions-container" class="dashboard-view hidden">
+            <div id="admin-exceptions-container" class="dashboard-view hidden">
                     <div class="sch-modern-header">
-                        <h2 class="section-title">Prerequisite & Exception Overrides</h2>
-                        <div class="header-stats-pill"><span id="pending-exc-count">0</span> Pending</div>
+                        <h2 class="section-title" data-i18n="nav_admin_exceptions">Prerequisite & Exception Overrides</h2>
+                        <div class="header-stats-pill"><span id="pending-exc-count">0</span> <span data-i18n="filter_pending">Pending</span></div>
                     </div>
-                    <div id="admin-exceptions-list" class="admin-grid">
-                        </div>
+                    <div id="admin-exceptions-list" class="admin-grid"></div>
+            </div>
+
+            <div id="admin-users-container" class="dashboard-view hidden">
+                <div class="sch-modern-header">
+                    <h2 class="section-title" data-i18n="sect_user_mgmt">User Management</h2>
+                    <div class="header-stats-pill"><span id="total-users-count">0</span> <span data-i18n="stat_total_users">Users</span></div>
+                </div>
+                
+                <div class="reg-controls-bar">
+                    <div class="filter-pills">
+                        <button class="filter-pill active" onclick="filterUsers('all')" data-i18n="filter_all_courses">All</button>
+                        <button class="filter-pill" onclick="filterUsers('student')" data-i18n="filter_students">Students</button>
+                        <button class="filter-pill" onclick="filterUsers('admin')" data-i18n="filter_admins">Admins</button>
+                        <button class="filter-pill" onclick="filterUsers('instructor')" data-i18n="filter_instructors">Instructors</button>
+                    </div>
+                    <div class="reg-search-group">
+                        <input type="text" id="user-search-input" data-i18n-placeholder="ph_search_users" placeholder="Search name or ID..." class="modern-input" onkeyup="searchUsers()">
+                    </div>
                 </div>
 
-                <div id="admin-users-container" class="dashboard-view hidden">
-    <div class="sch-modern-header">
-        <h2 class="section-title">User Management</h2>
-        <div class="header-stats-pill"><span id="total-users-count">0</span> Users</div>
-    </div>
-    
-    <div class="reg-controls-bar">
-        <div class="filter-pills">
-            <button class="filter-pill active" onclick="filterUsers('all')">All</button>
-            <button class="filter-pill" onclick="filterUsers('student')">Students</button>
-            <button class="filter-pill" onclick="filterUsers('admin')">Admins</button>
-            <button class="filter-pill" onclick="filterUsers('instructor')">Instructors</button>
-        </div>
-        <div class="reg-search-group">
-            <input type="text" id="user-search-input" placeholder="Search name or ID..." class="modern-input" onkeyup="searchUsers()">
-        </div>
-    </div>
-
-    <div class="table-container">
-        <table class="modern-table">
-            <thead>
-                <tr>
-                    <th>Name / ID</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>GPA</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="admin-users-table"></tbody>
-        </table>
-    </div>
-</div>
-
-<div id="admin-courses-container" class="dashboard-view hidden">
-    <div class="sch-modern-header">
-        <h2 class="section-title">Academic Sections</h2>
-        <button class="accept-btn" onclick="openSectionModal()">+ Create New Section</button>
-    </div>
-
-    <div class="reg-controls-bar">
-        <div class="filter-pills">
-            <button class="filter-pill active" onclick="filterSections('all')">All</button>
-            <button class="filter-pill" onclick="filterSections('OPEN')">Open</button>
-            <button class="filter-pill" onclick="filterSections('CLOSED')">Closed</button>
-        </div>
-        <div class="reg-search-group">
-            <input type="text" id="section-search-input" placeholder="Search course code..." class="modern-input" onkeyup="searchSections()">
-        </div>
-    </div>
-
-    <div id="admin-courses-grid" class="reg-grid"></div>
-</div>
-
-<div id="edit-user-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 400px;">
-        <h3>Edit User</h3>
-        <input type="hidden" id="edit-user-id">
-        
-        <label class="form-label-modern">Full Name</label>
-        <input type="text" id="edit-user-name" class="modern-input">
-        
-        <label class="form-label-modern">Role</label>
-        <select id="edit-user-role" class="modern-input">
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-            <option value="admission-admin">Admission Admin</option>
-            <option value="instructor">Instructor</option>
-        </select>
-
-        <label class="form-label-modern">GPA</label>
-        <input type="number" id="edit-user-gpa" class="modern-input" step="0.01">
-
-        <div class="box-grid-2" style="margin-top:20px;">
-            <button onclick="closeEditUserModal()" class="delete-btn">Cancel</button>
-            <button onclick="saveUserChanges()" class="accept-btn">Save Changes</button>
-        </div>
-    </div>
-</div>
-
-<div id="edit-section-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 500px;">
-        <h3 id="sec-modal-title">Edit Section</h3>
-        <input type="hidden" id="edit-sec-id"> <label class="form-label-modern">Course Code</label>
-        <input type="text" id="edit-sec-code" class="modern-input" placeholder="e.g. 311330">
-
-        <div class="box-grid-2">
-            <div>
-                <label class="form-label-modern">Section No.</label>
-                <input type="number" id="edit-sec-num" class="modern-input">
+                <div class="table-container">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="tbl_name_id">Name / ID</th>
+                                <th data-i18n="tbl_email">Email</th>
+                                <th data-i18n="tbl_role">Role</th>
+                                <th data-i18n="tbl_gpa">GPA</th>
+                                <th data-i18n="tbl_actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-table"></tbody>
+                    </table>
+                </div>
             </div>
-            <div>
-                 <label class="form-label-modern">Capacity</label>
-                 <input type="number" id="edit-sec-cap" class="modern-input">
+
+            <div id="admin-courses-container" class="dashboard-view hidden">
+                <div class="sch-modern-header">
+                    <h2 class="section-title" data-i18n="sect_academic_sec">Academic Sections</h2>
+                    <button class="accept-btn" onclick="openSectionModal()" data-i18n="btn_create_sec">+ Create New Section</button>
+                </div>
+
+                <div class="reg-controls-bar">
+                    <div class="filter-pills">
+                        <button class="filter-pill active" onclick="filterSections('all')" data-i18n="filter_all_courses">All</button>
+                        <button class="filter-pill" onclick="filterSections('OPEN')" data-i18n="filter_open">Open</button>
+                        <button class="filter-pill" onclick="filterSections('CLOSED')" data-i18n="filter_closed">Closed</button>
+                    </div>
+                    <div class="reg-search-group">
+                        <input type="text" id="section-search-input" data-i18n-placeholder="ph_search_sec" placeholder="Search course code..." class="modern-input" onkeyup="searchSections()">
+                    </div>
+                </div>
+
+                <div id="admin-courses-grid" class="reg-grid"></div>
             </div>
-        </div>
 
-        <label class="form-label-modern">Schedule Text</label>
-        <input type="text" id="edit-sec-sch" class="modern-input" placeholder="e.g. Mon/Wed 09:30-11:00">
+            <div id="edit-user-modal" class="modal hidden">
+                <div class="modal-content" style="max-width: 400px;">
+                    <h3 data-i18n="modal_edit_user">Edit User</h3>
+                    <input type="hidden" id="edit-user-id">
+                    
+                    <label class="form-label-modern" data-i18n="ph_fullname">Full Name</label>
+                    <input type="text" id="edit-user-name" class="modern-input">
+                    
+                    <label class="form-label-modern" data-i18n="tbl_role">Role</label>
+                    <select id="edit-user-role" class="modern-input">
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                        <option value="admission-admin">Admission Admin</option>
+                        <option value="instructor">Instructor</option>
+                    </select>
 
-        <label class="form-label-modern">Room</label>
-        <input type="text" id="edit-sec-room" class="modern-input">
-        
-        <label class="form-label-modern">Instructor</label>
-        <input type="text" id="edit-sec-instr" class="modern-input">
+                    <label class="form-label-modern" data-i18n="tbl_gpa">GPA</label>
+                    <input type="number" id="edit-user-gpa" class="modern-input" step="0.01">
 
-        <div class="box-grid-2" style="margin-top:20px;">
-            <button onclick="closeSectionModal()" class="delete-btn">Cancel</button>
-            <button onclick="saveSectionChanges()" class="accept-btn">Save Section</button>
-        </div>
-    </div>
-</div>
+                    <div class="box-grid-2" style="margin-top:20px;">
+                        <button onclick="closeEditUserModal()" class="delete-btn" data-i18n="btn_cancel">Cancel</button>
+                        <button onclick="saveUserChanges()" class="accept-btn" data-i18n="btn_save_changes">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="edit-section-modal" class="modal hidden">
+                <div class="modal-content" style="max-width: 500px;">
+                    <h3 id="sec-modal-title" data-i18n="modal_edit_sec">Edit Section</h3>
+                    <input type="hidden" id="edit-sec-id"> <label class="form-label-modern" data-i18n="lbl_sec_code">Course Code</label>
+                    <input type="text" id="edit-sec-code" class="modern-input" placeholder="e.g. 311330">
+
+                    <div class="box-grid-2">
+                        <div>
+                            <label class="form-label-modern" data-i18n="lbl_sec_num">Section No.</label>
+                            <input type="number" id="edit-sec-num" class="modern-input">
+                        </div>
+                        <div>
+                             <label class="form-label-modern" data-i18n="lbl_capacity">Capacity</label>
+                             <input type="number" id="edit-sec-cap" class="modern-input">
+                        </div>
+                    </div>
+
+                    <label class="form-label-modern" data-i18n="lbl_sch_text">Schedule Text</label>
+                    <input type="text" id="edit-sec-sch" class="modern-input" placeholder="e.g. Mon/Wed 09:30-11:00">
+
+                    <label class="form-label-modern" data-i18n="lbl_room">Room</label>
+                    <input type="text" id="edit-sec-room" class="modern-input">
+                    
+                    <label class="form-label-modern" data-i18n="lbl_instructor">Instructor</label>
+                    <input type="text" id="edit-sec-instr" class="modern-input">
+
+                    <div class="box-grid-2" style="margin-top:20px;">
+                        <button onclick="closeSectionModal()" class="delete-btn" data-i18n="btn_cancel">Cancel</button>
+                        <button onclick="saveSectionChanges()" class="accept-btn" data-i18n="btn_save_sec">Save Section</button>
+                    </div>
+                </div>
+            </div>
 
             <div id="admin-admissions-container" class="dashboard-view hidden">
                 <div class="sch-modern-header">
                     <div>
                         <h2 class="section-title" data-i18n="admin_title">Admissions Management</h2>
-                        <span style="color:#888;">Review and process incoming student applications.</span>
+                        <span style="color:#888;" data-i18n="admin_subtitle">Review and process incoming student applications.</span>
                     </div>
                     <div class="header-stats-pill">
-                        <span id="admin-pending-count" style="color:var(--primary); font-weight:bold;">0</span> Pending
+                        <span id="admin-pending-count" style="color:var(--primary); font-weight:bold;">0</span> <span data-i18n="filter_pending">Pending</span>
                     </div>
                 </div>
 
@@ -299,21 +292,21 @@
                     <div class="sheet-stat-card green-glow">
                         <div class="ss-icon">📥</div>
                         <div class="ss-info">
-                            <span class="ss-label">Total Received</span>
+                            <span class="ss-label" data-i18n="stat_total_apps">Total Received</span>
                             <span class="ss-value" id="stat-total-apps">0</span>
                         </div>
                     </div>
                     <div class="sheet-stat-card blue-glow">
                         <div class="ss-icon">⚖️</div>
                         <div class="ss-info">
-                            <span class="ss-label">Avg GPA</span>
+                            <span class="ss-label" data-i18n="stat_avg_gpa">Avg GPA</span>
                             <span class="ss-value" id="stat-avg-gpa">--</span>
                         </div>
                     </div>
                     <div class="sheet-stat-card purple-glow">
                         <div class="ss-icon">🏢</div>
                         <div class="ss-info">
-                            <span class="ss-label">Most Popular</span>
+                            <span class="ss-label" data-i18n="stat_pop_major">Most Popular</span>
                             <span class="ss-value" id="stat-pop-major">--</span>
                         </div>
                     </div>
@@ -321,382 +314,363 @@
 
                 <div class="reg-controls-bar">
                     <div class="filter-pills">
-                        <button class="filter-pill active" onclick="filterApplications('pending')">Pending</button>
-                        <button class="filter-pill" onclick="filterApplications('accepted')">Accepted</button>
-                        <button class="filter-pill" onclick="filterApplications('rejected')">Rejected</button>
+                        <button class="filter-pill active" onclick="filterApplications('pending')" data-i18n="filter_pending">Pending</button>
+                        <button class="filter-pill" onclick="filterApplications('accepted')" data-i18n="filter_accepted">Accepted</button>
+                        <button class="filter-pill" onclick="filterApplications('rejected')" data-i18n="filter_rejected">Rejected</button>
                     </div>
                     <div class="reg-search-group">
                         <div class="reg-search-wrapper">
                             <div class="search-icon-absolute">🔍</div>
-                            <input type="text" id="admin-search" placeholder="Search applicant name or ID...">
+                            <input type="text" id="admin-search" data-i18n-placeholder="ph_search_apps" placeholder="Search applicant name or ID...">
                         </div>
                     </div>
                 </div>
 
-                <div id="admin-apps-grid" class="reg-grid">
+                <div id="admin-apps-grid" class="reg-grid"></div>
+            </div>
+
+            <div id="admin-modal" class="modal hidden">
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h2 id="adm-modal-name">Applicant Name</h2>
+                        <button class="close-modal" onclick="closeAdminModal()">&times;</button>
                     </div>
-            </div>
+                    <div class="pref-form">
+                        <div class="sheet-stats-row">
+                            <div class="ai-control-box">
+                                <div class="ai-box-label" data-i18n="lbl_hs_gpa">High School GPA</div>
+                                <div class="ss-value" id="adm-modal-gpa" style="color:var(--primary);">--</div>
+                            </div>
+                            <div class="ai-control-box">
+                                <div class="ai-box-label" data-i18n="lbl_desired_major">Desired Major</div>
+                                <div class="ss-value" id="adm-modal-major">--</div>
+                            </div>
+                            <div class="ai-control-box">
+                                <div class="ai-box-label" data-i18n="lbl_nid">National ID</div>
+                                <div class="ss-value" id="adm-modal-nid">--</div>
+                            </div>
+                        </div>
 
-<div id="admin-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 800px;">
-        <div class="modal-header">
-            <h2 id="adm-modal-name">Applicant Name</h2>
-            <button class="close-modal" onclick="closeAdminModal()">&times;</button>
-        </div>
-        <div class="pref-form">
-            <div class="sheet-stats-row">
-                <div class="ai-control-box">
-                    <div class="ai-box-label">High School GPA</div>
-                    <div class="ss-value" id="adm-modal-gpa" style="color:var(--primary);">--</div>
+                        <h3 style="margin-top:20px; color:#aaa;" data-i18n="lbl_documents">Documents</h3>
+                        <div class="box-grid-2">
+                            <a href="#" target="_blank" id="btn-view-id" class="radio-card" style="text-decoration:none;">
+                                <span class="emoji">🆔</span> <span data-i18n="btn_view_id">View ID Card</span>
+                            </a>
+                            <a href="#" target="_blank" id="btn-view-grades" class="radio-card" style="text-decoration:none;">
+                                <span class="emoji">📝</span> <span data-i18n="btn_view_grades">View Grades</span>
+                            </a>
+                        </div>
+
+                        <hr style="border-color:#333; margin: 20px 0;">
+
+                        <div class="form-group">
+                            <label class="ai-box-label" data-i18n="lbl_admin_notes">Admin Notes (Optional)</label>
+                            <textarea id="adm-notes" class="modern-textarea" rows="2" data-i18n-placeholder="ph_admin_notes" placeholder="Reason for rejection or special notes..."></textarea>
+                        </div>
+
+                        <div class="box-grid-2" style="margin-top: 10px;">
+                            <button onclick="processApplication('Rejected')" class="delete-btn" style="width:100%; padding:15px; border-radius:12px;" data-i18n="btn_reject">Reject Application</button>
+                            <button onclick="processApplication('Accepted')" class="accept-btn" style="width:100%;" data-i18n="btn_accept">Accept & Create User</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="ai-control-box">
-                    <div class="ai-box-label">Desired Major</div>
-                    <div class="ss-value" id="adm-modal-major">--</div>
+            </div>
+
+            <div id="home-container" class="dashboard-view hidden">
+                <div class="home-header-row">
+                    <div class="user-header-card">
+                        <div class="uhc-avatar-container">
+                            <img src="https://ui-avatars.com/api/?name=Student&background=00E676&color=000" id="header-avatar-img" alt="Profile" class="uhc-avatar">
+                        </div>
+                        
+                        <div class="uhc-info-block">
+                            <h1 id="header-student-name" class="uhc-name">Loading Student...</h1>
+                            
+                            <div class="uhc-meta-badges">
+                                <div class="uhc-badge">
+                                    <span class="uhc-icon">🆔</span>
+                                    <span id="header-student-id">--</span>
+                                </div>
+
+                                <div class="uhc-badge">
+                                    <span class="uhc-icon">🎓</span>
+                                    <span id="header-student-major">--</span>
+                                </div>
+
+                                <div class="uhc-badge">
+                                    <span class="uhc-icon">📜</span>
+                                    <span id="header-student-degree">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alerts-container">
+                        <div class="alert-item warning">
+                            <div class="alert-icon">⚠️</div>
+                            <div class="alert-body">
+                                <strong data-i18n="alert_gpa_title">GPA Notice</strong>
+                                <span data-i18n="alert_gpa_desc">Your current GPA is below the recommended threshold.</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="ai-control-box">
-                    <div class="ai-box-label">National ID</div>
-                    <div class="ss-value" id="adm-modal-nid">--</div>
+
+                <div class="stats-overview-row">
+                    <div class="stat-widget">
+                        <span class="widget-label" data-i18n="lbl_current_gpa">Current GPA</span>
+                        <span id="stat-gpa" class="widget-value">--</span>
+                        <div class="widget-trend down" style="color:var(--accent-red); font-size:0.8rem;">↓ -0.05</div>
+                    </div>
+                    <div class="stat-widget">
+                        <span class="widget-label" data-i18n="lbl_hours_passed">Hours Passed</span>
+                        <span id="stat-hours-text" class="widget-value">--</span>
+                        <span class="widget-sub">of 132 credits</span>
+                    </div>
+                </div>
+
+                <div class="home-main-grid">
+                    <div class="dashboard-card schedule-widget">
+                        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <h3 style="margin:0;" data-i18n="lbl_todays_schedule">Today's Schedule</h3>
+                            <button class="mini-logout-btn" onclick="showSection('schedule')" style="width:auto; border:none; padding:0;" data-i18n="lbl_view_full">View Full</button>
+                        </div>
+                        <div id="bento-schedule-list" class="bento-schedule-list"></div>
+                    </div>
+
+                    <div class="stat-column">
+                        <div class="stat-widget">
+                            <span class="widget-label" data-i18n="lbl_class_rank">Class Rank</span>
+                            <span id="stat-rank" class="widget-value">--</span>
+                            <span class="widget-sub">Current Standing</span>
+                        </div>
+                        <div class="stat-widget" style="flex: 1;">
+                            <span class="widget-label" data-i18n="lbl_reg_courses_count">Registered Courses</span>
+                            <span id="stat-registered-count" class="widget-value">0</span>
+                            <span class="widget-sub" id="sch-credit-status" data-i18n="lbl_credits">0 Credits</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card hero-widget">
+                        <div class="hero-content">
+                            <span class="badge-new" style="background:var(--primary); color:black; padding:4px 8px; border-radius:8px; font-weight:bold; font-size:0.8rem;" data-i18n="badge_reg_open">Registration Open</span>
+                            <h2 style="margin:10px 0;" data-i18n="hero_enroll_title">Fall 2025 Enrollment</h2>
+                            <p style="color:#ccc; margin-bottom:20px;" data-i18n="hero_enroll_desc">Secure your seat in major compulsory courses before sections fill up.</p>
+                            <button class="ai-header-btn" onclick="showSection('registration')" data-i18n="btn_enroll_now">Enroll Now ✨</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <h3 style="margin-top:20px; color:#aaa;">Documents</h3>
-            <div class="box-grid-2">
-                <a href="#" target="_blank" id="btn-view-id" class="radio-card" style="text-decoration:none;">
-                    <span class="emoji">🆔</span> View ID Card
-                </a>
-                <a href="#" target="_blank" id="btn-view-grades" class="radio-card" style="text-decoration:none;">
-                    <span class="emoji">📝</span> View Grades
-                </a>
+            <div id="admin-home-container" class="dashboard-view hidden">
+                <div class="home-header-row">
+                    <div class="welcome-text">
+                        <h1 data-i18n="adm_home_title">Admin Dashboard 🛡️</h1>
+                        <p data-i18n="adm_home_sub">System Overview & Quick Actions</p>
+                    </div>
+                    <div class="header-right">
+                        <span class="badge badge-gray" id="admin-date-display">--</span>
+                    </div>
+                </div>
+
+                <div class="sheet-stats-row">
+                    <div class="sheet-stat-card green-glow" onclick="showSection('admin-admissions')" style="cursor:pointer;">
+                        <div class="ss-icon">📥</div>
+                        <div class="ss-info">
+                            <span class="ss-label" data-i18n="stat_pending_adm">Pending Admissions</span>
+                            <span class="ss-value" id="ah-stat-admissions">0</span>
+                        </div>
+                    </div>
+                    <div class="sheet-stat-card yellow-glow" onclick="showSection('admin-exceptions')" style="cursor:pointer; border-bottom: 2px solid var(--accent-orange);">
+                        <div class="ss-icon">⚡</div>
+                        <div class="ss-info">
+                            <span class="ss-label" data-i18n="stat_pending_exc">Pending Exceptions</span>
+                            <span class="ss-value" id="ah-stat-exceptions">0</span>
+                        </div>
+                    </div>
+                    <div class="sheet-stat-card blue-glow" onclick="showSection('admin-users')" style="cursor:pointer;">
+                        <div class="ss-icon">👥</div>
+                        <div class="ss-info">
+                            <span class="ss-label" data-i18n="stat_total_users">Total Users</span>
+                            <span class="ss-value" id="ah-stat-users">0</span>
+                        </div>
+                    </div>
+                    <div class="sheet-stat-card purple-glow" onclick="showSection('admin-courses')" style="cursor:pointer;">
+                        <div class="ss-icon">📚</div>
+                        <div class="ss-info">
+                            <span class="ss-label" data-i18n="stat_open_sec">Open Sections</span>
+                            <span class="ss-value" id="ah-stat-sections">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-title-sm" style="margin-top:30px; color:#888;">Quick Management</h3>
+                <div class="box-grid-3">
+                    <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-admissions')">
+                        <div class="ss-icon" style="background:var(--primary); color:black; margin-bottom:10px;">🛡️</div>
+                        <h3 data-i18n="card_rev_app">Review Applications</h3>
+                        <p style="color:#888; font-size:0.9rem;" data-i18n="card_rev_app_desc">Process new student enrollments</p>
+                    </div>
+
+                    <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-courses')">
+                        <div class="ss-icon" style="background:white; color:black; margin-bottom:10px;">✏️</div>
+                        <h3 data-i18n="card_man_courses">Manage Courses</h3>
+                        <p style="color:#888; font-size:0.9rem;" data-i18n="card_man_courses_desc">Open/Close sections and edit details</p>
+                    </div>
+
+                    <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-users')">
+                        <div class="ss-icon" style="background:var(--accent-blue); color:white; margin-bottom:10px;">👥</div>
+                        <h3 data-i18n="card_user_dir">User Directory</h3>
+                        <p style="color:#888; font-size:0.9rem;" data-i18n="card_user_dir_desc">Edit roles, GPA, and student data</p>
+                    </div>
+                </div>
             </div>
 
-            <hr style="border-color:#333; margin: 20px 0;">
+            <div id="registration-container" class="dashboard-view hidden">
+                <div class="reg-controls-bar">
+                    <div class="filter-pills">
+                        <button class="filter-pill active" onclick="filterGrid('all')" data-i18n="filter_all_courses">All Courses</button>
+                        <button class="filter-pill" onclick="filterGrid('available')" data-i18n="filter_available">Available</button>
+                        <button class="filter-pill" onclick="filterGrid('waitlist')" data-i18n="filter_waitlist_status">Waitlist Status</button>
+                    </div>
 
-            <div class="form-group">
-                <label class="ai-box-label">Admin Notes (Optional)</label>
-                <textarea id="adm-notes" class="modern-textarea" rows="2" placeholder="Reason for rejection or special notes..."></textarea>
+                    <div class="reg-search-group">
+                        <div class="reg-search-wrapper">
+                            <div class="search-icon-absolute">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            </div>
+                            <input type="text" id="reg-search-input" data-i18n-placeholder="ph_search_courses" placeholder="Search courses...">
+                        </div>
+                        
+                        <button class="filter-btn-glass" onclick="toggleFilters()" title="Toggle Filters">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        </button>
+                    </div>
+
+                    <button class="ai-header-btn" id="ai-enhance-btn-reg">
+                        <span data-i18n="btn_ai_advisor">✨ AI Advisor</span>
+                    </button>
+                </div>
+
+                <div id="reg-filter-panel" class="filter-panel hidden" style="margin-bottom: 25px;">
+                    <div class="filters-row">
+                        <select id="reg-filter-category" class="filter-select">
+                            <option value="all" data-i18n="filter_cat_all">All Categories</option>
+                            <option value="University Requirement">University Requirement</option>
+                            <option value="College Compulsory">College Compulsory</option>
+                            <option value="Major Compulsory">Major Compulsory</option>
+                            <option value="Major Elective">Major Elective</option>
+                        </select>
+                    </div>
+
+                    <div class="toggles-row" style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="reg-check-completed" onclick="renderRegistrationList(availableSectionsData)"> 
+                            <span data-i18n="toggle_hide_completed">Hide Completed</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="reg-check-conflict" onclick="renderRegistrationList(availableSectionsData)"> 
+                            <span data-i18n="toggle_hide_conflict">Hide Time Conflicts</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="reg-check-full" onclick="renderRegistrationList(availableSectionsData)"> 
+                            <span data-i18n="toggle_hide_full">Hide Full Sections</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="alert-item recommendation" style="margin-bottom: 20px;">
+                    <div class="alert-icon">✨</div>
+                    <div class="alert-body">
+                        <strong data-i18n="ai_rec_title">AI Recommendation</strong>
+                        <span data-i18n="ai_rec_desc">It's recommended to enroll in Database Design and Development to increase your GPA.</span>
+                    </div>
+                </div>
+
+                <div id="reg-credit-status" style="text-align:center; margin-bottom: 20px; font-size: 0.9rem; color: #666;"></div>
+                <div id="registration-courses-grid" class="reg-grid"></div>
             </div>
 
-            <div class="box-grid-2" style="margin-top: 10px;">
-                <button onclick="processApplication('Rejected')" class="delete-btn" style="width:100%; padding:15px; border-radius:12px;">Reject Application</button>
-                <button onclick="processApplication('Accepted')" class="accept-btn" style="width:100%;">Accept & Create User</button>
-            </div>
-        </div>
-    </div>
-</div>
+            <div id="courses-sheet-container" class="dashboard-view hidden">
+                <div class="sheet-stats-row">
+                    <div class="sheet-stat-card green-glow">
+                        <div class="ss-icon">📊</div>
+                        <div class="ss-info">
+                            <span class="ss-label" data-i18n="lbl_total_progress">Progress</span>
+                            <span class="ss-value" id="sheet-progress-val">0%</span>
+                            <div class="ss-progress-track">
+                                <div class="ss-progress-bar" id="sheet-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
 
-<div id="home-container" class="dashboard-view hidden">
-    <div class="home-header-row">
-        <div class="user-header-card">
-            <div class="uhc-avatar-container">
-                <img src="https://ui-avatars.com/api/?name=Student&background=00E676&color=000" id="header-avatar-img" alt="Profile" class="uhc-avatar">
-            </div>
-            
-            <div class="uhc-info-block">
-                <h1 id="header-student-name" class="uhc-name">Loading Student...</h1>
+                    <div class="sheet-stat-card purple-glow">
+                        <div class="ss-icon">🎓</div>
+                        <div class="ss-info">
+                            <span class="ss-label" data-i18n="lbl_completed_hrs">Completed Hours</span>
+                            <span class="ss-value"><span id="sheet-completed-val">0</span> <small>/ 132</small></span>
+                        </div>
+                    </div>
+
+                    <div class="sheet-stat-card blue-glow">
+                        <div class="ss-icon">⭐</div>
+                        <div class="ss-info">
+                            <span class="ss-label" data-i18n="lbl_avg_grade">Avg Grade</span>
+                            <span class="ss-value" id="sheet-gpa-val">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sheet-controls-bar">
+                    <div class="sheet-search-wrapper">
+                        <div class="search-icon-absolute">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <input type="text" id="sheet-search" data-i18n-placeholder="ph_search_history" placeholder="Search history...">
+                    </div>
+
+                    <div class="sheet-filter-group">
+
+                        <select id="filter-category" class="sheet-select">
+                            <option value="all" data-i18n="filter_cat_all">All Categories</option>
+                            <option value="University Requirement">Uni Req</option>
+                            <option value="College Compulsory">College Comp</option>
+                            <option value="Major Compulsory">Major Comp</option>
+                            <option value="Major Elective">Major Elec</option>
+                        </select>
+                        
+                        <div class="sheet-toggles">
+                            <label class="pill-checkbox">
+                                <input type="checkbox" id="check-completed" checked>
+                                <span data-i18n="status_passed">Passed</span>
+                            </label>
+                            <label class="pill-checkbox">
+                                <input type="checkbox" id="check-failed" checked>
+                                <span data-i18n="status_remaining">Remaining</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sheet-list-header">
+                    <div style="width:80px" data-i18n="col_code">Code</div>
+                    <div style="flex:1" data-i18n="col_detail">Course Detail</div>
+                    <div style="width:100px" data-i18n="col_credits">Credits</div>
+                    <div style="width:120px" data-i18n="col_prereq">Prereq</div>
+                    <div style="width:100px; text-align:right;" data-i18n="col_grade">Grade</div>
+                </div>
                 
-                <div class="uhc-meta-badges">
-                    <div class="uhc-badge">
-                        <span class="uhc-icon">🆔</span>
-                        <span id="header-student-id">--</span>
-                    </div>
-
-                    <div class="uhc-badge">
-                        <span class="uhc-icon">🎓</span>
-                        <span id="header-student-major">--</span>
-                    </div>
-
-                    <div class="uhc-badge">
-                        <span class="uhc-icon">📜</span>
-                        <span id="header-student-degree">--</span>
-                    </div>
-                </div>
+                <div id="courses-sheet-grid" class="sheet-grid-container"></div>
             </div>
-        </div>
-        
-        <div class="alerts-container">
-            <div class="alert-item warning">
-                <div class="alert-icon">⚠️</div>
-                <div class="alert-body">
-                    <strong>GPA Notice</strong>
-                    <span>Your current GPA is 60. Note: This is below the recommended threshold.</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="stats-overview-row">
-    <div class="stat-widget">
-        <span class="widget-label">Current GPA</span>
-        <span id="stat-gpa" class="widget-value">--</span>
-        <div class="widget-trend down" style="color:var(--accent-red); font-size:0.8rem;">↓ -0.05</div>
-    </div>
-    <div class="stat-widget">
-        <span class="widget-label">Hours Passed</span>
-        <span id="stat-hours-text" class="widget-value">--</span>
-        <span class="widget-sub">of 132 credits</span>
-    </div>
-</div>
-
-<div class="home-main-grid">
-    <div class="dashboard-card schedule-widget">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0;">Today's Schedule</h3>
-            <button class="mini-logout-btn" onclick="showSection('schedule')" style="width:auto; border:none; padding:0;">View Full</button>
-        </div>
-        <div id="bento-schedule-list" class="bento-schedule-list"></div>
-    </div>
-
-    <div class="stat-column">
-        <div class="stat-widget">
-            <span class="widget-label">Class Rank</span>
-            <span id="stat-rank" class="widget-value">--</span>
-            <span class="widget-sub">Current Standing</span>
-        </div>
-        <div class="stat-widget" style="flex: 1;">
-            <span class="widget-label">Registered Courses</span>
-            <span id="stat-registered-count" class="widget-value">0</span>
-            <span class="widget-sub" id="sch-credit-status">0 Credits</span>
-        </div>
-    </div>
-
-    <div class="dashboard-card hero-widget">
-        <div class="hero-content">
-            <span class="badge-new" style="background:var(--primary); color:black; padding:4px 8px; border-radius:8px; font-weight:bold; font-size:0.8rem;">Registration Open</span>
-            <h2 style="margin:10px 0;">Fall 2025 Enrollment</h2>
-            <p style="color:#ccc; margin-bottom:20px;">Secure your seat in major compulsory courses before sections fill up.</p>
-            <button class="ai-header-btn" onclick="showSection('registration')">Enroll Now ✨</button>
-        </div>
-    </div>
-</div>
-</div>
-
-<div id="admin-home-container" class="dashboard-view hidden">
-    <div class="home-header-row">
-        <div class="welcome-text">
-            <h1>Admin Dashboard 🛡️</h1>
-            <p>System Overview & Quick Actions</p>
-        </div>
-        <div class="header-right">
-            <span class="badge badge-gray" id="admin-date-display">--</span>
-        </div>
-    </div>
-
-    <div class="sheet-stats-row">
-        <div class="sheet-stat-card green-glow" onclick="showSection('admin-admissions')" style="cursor:pointer;">
-            <div class="ss-icon">📥</div>
-            <div class="ss-info">
-                <span class="ss-label">Pending Admissions</span>
-                <span class="ss-value" id="ah-stat-admissions">0</span>
-            </div>
-        </div>
-        <div class="sheet-stat-card yellow-glow" onclick="showSection('admin-exceptions')" style="cursor:pointer; border-bottom: 2px solid var(--accent-orange);">
-            <div class="ss-icon">⚡</div>
-            <div class="ss-info">
-                <span class="ss-label">Pending Exceptions</span>
-                <span class="ss-value" id="ah-stat-exceptions">0</span>
-            </div>
-        </div>
-        <div class="sheet-stat-card blue-glow" onclick="showSection('admin-users')" style="cursor:pointer;">
-            <div class="ss-icon">👥</div>
-            <div class="ss-info">
-                <span class="ss-label">Total Users</span>
-                <span class="ss-value" id="ah-stat-users">0</span>
-            </div>
-        </div>
-        <div class="sheet-stat-card purple-glow" onclick="showSection('admin-courses')" style="cursor:pointer;">
-            <div class="ss-icon">📚</div>
-            <div class="ss-info">
-                <span class="ss-label">Open Sections</span>
-                <span class="ss-value" id="ah-stat-sections">0</span>
-            </div>
-        </div>
-    </div>
-
-    <h3 class="section-title-sm" style="margin-top:30px; color:#888;">Quick Management</h3>
-    <div class="box-grid-3">
-        <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-admissions')">
-            <div class="ss-icon" style="background:var(--primary); color:black; margin-bottom:10px;">🛡️</div>
-            <h3>Review Applications</h3>
-            <p style="color:#888; font-size:0.9rem;">Process new student enrollments</p>
-        </div>
-
-        <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-courses')">
-            <div class="ss-icon" style="background:white; color:black; margin-bottom:10px;">✏️</div>
-            <h3>Manage Courses</h3>
-            <p style="color:#888; font-size:0.9rem;">Open/Close sections and edit details</p>
-        </div>
-
-        <div class="adm-card" style="padding:20px; align-items:center; text-align:center; cursor:pointer;" onclick="showSection('admin-users')">
-            <div class="ss-icon" style="background:var(--accent-blue); color:white; margin-bottom:10px;">👥</div>
-            <h3>User Directory</h3>
-            <p style="color:#888; font-size:0.9rem;">Edit roles, GPA, and student data</p>
-        </div>
-    </div>
-</div>
-
-<div id="registration-container" class="dashboard-view hidden">
-    
-    <div class="reg-controls-bar">
-        <div class="filter-pills">
-            <button class="filter-pill active" onclick="filterGrid('all')">All Courses</button>
-            <button class="filter-pill" onclick="filterGrid('available')">Available</button>
-            <button class="filter-pill" onclick="filterGrid('waitlist')">Waitlist Status</button>
-        </div>
-
-        <div class="reg-search-group">
-            <div class="reg-search-wrapper">
-                <div class="search-icon-absolute">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                </div>
-                <input type="text" id="reg-search-input" placeholder="Search courses..." data-i18n-placeholder="ph_search_courses">
-            </div>
-            
-            <button class="filter-btn-glass" onclick="toggleFilters()" title="Toggle Filters">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            </button>
-        </div>
-
-        <button class="ai-header-btn" id="ai-enhance-btn-reg">
-            <span>✨ AI Advisor</span>
-        </button>
-    </div>
-
-    <div id="reg-filter-panel" class="filter-panel hidden" style="margin-bottom: 25px;">
-        <div class="filters-row">
-            <select id="reg-filter-year" class="filter-select">
-                <option value="all">All Years</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-                <option value="4">Year 4</option>
-            </select>
-            <select id="reg-filter-category" class="filter-select">
-                <option value="all">All Categories</option>
-                <option value="University Requirement">University Requirement</option>
-                <option value="College Compulsory">College Compulsory</option>
-                <option value="Major Compulsory">Major Compulsory</option>
-                <option value="Major Elective">Major Elective</option>
-            </select>
-        </div>
-
-        <div class="toggles-row" style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
-            <label class="toggle-label">
-                <input type="checkbox" id="reg-check-completed" onclick="renderRegistrationList(availableSectionsData)"> 
-                Hide Completed
-            </label>
-            <label class="toggle-label">
-                <input type="checkbox" id="reg-check-conflict" onclick="renderRegistrationList(availableSectionsData)"> 
-                Hide Time Conflicts
-            </label>
-            <label class="toggle-label">
-                <input type="checkbox" id="reg-check-full" onclick="renderRegistrationList(availableSectionsData)"> 
-                Hide Full Sections
-            </label>
-        </div>
-    </div>
-
-    <div class="alert-item recommendation" style="margin-bottom: 20px;">
-        <div class="alert-icon">✨</div>
-        <div class="alert-body">
-            <strong>AI Recommendation</strong>
-            <span>It's recommended to enroll in <b>Database Design and Development</b> to increase your GPA.</span>
-        </div>
-    </div>
-
-    <div id="reg-credit-status" style="text-align:center; margin-bottom: 20px; font-size: 0.9rem; color: #666;"></div>
-    <div id="registration-courses-grid" class="reg-grid"></div>
-</div>
-
-
-<div id="courses-sheet-container" class="dashboard-view hidden">
-    
-    <div class="sheet-stats-row">
-        <div class="sheet-stat-card green-glow">
-            <div class="ss-icon">📊</div>
-            <div class="ss-info">
-                <span class="ss-label" data-i18n="lbl_total_progress">Progress</span>
-                <span class="ss-value" id="sheet-progress-val">0%</span>
-                <div class="ss-progress-track">
-                    <div class="ss-progress-bar" id="sheet-progress-bar" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="sheet-stat-card purple-glow">
-            <div class="ss-icon">🎓</div>
-            <div class="ss-info">
-                <span class="ss-label" data-i18n="lbl_completed_hrs">Completed Hours</span>
-                <span class="ss-value"><span id="sheet-completed-val">0</span> <small>/ 132</small></span>
-            </div>
-        </div>
-
-        <div class="sheet-stat-card blue-glow">
-            <div class="ss-icon">⭐</div>
-            <div class="ss-info">
-                <span class="ss-label" data-i18n="lbl_avg_grade">Avg Grade</span>
-                <span class="ss-value" id="sheet-gpa-val">--</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="sheet-controls-bar">
-        <div class="sheet-search-wrapper">
-            <div class="search-icon-absolute">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </div>
-            <input type="text" id="sheet-search" placeholder="Search history..." data-i18n-placeholder="ph_search_courses">
-        </div>
-
-        <div class="sheet-filter-group">
-            <select id="filter-year" class="sheet-select">
-                <option value="all" data-i18n="filter_year_all">All Years</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-                <option value="4">Year 4</option>
-            </select>
-
-            <select id="filter-category" class="sheet-select">
-                <option value="all" data-i18n="filter_cat_all">All Categories</option>
-                <option value="University Requirement">Uni Req</option>
-                <option value="College Compulsory">College Comp</option>
-                <option value="Major Compulsory">Major Comp</option>
-                <option value="Major Elective">Major Elec</option>
-            </select>
-            
-            <div class="sheet-toggles">
-                <label class="pill-checkbox">
-                    <input type="checkbox" id="check-completed" checked>
-                    <span>Passed</span>
-                </label>
-                <label class="pill-checkbox">
-                    <input type="checkbox" id="check-failed" checked>
-                    <span>Remaining</span>
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <div class="sheet-list-header">
-        <div style="width:80px">Code</div>
-        <div style="flex:1">Course Detail</div>
-        <div style="width:100px">Credits</div>
-        <div style="width:120px">Prereq</div>
-        <div style="width:100px; text-align:right;">Grade</div>
-    </div>
-    
-    <div id="courses-sheet-grid" class="sheet-grid-container">
-        </div>
-</div>
 
             <div id="schedule-container" class="dashboard-view hidden">
                 <div class="sch-modern-header">
                     <div style="display: flex; flex-direction: column;">
                         <h2 class="section-title" data-i18n="lbl_my_schedule" style="margin-bottom: 5px;">My Weekly Schedule</h2>
-                        <span id="sch-credit-status" style="color:#666; font-size:0.9rem;">Checking credits...</span>
+                        <span id="sch-credit-status" style="color:#666; font-size:0.9rem;" data-i18n="msg_checking_credits">Checking credits...</span>
                     </div>
                     <button class="ai-header-btn" onclick="showSection('registration')">
-                        <span>+ Add Course</span>
+                        <span data-i18n="lbl_add_course">+ Add Course</span>
                     </button>
                 </div>
 
@@ -710,128 +684,127 @@
                 <div id="history-timeline-container" class="history-timeline">
                     <div class="spinner"></div>
                 </div>
-
             </div>
 
-        <div id="plan-container" class="dashboard-view hidden">
-            <div class="tree-scroll-wrapper" id="tree-wrapper">
-                <div class="tree-background-ambient">
-                    <div class="blob blob-1"></div>
-                    <div class="blob blob-2"></div>
-                    <div class="blob blob-3"></div>
-                </div>
-                <div class="tree-grid-overlay"></div>
+            <div id="plan-container" class="dashboard-view hidden">
+                <div class="tree-scroll-wrapper" id="tree-wrapper">
+                    <div class="tree-background-ambient">
+                        <div class="blob blob-1"></div>
+                        <div class="blob blob-2"></div>
+                        <div class="blob blob-3"></div>
+                    </div>
+                    <div class="tree-grid-overlay"></div>
 
-                <div id="plan-tree-canvas"></div>
+                    <div id="plan-tree-canvas"></div>
+                </div>
             </div>
-        </div>
 
-<div id="exceptions-container" class="dashboard-view hidden">
-    <div class="sch-modern-header">
-        <div style="display: flex; flex-direction: column;">
-            <h2 class="section-title" data-i18n="exc_title" style="margin-bottom: 5px;">Exception Requests</h2>
-            <span style="color:#666; font-size:0.9rem;">Submit overrides for prerequisites or alternative courses.</span>
-        </div>
-        <div class="header-stats-pill">
-            <span id="exc-total-count" style="color:white; font-weight:bold;">0</span> Requests
-        </div>
-    </div>
-
-    <div class="exception-layout">
-        
-        <div class="exc-left-panel">
-            <div class="exc-form-card">
-                <div class="form-header-row">
-                    <div class="icon-box-orange">⚡</div>
-                    <div>
-                        <h3 style="margin:0; color:white;">New Exception Request</h3>
-                        <span style="font-size:0.8rem; color:#666;">Fill out the details below to request a curriculum override.</span>
+            <div id="exceptions-container" class="dashboard-view hidden">
+                <div class="sch-modern-header">
+                    <div style="display: flex; flex-direction: column;">
+                        <h2 class="section-title" data-i18n="exc_title" style="margin-bottom: 5px;">Exception Requests</h2>
+                        <span style="color:#666; font-size:0.9rem;" data-i18n="exc_desc">Submit overrides for prerequisites or alternative courses.</span>
                     </div>
-                </div>
-                
-                <div class="form-group" style="margin-top:20px;">
-                    <label class="form-label-modern" data-i18n="exc_type_label">Request Type</label>
-                    <div class="exc-type-grid">
-                        <label class="type-card">
-                            <input type="radio" name="exc-type-radio" value="PREREQ" checked onchange="updateExcType('PREREQ')">
-                            <span class="type-icon">🔓</span>
-                            <span class="type-name" data-i18n="opt_prereq">Prereq Override</span>
-                        </label>
-                        <label class="type-card">
-                            <input type="radio" name="exc-type-radio" value="ALTERNATIVE" onchange="updateExcType('ALTERNATIVE')">
-                            <span class="type-icon">🔀</span>
-                            <span class="type-name" data-i18n="opt_alt">Alternative Course</span>
-                        </label>
-                    </div>
-                    <select id="exc-type" class="hidden">
-                        <option value="PREREQ">Prerequisite</option>
-                        <option value="ALTERNATIVE">Alternative</option>
-                    </select>
-                </div>
-
-                <div class="ai-control-box">
-                    <div class="ai-box-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <span data-i18n="exc_target_label">Target Course (The course you want to take)</span>
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="text" id="exc-target-search" class="modern-input" data-i18n-placeholder="ph_search_target" placeholder="Search course code or name..." autocomplete="off">
-                        <input type="hidden" id="exc-target-code-hidden">
-                        <div id="exc-target-suggestions" class="suggestions-list hidden"></div>
+                    <div class="header-stats-pill">
+                        <span id="exc-total-count" style="color:white; font-weight:bold;">0</span> Requests
                     </div>
                 </div>
 
-                <div class="ai-control-box hidden" id="alt-course-group">
-                    <div class="ai-box-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
-                        <span data-i18n="exc_alt_label">Replacing Course</span>
+                <div class="exception-layout">
+                    
+                    <div class="exc-left-panel">
+                        <div class="exc-form-card">
+                            <div class="form-header-row">
+                                <div class="icon-box-orange">⚡</div>
+                                <div>
+                                    <h3 style="margin:0; color:white;" data-i18n="exc_new_req">New Exception Request</h3>
+                                    <span style="font-size:0.8rem; color:#666;" data-i18n="exc_new_req_desc">Fill out the details below to request a curriculum override.</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-top:20px;">
+                                <label class="form-label-modern" data-i18n="exc_type_label">Request Type</label>
+                                <div class="exc-type-grid">
+                                    <label class="type-card">
+                                        <input type="radio" name="exc-type-radio" value="PREREQ" checked onchange="updateExcType('PREREQ')">
+                                        <span class="type-icon">🔓</span>
+                                        <span class="type-name" data-i18n="opt_prereq">Prereq Override</span>
+                                    </label>
+                                    <label class="type-card">
+                                        <input type="radio" name="exc-type-radio" value="ALTERNATIVE" onchange="updateExcType('ALTERNATIVE')">
+                                        <span class="type-icon">🔀</span>
+                                        <span class="type-name" data-i18n="opt_alt">Alternative Course</span>
+                                    </label>
+                                </div>
+                                <select id="exc-type" class="hidden">
+                                    <option value="PREREQ">Prerequisite</option>
+                                    <option value="ALTERNATIVE">Alternative</option>
+                                </select>
+                            </div>
+
+                            <div class="ai-control-box">
+                                <div class="ai-box-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    <span data-i18n="exc_target_label">Target Course (The course you want to take)</span>
+                                </div>
+                                <div class="search-wrapper">
+                                    <input type="text" id="exc-target-search" class="modern-input" data-i18n-placeholder="ph_search_target" placeholder="Search course code or name..." autocomplete="off">
+                                    <input type="hidden" id="exc-target-code-hidden">
+                                    <div id="exc-target-suggestions" class="suggestions-list hidden"></div>
+                                </div>
+                            </div>
+
+                            <div class="ai-control-box hidden" id="alt-course-group">
+                                <div class="ai-box-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                                    <span data-i18n="exc_alt_label">Replacing Course</span>
+                                </div>
+                                <div class="search-wrapper">
+                                    <input type="text" id="exc-alt-search" class="modern-input" data-i18n-placeholder="ph_search_alt" placeholder="Search course to replace..." autocomplete="off">
+                                    <input type="hidden" id="exc-alt-code-hidden">
+                                    <div id="exc-alt-suggestions" class="suggestions-list hidden"></div>
+                                </div>
+                            </div>
+
+                            <div class="ai-control-box">
+                                <div class="ai-box-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    <span data-i18n="exc_reason_label">Justification / Reason</span>
+                                </div>
+                                <textarea id="exc-reason" class="modern-textarea" rows="5" data-i18n-placeholder="ph_reason" placeholder="Please explain your academic situation in detail..."></textarea>
+                            </div>
+
+                            <button class="accept-btn" onclick="submitException()" style="width: 100%; margin-top: 15px; padding: 12px;">
+                                <span data-i18n="btn_submit_req">Submit Request 🚀</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="search-wrapper">
-                        <input type="text" id="exc-alt-search" class="modern-input" data-i18n-placeholder="ph_search_alt" placeholder="Search course to replace..." autocomplete="off">
-                        <input type="hidden" id="exc-alt-code-hidden">
-                        <div id="exc-alt-suggestions" class="suggestions-list hidden"></div>
+
+                    <div class="exc-right-panel">
+                        <h3 class="section-title-sm" data-i18n="exc_history_title" style="margin-bottom:15px; color:#888;">History</h3>
+                        <div id="exception-history-list" class="exc-history-grid">
+                            <div class="spinner"></div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="ai-control-box">
-                    <div class="ai-box-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        <span data-i18n="exc_reason_label">Justification / Reason</span>
-                    </div>
-                    <textarea id="exc-reason" class="modern-textarea" rows="5" data-i18n-placeholder="ph_reason" placeholder="Please explain your academic situation in detail..."></textarea>
-                </div>
-
-                <button class="accept-btn" onclick="submitException()" data-i18n="btn_submit_req" style="width: 100%; margin-top: 15px; padding: 12px;">
-                    <span>Submit Request 🚀</span>
-                </button>
             </div>
-        </div>
-
-        <div class="exc-right-panel">
-            <h3 class="section-title-sm" data-i18n="exc_history_title" style="margin-bottom:15px; color:#888;">History</h3>
-            <div id="exception-history-list" class="exc-history-grid">
-                <div class="spinner"></div>
-            </div>
-        </div>
-    </div>
-</div>
     
         </div>
     </div>
 
-    <div id="node-highlight-container" class="hidden"></div>
-    <div id="plan-overlay" class="hidden" onclick="closePlanPopup()"></div>
+        <div id="node-highlight-container" class="hidden"></div>
+            <div id="plan-overlay" class="hidden" onclick="closePlanPopup()"></div>
 
-    <div id="course-popup" class="hidden">
-        <button class="close-popup" onclick="closePlanPopup()">×</button>
-        <h3 id="popup-title">Course Name</h3>
-        <p id="popup-desc">Full Course Name...</p>
-        <p id="popup-long-desc" class="popup-description"></p> 
-        <div class="popup-meta">
-            <span id="popup-credits" class="badge badge-gray">3 Cr</span>
-            <span id="popup-status" class="badge">Status</span>
-        </div>
-    </div>
+            <div id="course-popup" class="hidden">
+                <button class="close-popup" onclick="closePlanPopup()">×</button>
+                <h3 id="popup-title">Course Name</h3>
+                <p id="popup-desc">Full Course Name...</p>
+                <p id="popup-long-desc" class="popup-description"></p> 
+                <div class="popup-meta">
+                    <span id="popup-credits" class="badge badge-gray">3 Cr</span>
+                    <span id="popup-status" class="badge">Status</span>
+                </div>
+            </div>
 
     <div id="ai-modal" class="modal hidden">
         <div class="modal-content">
@@ -847,89 +820,89 @@
         </div>
     </div>
 
-<div id="ai-pref-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 500px; padding: 30px;">
-        <div class="modal-header" style="border:none;">
-            <div>
-                <h2 data-i18n="ai_pref_title" style="margin-bottom:5px;">AI Advisor</h2>
-                <p style="color:#666; font-size:0.9rem; margin:0;">Customize your schedule preferences</p>
+    <div id="ai-pref-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px; padding: 30px;">
+            <div class="modal-header" style="border:none;">
+                <div>
+                    <h2 data-i18n="ai_pref_title" style="margin-bottom:5px;">AI Advisor</h2>
+                    <p style="color:#666; font-size:0.9rem; margin:0;" data-i18n="ai_pref_subtitle">Customize your schedule preferences</p>
+                </div>
+                <button class="close-modal" id="close-pref-btn">&times;</button>
             </div>
-            <button class="close-modal" id="close-pref-btn">&times;</button>
-        </div>
-        
-        <div class="pref-form">
             
-            <div class="ai-control-box">
-                <div class="ai-box-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
-                    Study Intensity
-                </div>
-                <div class="box-grid-3">
-                    <label class="radio-card">
-                        <input type="radio" name="intensity" value="Relaxed">
-                        <span class="emoji">☕</span>
-                        <span>Relaxed</span>
-                    </label>
-                    <label class="radio-card">
-                        <input type="radio" name="intensity" value="Balanced" checked>
-                        <span class="emoji">⚖️</span>
-                        <span>Balanced</span>
-                    </label>
-                    <label class="radio-card">
-                        <input type="radio" name="intensity" value="Intense">
-                        <span class="emoji">🔥</span>
-                        <span>Intense</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="ai-control-box">
-                <div class="ai-box-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    Preferred Days
-                </div>
-                <div class="box-grid-3">
-                    <label class="radio-card" style="padding:10px;">
-                        <input type="checkbox" name="days" value="Sat"> Sat
-                    </label>
-                    <label class="radio-card" style="padding:10px;">
-                        <input type="checkbox" name="days" value="Mon/Wed" checked> Mon/Wed
-                    </label>
-                    <label class="radio-card" style="padding:10px;">
-                        <input type="checkbox" name="days" value="Sun/Tue"> Sun/Tue
-                    </label>
-                </div>
-            </div>
-
-            <div class="ai-control-box">
-                <div class="ai-box-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    Time Preference
-                </div>
-                <select id="time-pref">
-                    <option value="Any">Any Time</option>
-                    <option value="Morning Only">Morning (8:00 - 12:00)</option>
-                    <option value="No Early Classes">Late Start (10:00+)</option>
-                    <option value="Afternoon">Afternoon (12:00+)</option>
-                </select>
-            </div>
-
-            <div class="box-grid-2">
+            <div class="pref-form">
+                
                 <div class="ai-control-box">
-                    <div class="ai-box-label">Target Credits</div>
-                    <input type="number" id="credits-pref" placeholder="15" min="3" max="18" value="15" style="font-size:1.2rem; font-weight:bold; text-align:center;">
+                    <div class="ai-box-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                        <span data-i18n="lbl_intensity">Study Intensity</span>
+                    </div>
+                    <div class="box-grid-3">
+                        <label class="radio-card">
+                            <input type="radio" name="intensity" value="Relaxed">
+                            <span class="emoji">☕</span>
+                            <span data-i18n="opt_relaxed">Relaxed</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="intensity" value="Balanced" checked>
+                            <span class="emoji">⚖️</span>
+                            <span data-i18n="opt_balanced">Balanced</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="intensity" value="Intense">
+                            <span class="emoji">🔥</span>
+                            <span data-i18n="opt_intense">Intense</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="ai-control-box">
-                    <div class="ai-box-label">Specific Goal</div>
-                    <input type="text" id="focus-pref" placeholder="e.g. Focus on coding...">
+                    <div class="ai-box-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span data-i18n="lbl_pref_days">Preferred Days</span>
+                    </div>
+                    <div class="box-grid-3">
+                        <label class="radio-card" style="padding:10px;">
+                            <input type="checkbox" name="days" value="Sat"> Sat
+                        </label>
+                        <label class="radio-card" style="padding:10px;">
+                            <input type="checkbox" name="days" value="Mon/Wed" checked> Mon/Wed
+                        </label>
+                        <label class="radio-card" style="padding:10px;">
+                            <input type="checkbox" name="days" value="Sun/Tue"> Sun/Tue
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            <button id="generate-schedule-btn" class="enhance-ai-btn" data-i18n="btn_generate">Generate Recommendations ✨</button>
+                <div class="ai-control-box">
+                    <div class="ai-box-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span data-i18n="lbl_time_pref">Time Preference</span>
+                    </div>
+                    <select id="time-pref">
+                        <option value="Any" data-i18n="opt_time_any">Any Time</option>
+                        <option value="Morning Only" data-i18n="opt_time_morning">Morning (8:00 - 12:00)</option>
+                        <option value="No Early Classes" data-i18n="opt_time_late">Late Start (10:00+)</option>
+                        <option value="Afternoon" data-i18n="opt_time_afternoon">Afternoon (12:00+)</option>
+                    </select>
+                </div>
+
+                <div class="box-grid-2">
+                    <div class="ai-control-box">
+                        <div class="ai-box-label" data-i18n="lbl_target_credits">Target Credits</div>
+                        <input type="number" id="credits-pref" placeholder="15" min="3" max="18" value="15" style="font-size:1.2rem; font-weight:bold; text-align:center;">
+                    </div>
+
+                    <div class="ai-control-box">
+                        <div class="ai-box-label" data-i18n="lbl_specific_goal">Specific Goal</div>
+                        <input type="text" id="focus-pref" placeholder="e.g. Focus on coding...">
+                    </div>
+                </div>
+
+                <button id="generate-schedule-btn" class="enhance-ai-btn" data-i18n="btn_generate">Generate Recommendations ✨</button>
+            </div>
         </div>
     </div>
-</div>
 
     <div id="elective-drawer-overlay" class="side-drawer-overlay" onclick="closeDrawer()"></div>
     <div id="elective-drawer" class="side-drawer">
@@ -950,71 +923,68 @@
                     </svg>
                 </div>
             </div>
-            <h3 style="margin-top: 15px; color: white;">Join Waiting List?</h3>
+            <h3 style="margin-top: 15px; color: white;" data-i18n="wl_modal_title">Join Waiting List?</h3>
             <p id="wl-modal-course-name" style="color: #bbb; margin-bottom: 5px;">Course Name</p>
             <p id="wl-modal-sec-info" style="font-weight: bold; color: white; margin-bottom: 20px;">Section 1</p>
-            <p style="font-size: 0.9em; color: #888; margin-bottom: 20px;">
+            <p style="font-size: 0.9em; color: #888; margin-bottom: 20px;" data-i18n="wl_modal_desc">
                 This section is full. You will be placed in a queue.
             </p>
             <input type="hidden" id="wl-target-section-id">
             <div style="display: flex; gap: 10px;">
-                <button class="delete-btn" onclick="closeWaitlistModal()" style="flex: 1;">Cancel</button>
-                <button onclick="confirmWaitlistJoin()" style="flex: 1; background-color: #F57C00; color: white; border:none; border-radius:24px; cursor:pointer;">Confirm</button>
+                <button class="delete-btn" onclick="closeWaitlistModal()" style="flex: 1;" data-i18n="btn_cancel">Cancel</button>
+                <button onclick="confirmWaitlistJoin()" style="flex: 1; background-color: #F57C00; color: white; border:none; border-radius:24px; cursor:pointer;" data-i18n="btn_confirm">Confirm</button>
             </div>
         </div>
     </div>
 
     <div id="waitlist-success-modal" class="modal hidden">
         <div class="modal-content" style="max-width: 350px; text-align: center; padding: 30px;">
-            <h3 style="margin-top: 15px; color: #2E7D32;">Successfully Joined!</h3>
+            <h3 style="margin-top: 15px; color: #2E7D32;" data-i18n="wl_success_title">Successfully Joined!</h3>
             <div style="background: rgba(245, 124, 0, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px dashed #F57C00;">
-                <p style="margin: 0; font-size: 0.9em; color: #E65100;">Current Position</p>
+                <p style="margin: 0; font-size: 0.9em; color: #E65100;" data-i18n="lbl_current_pos">Current Position</p>
                 <p id="wl-success-pos" style="margin: 5px 0 0 0; font-size: 2.5em; font-weight: 800; color: #E65100;">#1</p>
             </div>
-            <button onclick="closeWaitlistSuccessModal()" style="width: 100%; background-color: #2E7D32; color: white; padding: 12px; border-radius: 24px; font-weight: bold; border: none; cursor: pointer;">Done</button>
+            <button onclick="closeWaitlistSuccessModal()" style="width: 100%; background-color: #2E7D32; color: white; padding: 12px; border-radius: 24px; font-weight: bold; border: none; cursor: pointer;" data-i18n="btn_done">Done</button>
         </div>
     </div>
 
     <div id="admin-enroll-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3 data-i18n="adm_enroll_title">Select Section for Enrollment</h3>
-            <button class="close-modal" onclick="closeAdminEnrollModal()">&times;</button>
-        </div>
-        
-        <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">
-            Approving this exception will automatically register 
-            <strong id="adm-enroll-student-name" style="color:white;">Student</strong> 
-            into the selected section.
-        </p>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 data-i18n="adm_enroll_title">Select Section for Enrollment</h3>
+                <button class="close-modal" onclick="closeAdminEnrollModal()">&times;</button>
+            </div>
+            
+            <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;" data-i18n="adm_enroll_desc">
+                Approving this exception will automatically register the student into the selected section.
+            </p>
 
-        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>Sec</th>
-                        <th>Schedule</th>
-                        <th>Instructor</th>
-                        <th>Seats</th>
-                        <th>Select</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-enroll-table-body">
-                    </tbody>
-            </table>
-        </div>
+            <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="lbl_sec_num">Sec</th>
+                            <th data-i18n="lbl_sch_text">Schedule</th>
+                            <th data-i18n="lbl_instructor">Instructor</th>
+                            <th data-i18n="tbl_seats">Seats</th>
+                            <th data-i18n="tbl_select">Select</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-enroll-table-body"></tbody>
+                </table>
+            </div>
 
-        <div class="form-group" style="margin-top:20px;">
-            <label class="form-label-modern">Admin Response (Optional)</label>
-            <input type="text" id="adm-enroll-response" class="modern-input" placeholder="Approved via exception...">
-        </div>
+            <div class="form-group" style="margin-top:20px;">
+                <label class="form-label-modern" data-i18n="lbl_admin_response">Admin Response (Optional)</label>
+                <input type="text" id="adm-enroll-response" class="modern-input" data-i18n-placeholder="ph_admin_response" placeholder="Approved via exception...">
+            </div>
 
-        <div class="box-grid-2" style="margin-top:20px;">
-            <button onclick="closeAdminEnrollModal()" class="delete-btn">Cancel</button>
-            <button onclick="confirmAdminEnrollment()" class="accept-btn">Confirm & Enroll</button>
+            <div class="box-grid-2" style="margin-top:20px;">
+                <button onclick="closeAdminEnrollModal()" class="delete-btn" data-i18n="btn_cancel">Cancel</button>
+                <button onclick="confirmAdminEnrollment()" class="accept-btn" data-i18n="btn_confirm_enroll">Confirm & Enroll</button>
+            </div>
         </div>
     </div>
-</div>
 
     <script type="module" src="js/main.js"></script>
 </body>
