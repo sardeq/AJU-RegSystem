@@ -111,6 +111,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Notification Bell Listener (UPDATED) ---
+    const notifBtn = document.getElementById('notif-btn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('hidden');
+            renderNotifications();
+        });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('notification-dropdown');
+        const notifBtn = document.getElementById('notif-btn');
+        if (dropdown && !dropdown.classList.contains('hidden')) {
+            if (!dropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        }
+    });
+
+    // Also handle Toast click to open notification
+    const toast = document.getElementById('toast-notification');
+    if (toast) {
+        toast.addEventListener('click', () => {
+            if (state.pendingAction) {
+                showActionModal(state.pendingAction.req, state.pendingAction.type);
+                toast.classList.add('hidden');
+            }
+        });
+    }
+
     setInterval(checkPendingActions, 60000);
 
 supabase.auth.onAuthStateChange((event, session) => {
@@ -280,16 +313,100 @@ async function checkPendingActions() {
         .eq('user_id', state.currentUser.id)
         .eq('status', 'ACTION_REQUIRED'); 
 
-    // Prioritize Waitlists because they have a timer
+    // Determine the pending action to store
+    let foundAction = null;
+    let actionType = null;
+
     if (waitlists && waitlists.length > 0) {
-        showActionModal(waitlists[0], 'WAITLIST');
+        foundAction = waitlists[0];
+        actionType = 'WAITLIST';
+    } else if (exceptions && exceptions.length > 0) {
+        foundAction = exceptions[0];
+        actionType = 'EXCEPTION';
+    }
+
+    const dot = document.getElementById('header-notif-dot');
+    const toast = document.getElementById('toast-notification');
+
+    if (foundAction) {
+        // --- NEW LOGIC: Store it, show Dot, don't block ---
+        state.pendingAction = { req: foundAction, type: actionType };
+        
+        // Show Red Dot
+        if (dot) dot.classList.remove('hidden');
+
+        // Show Toast (if not already shown this session?)
+        // For simplicity, we just show it.
+        if (toast) {
+            const msg = toast.querySelector('.toast-message');
+            if (msg) msg.textContent = state.currentLang === 'ar' ? 'يوجد إجراء مطلوب' : 'Action Required!';
+            toast.classList.remove('hidden');
+            
+            // Auto hide toast after 5 seconds to not annoy user
+            setTimeout(() => {
+                if(toast) toast.classList.add('hidden');
+            }, 5000);
+        }
+
+    } else {
+        // Clear state if resolved elsewhere
+        state.pendingAction = null;
+        if (dot) dot.classList.add('hidden');
+        if (toast) toast.classList.add('hidden');
+    }
+}
+
+// NEW: Render the notification list
+function renderNotifications() {
+    const list = document.getElementById('notification-list');
+    list.innerHTML = '';
+
+    if (!state.pendingAction) {
+        list.innerHTML = `
+            <div style="padding:20px; text-align:center; color:#666; font-size:0.9rem;">
+                ${state.currentLang === 'ar' ? 'لا توجد إشعارات' : 'No new notifications'}
+            </div>
+        `;
         return;
     }
 
-    if (exceptions && exceptions.length > 0) {
-        showActionModal(exceptions[0], 'EXCEPTION');
+    // Determine titles/descriptions based on language
+    const isAr = state.currentLang === 'ar';
+    let title, desc;
+
+    if (state.pendingAction.type === 'WAITLIST') {
+        title = isAr ? 'توفر مقعد انتظار!' : 'Waitlist Seat Available!';
+        desc = isAr ? 
+            'حان دورك للتسجيل في المادة. انقر هنا لإتمام الإجراء.' : 
+            'Your turn has arrived. Click here to confirm enrollment.';
+    } else {
+        title = isAr ? 'تمت الموافقة على الاستثناء' : 'Exception Approved';
+        desc = isAr ? 
+            'وافق المسؤول على طلبك. انقر لتأكيد التسجيل.' : 
+            'Admin approved your request. Click to confirm enrollment.';
     }
+
+    const item = document.createElement('div');
+    item.className = 'notif-item urgent';
+    item.onclick = () => {
+        // Close dropdown
+        document.getElementById('notification-dropdown').classList.add('hidden');
+        // Open Modal
+        showActionModal(state.pendingAction.req, state.pendingAction.type);
+    };
+
+    item.innerHTML = `
+        <div class="notif-icon" style="color:var(--accent-red)">⚠️</div>
+        <div class="notif-content">
+            <span class="notif-title">${title}</span>
+            <span class="notif-desc">${desc}</span>
+            <span class="notif-time">${isAr ? 'الآن' : 'Just now'}</span>
+        </div>
+    `;
+
+    list.appendChild(item);
 }
+
 
 let actionTimerInterval;
 

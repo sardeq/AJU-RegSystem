@@ -6,6 +6,8 @@ export const ROOT_SE_ID = 'ROOT_SE';
 export const state = {
     currentUser: null,
     currentLang: localStorage.getItem('app_lang') || 'en',
+
+    pendingAction: null,
     
     // Data Caches
     allCoursesData: [],       
