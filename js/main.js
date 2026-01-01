@@ -143,6 +143,7 @@ supabase.auth.onAuthStateChange((event, session) => {
         }
     });
     
+
 async function checkUserRole(userId) {
     try {
         const { data: profile, error } = await supabase
@@ -153,47 +154,53 @@ async function checkUserRole(userId) {
 
         if (error) throw error;
 
-        // 1. Reset: Hide ALL navigation items first
-        const allNavIds = [
-            'nav-home', 'nav-registration', 'nav-sheet', 'nav-schedule', 'nav-plan', 'nav-exceptions', // Student
-            'nav-admin-home', 'nav-admin-users', 'nav-admin-courses', 'nav-admin-exceptions', 'nav-admin-admissions' // Admin
-        ];
-        allNavIds.forEach(id => document.getElementById(id)?.classList.add('hidden'));
 
-        // 2. Role-Based Visibility Logic
+        const allSelectors = [
+            '.student-only',
+            '#nav-admin-home',
+            '#nav-admin-users',
+            '#nav-admin-courses',
+            '#nav-admin-exceptions',
+            '#nav-admin-admissions'
+        ];
+        
+        allSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => el.classList.add('hidden'));
+        });
+
+        // 2. Logic Split based on Role
         if (profile.role === 'admission-admin') {
             // --- ADMISSION ADMIN ---
-            // Requirement: "Only see admissions"
+            // Only sees Admissions tab
             document.getElementById('nav-admin-admissions').classList.remove('hidden');
             
-            // Default view for this role
+            // Navigate directly to admissions view
             showSection('admin-admissions');
 
         } else if (profile.role === 'admin') {
             // --- NORMAL ADMIN ---
-            // Requirement: See Admin Home, Users, Courses, Exceptions. NOT Admissions.
+            // Sees Dashboard, Users, Courses, Prereq Requests. 
+            // Does NOT see Admissions.
             document.getElementById('nav-admin-home').classList.remove('hidden');
             document.getElementById('nav-admin-users').classList.remove('hidden');
             document.getElementById('nav-admin-courses').classList.remove('hidden');
             document.getElementById('nav-admin-exceptions').classList.remove('hidden');
 
-            // Default view for this role
+            // Navigate directly to Admin Home
             showSection('admin-home');
 
         } else {
             // --- STUDENT ---
-            document.getElementById('nav-home').classList.remove('hidden');
-            document.getElementById('nav-registration').classList.remove('hidden');
-            document.getElementById('nav-sheet').classList.remove('hidden');
-            document.getElementById('nav-schedule').classList.remove('hidden');
-            document.getElementById('nav-plan').classList.remove('hidden');
-            document.getElementById('nav-exceptions').classList.remove('hidden');
+            // Show all student elements (Sidebar items + Header Schedule Button)
+            document.querySelectorAll('.student-only').forEach(el => el.classList.remove('hidden'));
 
             // Ensure the Home link acts normally for students
             const homeLink = document.querySelector('#nav-home .nav-link');
             if(homeLink) {
                 homeLink.setAttribute('onclick', "showSection('home')");
-                homeLink.querySelector('span[data-i18n="nav_home"]').textContent = "Home"; // Reset text if it was changed
+                // Reset text in case it was changed previously
+                const span = homeLink.querySelector('span[data-i18n="nav_home"]');
+                if(span) span.textContent = "Home"; 
             }
 
             showSection('home');
