@@ -2,6 +2,33 @@
 import { supabase } from './config.js';
 import { state, ROOT_SE_ID } from './state.js';
 
+const COURSE_DESCRIPTIONS = {
+    "313160": {
+        en: "Covers the entire software development lifecycle (SDLC), including requirements engineering, system modeling, design patterns, and software testing methodologies.",
+        ar: "يغطي دورة حياة تطوير البرمجيات (SDLC)، بما في ذلك هندسة المتطلبات، نمذجة النظام، أنماط التصميم، ومنهجيات اختبار البرمجيات."
+    },
+    "311101": {
+        en: "Foundational programming concepts including variables, data types, control structures (loops/conditions), and functions. Focuses on problem-solving logic.",
+        ar: "مفاهيم البرمجة الأساسية بما في ذلك المتغيرات، أنواع البيانات، هياكل التحكم (الحلقات/الشروط)، والدوال. يركز على منطق حل المشكلات."
+    },
+    "311220": {
+        en: "Introduction to binary systems, Boolean algebra, logic gates, and the design of combinational and sequential digital circuits.",
+        ar: "مقدمة في الأنظمة الثنائية، الجبر البولياني، البوابات المنطقية، وتصميم الدوائر الرقمية التوافقية والتسلسلية."
+    },
+    "311160": {
+        en: "Explores the ethical, legal, and social issues related to computing technology, intellectual property, privacy, and professional responsibility.",
+        ar: "يستكشف القضايا الأخلاقية والقانونية والاجتماعية المتعلقة بتكنولوجيا الحاسوب، الملكية الفكرية، الخصوصية، والمسؤولية المهنية."
+    },
+    "601101": {
+        en: "Study of limits, continuity, differentiation, and integration. Includes applications of derivatives and integrals in scientific and engineering contexts.",
+        ar: "دراسة النهايات، الاتصال، التفاضل، والتكامل. يشمل تطبيقات المشتقات والتكاملات في السياقات العلمية والهندسية."
+    },
+    "311240": {
+        en: "Covers database architecture, relational models, SQL querying, normalization techniques, and entity-relationship (ER) modeling.",
+        ar: "يغطي هندسة قواعد البيانات، النماذج العلائقية، استعلامات SQL، تقنيات التسوية (Normalization)، ونمذجة الكيانات والعلاقات (ER)."
+    }
+};
+
 // --- Zoom & Pan State ---
 let transformState = {
     scale: 0.6, // Start slightly more zoomed out
@@ -602,22 +629,62 @@ window.showCoursePopup = function(course, status) {
     const overlay = document.getElementById('plan-overlay');
     if(!popup || !overlay) return;
 
-    document.getElementById('popup-title').innerText = course.course_name_en || course.course_code;
+    const isAr = state.currentLang === 'ar';
     
-    const desc = course.description || "This course introduces fundamental concepts in " + course.course_name_en + ". Students will learn key methodologies and apply them in practical scenarios.";
-    document.getElementById('popup-desc').innerText = course.course_code;
-    document.getElementById('popup-long-desc').innerText = desc;
-    
-    document.getElementById('popup-credits').innerText = `${course.credit_hours} Credit Hours`;
-    
-    const statusBadge = document.getElementById('popup-status');
-    statusBadge.innerText = status.toUpperCase();
-    statusBadge.className = 'badge'; 
-    if(status === 'passed') statusBadge.classList.add('badge-green');
-    else if(status === 'registered') statusBadge.classList.add('badge-blue');
-    else if(status === 'open') statusBadge.classList.add('badge-yellow');
-    else statusBadge.classList.add('badge-gray');
+    // 1. Set Title & Code
+    const courseName = isAr ? (course.course_name_ar || course.course_name_en) : course.course_name_en;
+    document.getElementById('popup-title').innerText = courseName;
+    document.getElementById('popup-desc').innerText = course.course_code; // This is the subtitle (Code)
 
+    // 2. Resolve Description
+    let descText = "";
+    
+    // Check if we have a specific hardcoded description for this ID
+    if (COURSE_DESCRIPTIONS[course.course_code]) {
+        descText = isAr ? COURSE_DESCRIPTIONS[course.course_code].ar : COURSE_DESCRIPTIONS[course.course_code].en;
+    } else {
+        // Fallback: Use DB description or Generic
+        if (course.description) {
+            descText = course.description;
+        } else {
+            descText = isAr 
+                ? "يقدم هذا المساق المفاهيم الأساسية والمنهجيات العملية المتعلقة بالموضوع، مما يؤهل الطالب للمساقات المتقدمة."
+                : `This course introduces fundamental concepts in ${course.course_name_en}. Students will learn key methodologies and apply them in practical scenarios.`;
+        }
+    }
+
+    const descLabel = isAr ? "عن المساق" : "About Course";
+    
+    // 3. Update Content with enhanced UI
+    const longDescContainer = document.getElementById('popup-long-desc');
+    longDescContainer.innerHTML = `
+        <strong style="display:block; color:var(--primary); margin-bottom:8px; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
+            ${descLabel}
+        </strong>
+        <span style="color:#ccc; line-height:1.6;">${descText}</span>
+    `;
+    
+    // 4. Update Credits
+    const crLabel = isAr ? "ساعات معتمدة" : "Credit Hours";
+    document.getElementById('popup-credits').innerText = `${course.credit_hours} ${crLabel}`;
+    
+    // 5. Update Status Badge
+    const statusBadge = document.getElementById('popup-status');
+    
+    // Translation Map for Status
+    const statusMap = {
+        passed: { en: "PASSED", ar: "ناجح", class: "badge-green" },
+        registered: { en: "REGISTERED", ar: "مسجل", class: "badge-blue" },
+        open: { en: "AVAILABLE", ar: "متاح", class: "badge-yellow" },
+        locked: { en: "LOCKED", ar: "مغلق", class: "badge-gray" }
+    };
+
+    const statusInfo = statusMap[status] || statusMap.locked;
+    
+    statusBadge.innerText = isAr ? statusInfo.ar : statusInfo.en;
+    statusBadge.className = `badge ${statusInfo.class}`;
+
+    // Show
     popup.classList.remove('hidden');
     overlay.classList.remove('hidden');
 }
