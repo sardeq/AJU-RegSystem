@@ -10,6 +10,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeSpan = document.querySelector(".close-button");
     const form = document.getElementById('universityRegistrationForm');
 
+    // --- Majors Image Modal Logic ---
+    const majorsModal = document.getElementById("majorsModal");
+    const majorsBtn = document.getElementById("browseMajorsBtn");
+    const majorsClose = document.getElementById("closeMajorsModal");
+
+    if (majorsBtn && majorsModal) {
+        majorsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            majorsModal.style.display = "flex"; // Use flex to center the image
+        });
+    }
+
+    if (majorsClose && majorsModal) {
+        majorsClose.addEventListener('click', () => {
+            majorsModal.style.display = "none";
+        });
+    }
+
+    // Close modal if clicking outside the image
+    window.addEventListener('click', (e) => {
+        if (e.target == majorsModal) {
+            majorsModal.style.display = "none";
+        }
+    });
+
     // Open Modal
     function openModal(e) {
         if(e) e.preventDefault();
