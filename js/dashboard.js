@@ -1,12 +1,11 @@
 import { supabase } from './config.js';
 import { state } from './state.js';
-import { translations } from './utils.js'; // Import translations
+import { translations } from './utils.js';
 
 export async function loadDashboardData(userId) {
     try {
         const lang = state.currentLang || 'en';
 
-        // 1. Fetch User Profile
         const { data: profile } = await supabase
             .from('users').select('*').eq('id', userId).single();
 

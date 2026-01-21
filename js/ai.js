@@ -40,7 +40,6 @@ export function setupAIListeners() {
         if (event.target == aiPrefModal) aiPrefModal.classList.add('hidden');
     });
 
-    // 4. Generate Button Logic
     if (generateBtn) {
         generateBtn.addEventListener('click', handleAIGeneration);
     }
@@ -54,7 +53,6 @@ async function handleAIGeneration() {
 
     const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
     
-    // 1. Get User Input
     let userTargetTotal = parseInt(document.getElementById('credits-pref').value) || 15;
 
     if (daysPref.length === 0) { alert("Please select days."); return; }
@@ -67,7 +65,6 @@ async function handleAIGeneration() {
     try {
         const context = await fetchStudentContext(state.currentUser.id);
         
-        // --- NEW LIMIT LOGIC ---
         const TOTAL_REQ_HOURS = 132;
         const passedHours = context.totalPassedCredits || 0;
         const currentRegistered = context.totalRegisteredCredits || 0;
@@ -75,18 +72,13 @@ async function handleAIGeneration() {
         const remainingHours = TOTAL_REQ_HOURS - passedHours;
         const isGraduate = remainingHours <= 21;
         
-        // Determine Hard Limit
         const hardLimit = isGraduate ? 21 : 18;
 
-        // Clamp user target to the hard limit
         if (userTargetTotal > hardLimit) {
             userTargetTotal = hardLimit;
-            // Optional: Notify user
             console.warn(`Target adjusted to ${hardLimit} based on academic status.`);
         }
 
-        // Calculate how many NEW credits we can add
-        // If user wants 15 total, and has 6 registered, we generate 9.
         const creditsNeeded = userTargetTotal - currentRegistered;
 
         if (creditsNeeded <= 0) {

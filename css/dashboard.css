@@ -40,7 +40,7 @@
     position: absolute; top: 12px; right: 12px;
 }
 .bcc-title { color: white; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; display: block; }
-.bcc-prof { color: #666; font-size: 0.8rem; }
+.bcc-prof { color: #ffffff; font-size: 0.8rem; }
 
 /* Col 2: Stats */
 .bento-col-stats { display: flex; flex-direction: column; gap: 20px; }
@@ -206,7 +206,7 @@ html[dir="rtl"] .bcc-time-pill { right: auto; left: 12px; }
 
 .widget-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
 .widget-value { font-size: 2rem; font-weight: 800; display: block; margin: 5px 0; }
-.widget-sub { font-size: 0.8rem; color: #666; }
+.widget-sub { font-size: 0.8rem; color: #ffffff; }
 .home-main-grid {
     display: grid;
     grid-template-columns: 350px 250px 1fr; /* Schedule | Small Stats | Hero */

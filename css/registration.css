@@ -17,7 +17,7 @@
 .reg-search-wrapper input { padding-left: 50px !important; } /* Icon space */
 .search-icon-absolute {
     position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-    color: #666; pointer-events: none;
+    color: #ffffff; pointer-events: none;
 }
 
 /* Course Grid & Cards */
@@ -177,7 +177,7 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
     background: #0a0a0a; padding: 8px 12px;
     border-radius: 8px; border: 1px solid #333;
 }
-.toggle-label:hover { border-color: #666; }
+.toggle-label:hover { border-color: #ffffff; }
 .toggle-label input { width: auto; accent-color: var(--primary); }
 
 .ai-control-box {
@@ -430,7 +430,7 @@ html[dir="rtl"] .search-icon-absolute { left: auto; right: 15px; }
 }
 
 .card-courses li small {
-    color: #666;
+    color: #ffffff;
     font-size: 0.8em;
 }
 

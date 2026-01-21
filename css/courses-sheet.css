@@ -101,7 +101,7 @@
 /* --- THE COURSE LIST --- */
 .sheet-list-header {
     display: flex; padding: 0 25px; margin-bottom: 10px;
-    color: #666; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;
+    color: #ffffff; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;
     gap: 15px;
 }
 
@@ -133,13 +133,13 @@
 .src-main { flex: 1; display: flex; flex-direction: column; }
 .src-title { font-weight: 700; color: white; font-size: 1rem; margin-bottom: 4px; }
 .src-cat { 
-    font-size: 0.75rem; color: #666; 
+    font-size: 0.75rem; color: #ffffff; 
     background: #1a1a1a; padding: 2px 8px; border-radius: 4px; 
     display: inline-block; width: fit-content;
 }
 
 .src-credits { width: 100px; color: #ccc; font-size: 0.9rem; }
-.src-prereq { width: 120px; font-size: 0.8rem; color: #666; font-style: italic; }
+.src-prereq { width: 120px; font-size: 0.8rem; color: #ffffff; font-style: italic; }
 
 .src-grade-box { width: 100px; text-align: right; display: flex; justify-content: flex-end; }
 .grade-pill {

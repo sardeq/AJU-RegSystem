@@ -1,4 +1,3 @@
-// registration.js
 import { supabase } from './config.js';
 import { state } from './state.js';
 import { getCreditLimits, updateCreditUI } from './utils.js';
@@ -6,19 +5,17 @@ import { updateExcType } from './exceptions.js';
 
 let currentPillFilter = 'all';
 
-// --- Global Exports for HTML Buttons ---
 window.renderRegistrationList = (sections) => renderRegistrationList(sections || state.availableSectionsData);
 window.filterGrid = filterGrid;
 window.toggleFilters = toggleFilters;
 window.handleRegister = handleRegister;
 window.handleWaitlist = handleWaitlist;
 window.dropWaitlist = dropWaitlist;
-window.confirmWaitlistJoin = confirmWaitlistJoin; // Missing export added
-window.closeWaitlistModal = closeWaitlistModal;   // Missing export added
-window.closeWaitlistSuccessModal = closeWaitlistSuccessModal; // Missing export added
+window.confirmWaitlistJoin = confirmWaitlistJoin;
+window.closeWaitlistModal = closeWaitlistModal;
+window.closeWaitlistSuccessModal = closeWaitlistSuccessModal;
 window.handleExceptionRequest = handleExceptionRequest; 
 
-// Allow HTML to access availableSectionsData length for "onclick" checks if needed
 Object.defineProperty(window, 'availableSectionsData', {
     get: () => state.availableSectionsData
 });
@@ -35,14 +32,12 @@ function filterGrid(filterType) {
     renderRegistrationList(state.availableSectionsData);
 };
 
-// --- MAIN REGISTRATION ACTION ---
 async function handleRegister(sectionId) {
     if (!state.currentUser) {
         alert("Please log in to register.");
         return;
     }
 
-    // 1. Find the section
     const section = state.availableSectionsData.find(s => s.section_id === sectionId);
     if (!section) return;
 
