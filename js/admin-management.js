@@ -1,7 +1,6 @@
 import { supabase } from './config.js';
-import { getCreditLimits } from './utils.js'; // Import helper
+import { getCreditLimits } from './utils.js';
 
-// --- Global State for Admin ---
 let allUsers = [];
 let allSections = [];
 let currentUserFilter = 'all';
@@ -11,7 +10,6 @@ let currentExceptionReqId = null;
 let currentExceptionUserId = null;
 let selectedSectionId = null;
 
-// ================= USER MANAGEMENT =================
 
 export async function loadAdminUsers() {
     const tbody = document.getElementById('admin-users-table');
@@ -37,7 +35,6 @@ window.renderUsers = () => {
     const tbody = document.getElementById('admin-users-table');
     const searchVal = document.getElementById('user-search-input').value.toLowerCase();
     
-    // Filter locally
     const filtered = allUsers.filter(u => {
         const matchesRole = currentUserFilter === 'all' || u.role === currentUserFilter;
         const matchesSearch = (u.full_name || '').toLowerCase().includes(searchVal) || 

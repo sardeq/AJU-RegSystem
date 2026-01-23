@@ -1,4 +1,3 @@
-// plan.js
 import { supabase } from './config.js';
 import { state, ROOT_SE_ID } from './state.js';
 
@@ -29,21 +28,18 @@ const COURSE_DESCRIPTIONS = {
     }
 };
 
-// --- Zoom & Pan State ---
 let transformState = {
-    scale: 0.6, // Start slightly more zoomed out
+    scale: 0.6,
     x: 0,
     y: 0
 };
 
-// Input State
 let isDragging = false;
 let startX = 0;
 let startY = 0;
 let lastMouseX = 0;
 let lastMouseY = 0;
 
-// Performance Flags
 let isInteracting = false;
 let interactTimeout = null;
 let animationFrameId = null;
@@ -52,9 +48,9 @@ let needsUpdate = false;
 let globalEdges = []; 
 
 let traceMap = {
-    parents: {},  // nodeId -> [parentIds]
-    children: {}, // nodeId -> [childIds]
-    edges: {}     // "source-target" -> edgeElementId
+    parents: {}, 
+    children: {},
+    edges: {} 
 };
 
 const ELECTIVE_GROUPS = [
@@ -322,12 +318,6 @@ function centerView(wrapper, contentWidth) {
     needsUpdate = true;
 }
 
-// ... (Keep calculateTreeLayout, renderNodes, renderOrthogonalConnections, renderElectives, highlightTrace, resetTrace, isPrereqMet unchanged) ...
-// Ensure you copy those functions from the previous version exactly as they were.
-
-/**
- * Standard Tree Layout Algorithm
- */
 function calculateTreeLayout(roots, links) {
     const nodes = [];
     const edges = [];

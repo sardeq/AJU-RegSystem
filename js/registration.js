@@ -32,6 +32,7 @@ function filterGrid(filterType) {
     renderRegistrationList(state.availableSectionsData);
 };
 
+// --- UPDATED HANDLE REGISTER ---
 async function handleRegister(sectionId) {
     if (!state.currentUser) {
         alert("Please log in to register.");
@@ -44,24 +45,25 @@ async function handleRegister(sectionId) {
     const code = section.courses.course_code.toString();
     const courseName = state.currentLang === 'ar' ? section.courses.course_name_ar : section.courses.course_name_en;
 
-    // 2. Check: Already Passed?
+    // 1. Check: Already Passed?
     if (state.passedCourses && state.passedCourses.includes(code)) {
         alert("⛔ Error: You have already successfully completed this course.");
         return;
     }
 
-    // 3. Check: Already Registered?
+    // 2. Check: Already Registered?
     if (state.currentEnrollments.includes(sectionId)) {
         alert("⚠️ You are already registered for this section.");
         return;
     }
 
-    // 4. Check: Time Conflict
+    // 3. Check: Time Conflict (STRICT BLOCK)
     if (section.schedule_text && state.myBusyTimes.includes(section.schedule_text)) {
-        if(!confirm(`⚠️ Time Conflict Detected: ${section.schedule_text}\nDo you really want to force register?`)) return;
+        alert(`⛔ REGISTRATION BLOCKED\n\nTime Conflict: ${section.schedule_text}\nYou are already taking a class at this time.`);
+        return; // Stop execution immediately
     }
 
-    // 5. Check: Credit Limits
+    // 4. Check: Credit Limits
     const newCredits = section.courses.credit_hours || 3;
     const currentTotal = state.currentTotalCredits || 0;    
     const { max, isGrad } = getCreditLimits();
@@ -72,10 +74,10 @@ async function handleRegister(sectionId) {
         return; 
     }
 
-    // 6. Confirm Action
+    // 5. Confirm Action
     if (!confirm(`Register for ${courseName} (${newCredits} Cr)?`)) return;
 
-    // 7. Execute Database Insert
+    // 6. Execute Database Insert
     try {
         const { error } = await supabase
             .from('enrollments')
@@ -93,7 +95,6 @@ async function handleRegister(sectionId) {
         loadRegistrationData(state.currentUser.id); 
 
     } catch (err) {
-        // Handle specific DB errors (like unique constraint violation)
         if (err.message.includes("duplicate key")) {
              alert("You are already registered for a section of this course.");
         } else {
@@ -102,7 +103,6 @@ async function handleRegister(sectionId) {
     }
 };
 
-// --- DATA LOADING ---
 export async function loadRegistrationData(userId) {
     const grid = document.getElementById('registration-courses-grid');
     if (grid) grid.innerHTML = '<div class="spinner"></div>';
@@ -122,7 +122,9 @@ export async function loadRegistrationData(userId) {
 
         // --- UPDATE STATE ---
         state.currentEnrollments = enrollRes.data ? enrollRes.data.map(e => e.section_id) : [];
+        // Ensure we capture all busy times correctly
         state.myBusyTimes = enrollRes.data ? enrollRes.data.map(e => e.sections?.schedule_text).filter(Boolean) : [];
+        
         state.currentWaitlist = waitRes.data ? waitRes.data.map(w => w.section_id) : [];
         state.passedCourses = historyRes.data ? historyRes.data.map(h => h.sections?.course_code.toString()) : [];
         state.currentTotalCredits = enrollRes.data ? enrollRes.data.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0) : 0;
@@ -152,6 +154,7 @@ export async function loadRegistrationData(userId) {
     }
 }
 
+// --- UPDATED RENDER FUNCTION ---
 export function renderRegistrationList(sections) {
     const grid = document.getElementById('registration-courses-grid');
     if (!grid) return;
@@ -168,45 +171,37 @@ export function renderRegistrationList(sections) {
     const hideCompleted = document.getElementById('reg-check-completed')?.checked || false;
     const hideFull = document.getElementById('reg-check-full')?.checked || false;
     const hideConflict = document.getElementById('reg-check-conflict')?.checked || false;
-    const hideMissingPrereq = document.getElementById('reg-check-prereq')?.checked || false; // NEW
+    const hideMissingPrereq = document.getElementById('reg-check-prereq')?.checked || false;
 
     const filtered = sections.filter(sec => {
         const course = sec.courses;
         const code = (course.course_code || sec.course_code).toString();
         const nameEn = course.course_name_en.toLowerCase();
         
-        // Basic Filters
         if (!code.toLowerCase().includes(searchText) && !nameEn.includes(searchText)) return false;
         if (filterYear !== 'all' && code.length >= 3 && code[2] !== filterYear) return false;
         if (filterCat !== 'all' && course.category !== filterCat) return false;
 
-        // State Checks
         const isRegistered = state.currentEnrollments.includes(sec.section_id);
         const isWaitlisted = state.currentWaitlist.includes(sec.section_id);
         const isPassed = state.passedCourses.includes(code);
         const isFull = (sec.enrolled_count || 0) >= (sec.capacity || 40);
         
-        // --- PREREQUISITE CHECK ---
-        // course.prerequisites is likely an array of objects: [{prereq_code: "101"}, ...]
+        // Conflict Check
+        const isConflict = !isRegistered && sec.schedule_text && state.myBusyTimes.includes(sec.schedule_text);
+
         const prereqs = course.prerequisites || [];
         const missingPrereqs = prereqs.filter(p => !state.passedCourses.includes(p.prereq_code.toString()));
         const hasMissingPrereq = missingPrereqs.length > 0;
 
-        // Toggle Logic
         if (hideCompleted && isPassed) return false;
         if (hideFull && isFull && !isRegistered) return false;
-        if (hideConflict && !isRegistered) {
-            if (sec.schedule_text && state.myBusyTimes.includes(sec.schedule_text)) return false;
-        }
-        
-        // NEW: Filter out missing prereqs if toggle is on
+        if (hideConflict && isConflict) return false;
         if (hideMissingPrereq && hasMissingPrereq && !isRegistered && !isPassed) return false;
 
-        // Pill Logic (Waitlist vs Available)
         if (currentPillFilter === 'available') {
-            if (isRegistered || isWaitlisted || isFull || isPassed) return false;
-            // Note: We do NOT filter out missing prereqs here by default, 
-            // so they show up unless the specific "Hide Missing Prereq" toggle is checked.
+            // Note: Conflict implies not available to register
+            if (isRegistered || isWaitlisted || isFull || isPassed || isConflict) return false;
         } 
         else if (currentPillFilter === 'waitlist') {
             if (!isWaitlisted) return false;
@@ -228,7 +223,9 @@ export function renderRegistrationList(sections) {
         const isPassed = state.passedCourses.includes(course.course_code.toString());
         const isFull = (sec.enrolled_count || 0) >= (sec.capacity || 40);
 
-        // Prereq Check again for button logic
+        // Detect Conflict
+        const isConflict = !isRegistered && !isPassed && sec.schedule_text && state.myBusyTimes.includes(sec.schedule_text);
+
         const prereqs = course.prerequisites || [];
         const missingPrereqs = prereqs.filter(p => !state.passedCourses.includes(p.prereq_code.toString()));
         const hasMissingPrereq = missingPrereqs.length > 0;
@@ -247,11 +244,15 @@ export function renderRegistrationList(sections) {
         } else if (isWaitlisted) {
             statusBadge = `<span class="rc-status waitlist">On Waitlist</span>`;
             actionBtn = `<button class="rc-action-btn outline" onclick="dropWaitlist(${sec.section_id})">Leave Queue</button>`;
+        } else if (isConflict) {
+            // --- NEW: Time Conflict Visuals ---
+            statusBadge = `<span class="rc-status" style="background:rgba(255, 0, 0, 0.15); color:#ff5252; border: 1px solid #ff5252;">Time Conflict ⛔</span>`;
+            borderClass = 'border-color: #ff5252; box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);';
+            // Button is disabled visually and functionality is blocked in handleRegister
+            actionBtn = `<button class="rc-action-btn" style="background:transparent; border:1px solid #555; color:#777; cursor:not-allowed;" disabled>Conflict</button>`;
         } else if (hasMissingPrereq) {
-            // --- NEW: Missing Prerequisite Logic ---
             const missingCodes = missingPrereqs.map(p => p.prereq_code).join(', ');
             statusBadge = `<span class="rc-status" style="background:rgba(255, 145, 0, 0.15); color:#ff9100;">Missing Prereq: ${missingCodes}</span>`;
-            // Button redirects to exceptions
             actionBtn = `<button class="rc-action-btn" style="background:transparent; border:1px solid #ff9100; color:#ff9100;" onclick="handleExceptionRequest('${course.course_code}', '${courseName.replace(/'/g, "\\'")}')">Apply Exception</button>`;
         } else if (isFull) {
             statusBadge = `<span class="rc-status full">Class Full</span>`;
@@ -272,7 +273,7 @@ export function renderRegistrationList(sections) {
                 <h3 class="rc-title">${courseName}</h3>
                 <p class="rc-desc">Section ${sec.section_number} • ${course.credit_hours} Cr</p>
                 <div class="rc-meta-row">
-                    <div class="rc-meta-pill">${sec.schedule_text || 'TBA'}</div>
+                    <div class="rc-meta-pill" style="${isConflict ? 'color:#ff5252; font-weight:bold;' : ''}">${sec.schedule_text || 'TBA'}</div>
                     <div class="rc-meta-pill">${sec.instructor_name || 'Staff'}</div>
                 </div>
             </div>
@@ -285,13 +286,8 @@ export function renderRegistrationList(sections) {
     });
 }
 
-// 2. ADD New Handler Function
 function handleExceptionRequest(code, name) {
-    // 1. Navigate to Exception Page
     window.showSection('exceptions');
-
-    // 2. Pre-fill the form
-    // We use a short timeout to ensure the view is visible/loaded
     setTimeout(() => {
         const searchInput = document.getElementById('exc-target-search');
         const hiddenInput = document.getElementById('exc-target-code-hidden');
@@ -301,15 +297,10 @@ function handleExceptionRequest(code, name) {
             searchInput.value = `${code} - ${name}`;
             hiddenInput.value = code;
         }
-
-        // 3. Set Request Type to "Prereq"
         if (typeRadio) {
             typeRadio.checked = true;
-            // Manually trigger the update function to handle UI toggles (hide alt course input)
             if (window.updateExcType) window.updateExcType('PREREQ');
         }
-
-        // 4. Focus the reason box for better UX
         const reasonBox = document.getElementById('exc-reason');
         if (reasonBox) {
             reasonBox.placeholder = `I am requesting an exception for ${code} because...`;
@@ -318,9 +309,8 @@ function handleExceptionRequest(code, name) {
     }, 100);
 }
 
-// --- LISTENERS SETUP ---
 export function setupRegistrationListeners() {
-    ['reg-search-input', 'reg-filter-year', 'reg-filter-category', 'reg-check-completed', 'reg-check-full', 'reg-check-conflict'].forEach(id => {
+    ['reg-search-input', 'reg-filter-year', 'reg-filter-category', 'reg-check-completed', 'reg-check-full', 'reg-check-conflict', 'reg-check-prereq'].forEach(id => {
         const el = document.getElementById(id);
         if(el) {
             el.removeEventListener(el.type === 'checkbox' ? 'change' : 'input', handleFilterEvent);
@@ -333,7 +323,6 @@ function handleFilterEvent() {
     renderRegistrationList(state.availableSectionsData);
 }
 
-// --- WAITLIST HELPERS ---
 function toggleFilters() {
     const panel = document.getElementById('reg-filter-panel');
     if (panel) panel.classList.toggle('hidden');

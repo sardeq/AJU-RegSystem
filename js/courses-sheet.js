@@ -1,4 +1,3 @@
-// courses-sheet.js
 import { supabase } from './config.js';
 import { state } from './state.js';
 
@@ -7,7 +6,6 @@ export async function loadCoursesSheetData(userId) {
     if(grid) grid.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // 1. Fetch History Map
         const { data: history } = await supabase.from('enrollments')
             .select('status, grade_value, sections(course_code)')
             .eq('user_id', userId);
@@ -17,7 +15,6 @@ export async function loadCoursesSheetData(userId) {
             if(h.sections) state.userHistoryMap[h.sections.course_code] = { status: h.status, grade: h.grade_value };
         });
 
-        // 2. Fetch All Courses if missing
         if(!state.allCoursesData || state.allCoursesData.length === 0) {
             const { data } = await supabase.from('courses').select('*');
             state.allCoursesData = data || [];
@@ -35,12 +32,10 @@ function renderCoursesTable() {
     if(!grid) return;
     grid.innerHTML = '';
 
-    // Get Filter Values
     const searchText = document.getElementById('sheet-search')?.value.toLowerCase() || '';
     const filterYear = document.getElementById('filter-year')?.value || 'all';
     const filterCat = document.getElementById('filter-category')?.value || 'all';
     
-    // Checkboxes (default to true if element not found)
     const checkCompleted = document.getElementById('check-completed');
     const checkFailed = document.getElementById('check-failed');
     const showPassed = checkCompleted ? checkCompleted.checked : true;
@@ -50,13 +45,11 @@ function renderCoursesTable() {
     let gradeSum = 0;
     let gradeCount = 0;
 
-    // Filter Logic
     const filtered = state.allCoursesData.filter(c => {
         const code = c.course_code.toString();
         const h = state.userHistoryMap[code] || { status: 'NONE' };
         const isCompleted = h.status === 'COMPLETED';
 
-        // --- View Filters ---
         if (isCompleted && !showPassed) return false;
         if (!isCompleted && !showRemaining) return false;
 
