@@ -20,6 +20,65 @@ Object.defineProperty(window, 'availableSectionsData', {
     get: () => state.availableSectionsData
 });
 
+// --- HELPER: TIME PARSING ---
+function parseSchedule(scheduleText) {
+    if (!scheduleText || scheduleText === 'TBA') return null;
+    
+    // Normalize string: "Mon/Wed 09:30-11:00" -> days: "mon/wed", time: "09:30-11:00"
+    const parts = scheduleText.toLowerCase().split(' ');
+    if (parts.length < 2) return null;
+
+    const dayPart = parts[0]; 
+    const timePart = parts[1];
+
+    // Identify Days
+    let days = [];
+    if (dayPart.includes('mon') || dayPart.includes('wed')) days = ['mon', 'wed'];
+    if (dayPart.includes('sun') || dayPart.includes('tue')) days = ['sun', 'tue']; // Usually Sun/Tue/Thu
+    if (dayPart.includes('thu')) days.push('thu'); // Explicit Thursday check if needed
+
+    // Parse Times to Minutes
+    const times = timePart.split('-');
+    if (times.length !== 2) return null;
+
+    const startMin = timeToMinutes(times[0]);
+    const endMin = timeToMinutes(times[1]);
+
+    return { days, start: startMin, end: endMin, raw: scheduleText };
+}
+
+function timeToMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function checkTimeConflict(schedule1, schedule2) {
+    const s1 = parseSchedule(schedule1);
+    const s2 = parseSchedule(schedule2);
+
+    if (!s1 || !s2) return false;
+
+    // 1. Check Day Overlap
+    const commonDays = s1.days.filter(day => s2.days.includes(day));
+    if (commonDays.length === 0) return false;
+
+    // 2. Check Time Overlap
+    // Two ranges overlap if (StartA < EndB) AND (EndA > StartB)
+    return (s1.start < s2.end && s1.end > s2.start);
+}
+
+// Check against ALL enrolled courses
+function isTimeConflict(targetSchedule) {
+    if (!targetSchedule || !state.myBusyTimes) return false;
+    
+    return state.myBusyTimes.some(busySchedule => {
+        // Skip self-comparison just in case
+        if (busySchedule === targetSchedule) return false; 
+        return checkTimeConflict(targetSchedule, busySchedule);
+    });
+}
+// ----------------------------
+
 function filterGrid(filterType) {
     currentPillFilter = filterType;
     const pills = document.querySelectorAll('.filter-pill');
@@ -32,7 +91,6 @@ function filterGrid(filterType) {
     renderRegistrationList(state.availableSectionsData);
 };
 
-// --- UPDATED HANDLE REGISTER ---
 async function handleRegister(sectionId) {
     if (!state.currentUser) {
         alert("Please log in to register.");
@@ -57,10 +115,13 @@ async function handleRegister(sectionId) {
         return;
     }
 
-    // 3. Check: Time Conflict (STRICT BLOCK)
-    if (section.schedule_text && state.myBusyTimes.includes(section.schedule_text)) {
-        alert(`⛔ REGISTRATION BLOCKED\n\nTime Conflict: ${section.schedule_text}\nYou are already taking a class at this time.`);
-        return; // Stop execution immediately
+    // 3. Check: Time Conflict (ROBUST)
+    // We check against all busy times, finding the one that conflicts
+    const conflictSchedule = state.myBusyTimes.find(busy => checkTimeConflict(section.schedule_text, busy));
+    
+    if (conflictSchedule) {
+        alert(`⛔ REGISTRATION BLOCKED\n\nTime Conflict Detected!\n\nTarget: ${section.schedule_text}\nConflict: ${conflictSchedule}\n\nYou cannot be in two places at once.`);
+        return;
     }
 
     // 4. Check: Credit Limits
@@ -122,9 +183,7 @@ export async function loadRegistrationData(userId) {
 
         // --- UPDATE STATE ---
         state.currentEnrollments = enrollRes.data ? enrollRes.data.map(e => e.section_id) : [];
-        // Ensure we capture all busy times correctly
         state.myBusyTimes = enrollRes.data ? enrollRes.data.map(e => e.sections?.schedule_text).filter(Boolean) : [];
-        
         state.currentWaitlist = waitRes.data ? waitRes.data.map(w => w.section_id) : [];
         state.passedCourses = historyRes.data ? historyRes.data.map(h => h.sections?.course_code.toString()) : [];
         state.currentTotalCredits = enrollRes.data ? enrollRes.data.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0) : 0;
@@ -154,7 +213,6 @@ export async function loadRegistrationData(userId) {
     }
 }
 
-// --- UPDATED RENDER FUNCTION ---
 export function renderRegistrationList(sections) {
     const grid = document.getElementById('registration-courses-grid');
     if (!grid) return;
@@ -162,12 +220,10 @@ export function renderRegistrationList(sections) {
 
     if (!sections) sections = state.availableSectionsData;
 
-    // Get Inputs
     const searchText = document.getElementById('reg-search-input')?.value.toLowerCase() || '';
     const filterYear = document.getElementById('reg-filter-year')?.value || 'all';
     const filterCat = document.getElementById('reg-filter-category')?.value || 'all';
     
-    // Toggles
     const hideCompleted = document.getElementById('reg-check-completed')?.checked || false;
     const hideFull = document.getElementById('reg-check-full')?.checked || false;
     const hideConflict = document.getElementById('reg-check-conflict')?.checked || false;
@@ -187,8 +243,8 @@ export function renderRegistrationList(sections) {
         const isPassed = state.passedCourses.includes(code);
         const isFull = (sec.enrolled_count || 0) >= (sec.capacity || 40);
         
-        // Conflict Check
-        const isConflict = !isRegistered && sec.schedule_text && state.myBusyTimes.includes(sec.schedule_text);
+        // --- UPDATED CONFLICT CHECK IN FILTER ---
+        const isConflict = !isRegistered && !isPassed && isTimeConflict(sec.schedule_text);
 
         const prereqs = course.prerequisites || [];
         const missingPrereqs = prereqs.filter(p => !state.passedCourses.includes(p.prereq_code.toString()));
@@ -200,7 +256,6 @@ export function renderRegistrationList(sections) {
         if (hideMissingPrereq && hasMissingPrereq && !isRegistered && !isPassed) return false;
 
         if (currentPillFilter === 'available') {
-            // Note: Conflict implies not available to register
             if (isRegistered || isWaitlisted || isFull || isPassed || isConflict) return false;
         } 
         else if (currentPillFilter === 'waitlist') {
@@ -223,8 +278,8 @@ export function renderRegistrationList(sections) {
         const isPassed = state.passedCourses.includes(course.course_code.toString());
         const isFull = (sec.enrolled_count || 0) >= (sec.capacity || 40);
 
-        // Detect Conflict
-        const isConflict = !isRegistered && !isPassed && sec.schedule_text && state.myBusyTimes.includes(sec.schedule_text);
+        // --- UPDATED CONFLICT CHECK FOR BADGE ---
+        const isConflict = !isRegistered && !isPassed && isTimeConflict(sec.schedule_text);
 
         const prereqs = course.prerequisites || [];
         const missingPrereqs = prereqs.filter(p => !state.passedCourses.includes(p.prereq_code.toString()));
@@ -245,10 +300,9 @@ export function renderRegistrationList(sections) {
             statusBadge = `<span class="rc-status waitlist">On Waitlist</span>`;
             actionBtn = `<button class="rc-action-btn outline" onclick="dropWaitlist(${sec.section_id})">Leave Queue</button>`;
         } else if (isConflict) {
-            // --- NEW: Time Conflict Visuals ---
+            // CONFLICT BADGE
             statusBadge = `<span class="rc-status" style="background:rgba(255, 0, 0, 0.15); color:#ff5252; border: 1px solid #ff5252;">Time Conflict ⛔</span>`;
             borderClass = 'border-color: #ff5252; box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);';
-            // Button is disabled visually and functionality is blocked in handleRegister
             actionBtn = `<button class="rc-action-btn" style="background:transparent; border:1px solid #555; color:#777; cursor:not-allowed;" disabled>Conflict</button>`;
         } else if (hasMissingPrereq) {
             const missingCodes = missingPrereqs.map(p => p.prereq_code).join(', ');
