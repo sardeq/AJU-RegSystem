@@ -51,6 +51,77 @@ async function handleAIGeneration() {
     const aiLoading = document.getElementById('ai-loading');
     const aiResults = document.getElementById('ai-results');
 
+    // 1. Get User Preferences
+    const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
+    const intensity = document.querySelector('input[name="intensity"]:checked')?.value || "Balanced";
+    const timePref = document.getElementById('time-pref')?.value || "Any";
+    let userTargetTotal = parseInt(document.getElementById('credits-pref').value) || 15;
+
+    if (daysPref.length === 0) { alert("Please select preferred days."); return; }
+
+    // 2. Prepare UI
+    aiPrefModal.classList.add('hidden');
+    aiModal.classList.remove('hidden');
+    aiLoading.classList.remove('hidden');
+    aiResults.innerHTML = ''; 
+
+    try {
+        // 3. Fetch Context (Courses, History, Busy Times)
+        const context = await fetchStudentContext(state.currentUser.id);
+        
+        // Calculate credits needed
+        const currentRegistered = context.totalRegisteredCredits || 0;
+        const creditsNeeded = userTargetTotal - currentRegistered;
+
+        if (creditsNeeded <= 0) {
+            throw new Error(`You have ${currentRegistered} credits registered. Target reached.`);
+        }
+
+        // ---------------------------------------------------------
+        //  FIX: CALL THE EDGE FUNCTION INSTEAD OF LOCAL LOGIC
+        // ---------------------------------------------------------
+        
+        console.log("🤖 Invoking AI Edge Function...");
+        
+        const { data: plans, error } = await supabase.functions.invoke('generate-schedule', {
+            body: { 
+                context: context, 
+                preferences: {
+                    days: daysPref,
+                    targetCredits: userTargetTotal,
+                    creditsToAdd: creditsNeeded,
+                    intensity: intensity,
+                    timePref: timePref
+                }
+            }
+        });
+
+        if (error) throw error;
+        // ---------------------------------------------------------
+
+        aiLoading.classList.add('hidden');
+        renderPlans(plans, userTargetTotal, currentRegistered);
+
+    } catch (err) {
+        console.error("AI Error:", err);
+        aiLoading.classList.add('hidden');
+        
+        // Fallback or Error Display
+        aiResults.innerHTML = `<div style="text-align:center; padding:20px;">
+            <p style="color:#e53935; font-weight:bold; margin-bottom:10px;">⚠️ AI Generation Failed</p>
+            <p>${err.message || "Connection to AI advisor failed."}</p>
+            <button class="enhance-ai-btn" onclick="document.getElementById('ai-modal').classList.add('hidden')">Close</button>
+        </div>`;
+    }
+}
+
+/*
+async function handleAIGeneration() {
+    const aiModal = document.getElementById('ai-modal');
+    const aiPrefModal = document.getElementById('ai-pref-modal');
+    const aiLoading = document.getElementById('ai-loading');
+    const aiResults = document.getElementById('ai-results');
+
     const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
     
     let userTargetTotal = parseInt(document.getElementById('credits-pref').value) || 15;
@@ -114,6 +185,7 @@ async function handleAIGeneration() {
         </div>`;
     }
 }
+    */
 
 function generateLocalPlans(options, targetToAdd, baseBusyRanges = []) {
     const plans = [];
