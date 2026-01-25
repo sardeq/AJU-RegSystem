@@ -101,6 +101,12 @@ async function handleRegister(sectionId) {
     if (!section) return;
 
     const code = section.courses.course_code.toString();
+
+    if (state.enrolledCourseCodes.includes(code)) {
+        alert("⚠️ You are already registered for another section of this course. Drop the current section first to switch.");
+        return;
+    }
+
     const courseName = state.currentLang === 'ar' ? section.courses.course_name_ar : section.courses.course_name_en;
 
     // 1. Check: Already Passed?
@@ -183,6 +189,7 @@ export async function loadRegistrationData(userId) {
 
         // --- UPDATE STATE ---
         state.currentEnrollments = enrollRes.data ? enrollRes.data.map(e => e.section_id) : [];
+        state.enrolledCourseCodes = enrollRes.data ? enrollRes.data.map(e => e.sections?.course_code.toString()) : [];
         state.myBusyTimes = enrollRes.data ? enrollRes.data.map(e => e.sections?.schedule_text).filter(Boolean) : [];
         state.currentWaitlist = waitRes.data ? waitRes.data.map(w => w.section_id) : [];
         state.passedCourses = historyRes.data ? historyRes.data.map(h => h.sections?.course_code.toString()) : [];
@@ -231,6 +238,7 @@ export function renderRegistrationList(sections) {
 
     const filtered = sections.filter(sec => {
         const course = sec.courses;
+        // DEFINE code here so it can be used for searchText and isRegistered
         const code = (course.course_code || sec.course_code).toString();
         const nameEn = course.course_name_en.toLowerCase();
         
@@ -238,12 +246,12 @@ export function renderRegistrationList(sections) {
         if (filterYear !== 'all' && code.length >= 3 && code[2] !== filterYear) return false;
         if (filterCat !== 'all' && course.category !== filterCat) return false;
 
-        const isRegistered = state.currentEnrollments.includes(sec.section_id);
+        // Check enrollment by COURSE CODE to prevent multiple sections of same course
+        const isRegistered = state.enrolledCourseCodes.includes(code);
         const isWaitlisted = state.currentWaitlist.includes(sec.section_id);
         const isPassed = state.passedCourses.includes(code);
         const isFull = (sec.enrolled_count || 0) >= (sec.capacity || 40);
         
-        // --- UPDATED CONFLICT CHECK IN FILTER ---
         const isConflict = !isRegistered && !isPassed && isTimeConflict(sec.schedule_text);
 
         const prereqs = course.prerequisites || [];
@@ -272,13 +280,15 @@ export function renderRegistrationList(sections) {
 
     filtered.forEach(sec => {
         const course = sec.courses;
+        const code = (course.course_code || sec.course_code).toString(); // Re-declare for the display loop
         const courseName = state.currentLang === 'ar' ? course.course_name_ar : course.course_name_en;
-        const isRegistered = state.currentEnrollments.includes(sec.section_id);
+        
+        // Use enrolledCourseCodes to check if ANY section of this course is taken
+        const isRegistered = state.enrolledCourseCodes.includes(code);
         const isWaitlisted = state.currentWaitlist.includes(sec.section_id);
-        const isPassed = state.passedCourses.includes(course.course_code.toString());
+        const isPassed = state.passedCourses.includes(code);
         const isFull = (sec.enrolled_count || 0) >= (sec.capacity || 40);
 
-        // --- UPDATED CONFLICT CHECK FOR BADGE ---
         const isConflict = !isRegistered && !isPassed && isTimeConflict(sec.schedule_text);
 
         const prereqs = course.prerequisites || [];
@@ -300,7 +310,6 @@ export function renderRegistrationList(sections) {
             statusBadge = `<span class="rc-status waitlist">On Waitlist</span>`;
             actionBtn = `<button class="rc-action-btn outline" onclick="dropWaitlist(${sec.section_id})">Leave Queue</button>`;
         } else if (isConflict) {
-            // CONFLICT BADGE
             statusBadge = `<span class="rc-status" style="background:rgba(255, 0, 0, 0.15); color:#ff5252; border: 1px solid #ff5252;">Time Conflict ⛔</span>`;
             borderClass = 'border-color: #ff5252; box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);';
             actionBtn = `<button class="rc-action-btn" style="background:transparent; border:1px solid #555; color:#777; cursor:not-allowed;" disabled>Conflict</button>`;
