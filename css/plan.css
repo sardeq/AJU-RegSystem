@@ -6,8 +6,9 @@
     height: 85vh;
     overflow: hidden;
     
-    /* 1. Base Layer: Deep Void Green-Black */
-    background-color: #010502; 
+    /* 1. Base Layer: Deep Void Green-Black -> Semi Transparent */
+    background-color: rgba(1, 5, 2, 0.65); 
+    backdrop-filter: blur(10px); /* Adds glass effect over the body background */
     
     background-size: 50px 50px;
     
@@ -16,7 +17,7 @@
     
     /* Inner shadow to give depth to the container */
     box-shadow: 
-        inset 0 0 80px rgba(0,0,0,1),
+        inset 0 0 80px rgba(0,0,0,0.8),
         0 0 0 1px rgba(255, 255, 255, 0.05);
         
     user-select: none;
