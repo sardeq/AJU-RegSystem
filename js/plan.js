@@ -95,13 +95,10 @@ export async function loadStudentPlan(userId) {
 
     canvas.innerHTML = '<div style="color:#fff; padding:50px; text-align:center;">Generating Plan...</div>';
     
-    // Reset State
     transformState = { scale: 0.6, x: 0, y: 0 };
     cancelAnimationFrame(animationFrameId);
 
     try {
-        // ... (Keep Data Fetching logic unchanged: 1. History, 2. Courses, 3. Layout) ...
-        // 1. Fetch History
         const { data: history } = await supabase
             .from('enrollments')
             .select('status, sections(course_code)')
@@ -118,19 +115,15 @@ export async function loadStudentPlan(userId) {
             else registered.add(code);
         });
 
-        // 2. Ensure Course Data
         if (!state.allCoursesData || state.allCoursesData.length === 0) {
             const { data: courses } = await supabase.from('courses').select('*');
             state.allCoursesData = courses || [];
         }
 
-        // 3. Calculate Layout
         const layoutData = calculateTreeLayout(state.planRoots, state.planLinks);
         globalEdges = layoutData.edges;
 
-        // 4. Render
         canvas.innerHTML = '';
-        // Set huge bounds to ensure no clipping during pans
         canvas.style.width = `${Math.max(4000, layoutData.width + 1000)}px`; 
         canvas.style.height = `${Math.max(4000, layoutData.height + 1000)}px`;
 
@@ -179,7 +172,6 @@ function renderSpecialMilestones(canvas, x, y, currentCredits) {
     container.style.left = `${x}px`;
     container.style.top = `${y}px`;
 
-    // SVG for the horizontal connection
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("style", "position:absolute; width:100%; height:100%; pointer-events:none;");
     svg.innerHTML = `<line x1="210" y1="40" x2="270" y2="40" stroke="#30363d" stroke-width="2" stroke-dasharray="4" />`;
@@ -214,7 +206,6 @@ function startRenderLoop() {
     
     function loop() {
         if (needsUpdate && canvas) {
-            // Use translate3d for GPU acceleration
             canvas.style.transform = `translate3d(${transformState.x}px, ${transformState.y}px, 0) scale(${transformState.scale})`;
             needsUpdate = false;
         }
@@ -227,7 +218,6 @@ function setInteracting(active) {
     const wrapper = document.getElementById('tree-wrapper');
     if (!wrapper) return;
 
-    // Clear existing timeout to prevent flickering
     if (interactTimeout) clearTimeout(interactTimeout);
 
     if (active) {
@@ -236,7 +226,6 @@ function setInteracting(active) {
             wrapper.classList.add('is-interacting');
         }
     } else {
-        // Debounce turning it off so we don't flash styles on every wheel tick
         interactTimeout = setTimeout(() => {
             isInteracting = false;
             wrapper.classList.remove('is-interacting');
@@ -419,7 +408,6 @@ function renderNodes(nodes, passed, registered) {
         el.style.top = `${n.top}px`;
         el.id = `node-${n.id}`; 
 
-        // Event Listeners for Recursive Trace
         el.onmouseenter = () => highlightTrace(n.id);
         el.onmouseleave = () => resetTrace();
 

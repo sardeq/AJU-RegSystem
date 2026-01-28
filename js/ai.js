@@ -51,45 +51,62 @@ async function handleAIGeneration() {
     const aiLoading = document.getElementById('ai-loading');
     const aiResults = document.getElementById('ai-results');
 
-    // 1. Get User Preferences
     const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
     const intensity = document.querySelector('input[name="intensity"]:checked')?.value || "Balanced";
     const timePref = document.getElementById('time-pref')?.value || "Any";
+    
+    // Get raw user input
     let userTargetTotal = parseInt(document.getElementById('credits-pref').value) || 15;
 
     if (daysPref.length === 0) { alert("Please select preferred days."); return; }
 
-    // 2. Prepare UI
     aiPrefModal.classList.add('hidden');
     aiModal.classList.remove('hidden');
     aiLoading.classList.remove('hidden');
     aiResults.innerHTML = ''; 
 
     try {
-        // 3. Fetch Context (Courses, History, Busy Times)
         const context = await fetchStudentContext(state.currentUser.id);
         
-        // Calculate credits needed
+        // --- 1. CALCULATE LIMITS ---
+        const TOTAL_PLAN_HOURS = 132;
+        const passedHours = context.totalPassedCredits || 0;
         const currentRegistered = context.totalRegisteredCredits || 0;
+        
+        // Graduate if remaining hours <= 21
+        const remainingToGraduate = TOTAL_PLAN_HOURS - passedHours;
+        const isGraduate = remainingToGraduate <= 21;
+        
+        // Determine Hard Limit (18 or 21)
+        const hardLimit = isGraduate ? 21 : 18;
+
+        // --- 2. CAP USER TARGET ---
+        // If user asks for 21 but is not a graduate, cap at 18.
+        if (userTargetTotal > hardLimit) {
+            console.warn(`User target ${userTargetTotal} exceeds limit ${hardLimit}. Capping.`);
+            userTargetTotal = hardLimit;
+        }
+
+        // --- 3. CALCULATE CREDITS TO ADD ---
         const creditsNeeded = userTargetTotal - currentRegistered;
 
         if (creditsNeeded <= 0) {
-            throw new Error(`You have ${currentRegistered} credits registered. Target reached.`);
+            if (currentRegistered >= hardLimit) {
+                throw new Error(`You have reached your maximum limit of ${hardLimit} credit hours.`);
+            } else {
+                throw new Error(`You already have ${currentRegistered} credits. Please increase your target to add more.`);
+            }
         }
-
-        // ---------------------------------------------------------
-        //  FIX: CALL THE EDGE FUNCTION INSTEAD OF LOCAL LOGIC
-        // ---------------------------------------------------------
         
-        console.log("🤖 Invoking AI Edge Function...");
+        console.log(`🤖 AI Request: Registered=${currentRegistered}, Target=${userTargetTotal}, ToAdd=${creditsNeeded}, Limit=${hardLimit}`);
         
         const { data: plans, error } = await supabase.functions.invoke('generate-schedule', {
             body: { 
                 context: context, 
                 preferences: {
                     days: daysPref,
-                    targetCredits: userTargetTotal,
-                    creditsToAdd: creditsNeeded,
+                    targetCredits: userTargetTotal, 
+                    creditsToAdd: creditsNeeded,    
                     intensity: intensity,
                     timePref: timePref
                 }
@@ -97,147 +114,50 @@ async function handleAIGeneration() {
         });
 
         if (error) throw error;
-        // ---------------------------------------------------------
+
+        // --- 4. STRICT CLIENT-SIDE FILTERING ---
+        // Iterate through AI plans and remove courses that exceed the hardLimit
+        const safePlans = (plans || []).map(plan => {
+            let runningTotal = currentRegistered;
+            const validCourses = [];
+
+            for (const course of plan.courses) {
+                const nextTotal = runningTotal + (course.credits || 0);
+                
+                // Only keep course if it fits within the limit
+                if (nextTotal <= hardLimit) {
+                    validCourses.push(course);
+                    runningTotal = nextTotal;
+                } else {
+                    console.warn(`Dropped course ${course.code} from AI plan to enforce limit of ${hardLimit}.`);
+                }
+            }
+
+            return {
+                ...plan,
+                courses: validCourses,
+                totalAdded: runningTotal - currentRegistered,
+                reasoning: plan.reasoning // We preserve original text for now, or could append a note
+            };
+        }).filter(p => p.courses.length > 0); // Remove empty plans
+
+        if (safePlans.length === 0) {
+            throw new Error(`Could not generate a plan that fits within your ${hardLimit} credit limit.`);
+        }
 
         aiLoading.classList.add('hidden');
-        renderPlans(plans, userTargetTotal, currentRegistered);
+        renderPlans(safePlans, userTargetTotal, currentRegistered);
 
     } catch (err) {
         console.error("AI Error:", err);
         aiLoading.classList.add('hidden');
         
-        // Fallback or Error Display
         aiResults.innerHTML = `<div style="text-align:center; padding:20px;">
-            <p style="color:#e53935; font-weight:bold; margin-bottom:10px;">⚠️ AI Generation Failed</p>
+            <p style="color:#e53935; font-weight:bold; margin-bottom:10px;">⚠️ Unable to Generate</p>
             <p>${err.message || "Connection to AI advisor failed."}</p>
             <button class="enhance-ai-btn" onclick="document.getElementById('ai-modal').classList.add('hidden')">Close</button>
         </div>`;
     }
-}
-
-/*
-async function handleAIGeneration() {
-    const aiModal = document.getElementById('ai-modal');
-    const aiPrefModal = document.getElementById('ai-pref-modal');
-    const aiLoading = document.getElementById('ai-loading');
-    const aiResults = document.getElementById('ai-results');
-
-    const daysPref = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
-    
-    let userTargetTotal = parseInt(document.getElementById('credits-pref').value) || 15;
-
-    if (daysPref.length === 0) { alert("Please select days."); return; }
-
-    aiPrefModal.classList.add('hidden');
-    aiModal.classList.remove('hidden');
-    aiLoading.classList.remove('hidden');
-    aiResults.innerHTML = ''; 
-
-    try {
-        const context = await fetchStudentContext(state.currentUser.id);
-        
-        const TOTAL_REQ_HOURS = 132;
-        const passedHours = context.totalPassedCredits || 0;
-        const currentRegistered = context.totalRegisteredCredits || 0;
-        
-        const remainingHours = TOTAL_REQ_HOURS - passedHours;
-        const isGraduate = remainingHours <= 21;
-        
-        const hardLimit = isGraduate ? 21 : 18;
-
-        if (userTargetTotal > hardLimit) {
-            userTargetTotal = hardLimit;
-            console.warn(`Target adjusted to ${hardLimit} based on academic status.`);
-        }
-
-        const creditsNeeded = userTargetTotal - currentRegistered;
-
-        if (creditsNeeded <= 0) {
-            throw new Error(`You have ${currentRegistered} credits registered. Your limit is ${hardLimit}. Cannot add more courses.`);
-        }
-        
-        // Advanced Filtering: Attach time ranges to the options
-        let filteredOptions = context.options.map(sec => ({
-            ...sec,
-            timeRanges: parseScheduleToRanges(sec.schedule_text)
-        })).filter(sec => {
-            const sched = sec.schedule_text || "";
-            return daysPref.some(d => sched.includes(d));
-        });
-
-        // Parse existing busy times into ranges once
-        const baseBusyRanges = context.busyTimes.flatMap(t => parseScheduleToRanges(t));
-
-        // Generate plans using the calculated creditsNeeded
-        // We pass 'creditsNeeded' as the target for the generator
-        const plans = generateLocalPlans(filteredOptions, creditsNeeded, baseBusyRanges);            
-        
-        aiLoading.classList.add('hidden');
-        
-        // Pass info to render so user sees why they got these courses
-        renderPlans(plans, userTargetTotal, currentRegistered);
-
-    } catch (err) {
-        aiLoading.classList.add('hidden');
-        aiResults.innerHTML = `<div style="text-align:center; padding:20px;">
-            <p style="color:#e53935; font-weight:bold; margin-bottom:10px;">⚠️ Limit Reached</p>
-            <p>${err.message}</p>
-        </div>`;
-    }
-}
-    */
-
-function generateLocalPlans(options, targetToAdd, baseBusyRanges = []) {
-    const plans = [];
-    const titles = ["Balanced Choice", "Quick Progress", "Major Focused"];
-    
-    // We try to fill 'targetToAdd' credits
-    
-    for (let i = 0; i < 3; i++) {
-        let addedCredits = 0;
-        let selectedSections = [];
-        let currentPlanRanges = [...baseBusyRanges]; 
-        let usedCourseCodes = new Set();
-
-        const shuffled = [...options].sort(() => 0.5 - Math.random());
-
-        for (const sec of shuffled) {
-            const courseHours = sec.courses?.credit_hours || 0;
-            
-            // Check if adding this course exceeds the target amount to add
-            if (addedCredits + courseHours > targetToAdd) continue;
-
-            // Check if course code is already used in this plan
-            if (usedCourseCodes.has(sec.course_code)) continue;
-
-            // USE ADVANCED OVERLAP CHECK
-            const hasConflict = checkOverlap(sec.timeRanges, currentPlanRanges);
-
-            if (!hasConflict) { 
-                selectedSections.push({
-                    section_id: sec.section_id,
-                    code: sec.course_code,
-                    name: sec.courses.course_name_en,
-                    time: sec.schedule_text,
-                    credits: courseHours
-                });
-
-                currentPlanRanges.push(...sec.timeRanges);
-                usedCourseCodes.add(sec.course_code);
-                addedCredits += courseHours;
-            }
-        }
-
-        if (selectedSections.length > 0) {
-            plans.push({
-                title: titles[i],
-                reasoning: `Added ${addedCredits} credits to your schedule.`,
-                courses: selectedSections,
-                totalAdded: addedCredits
-            });
-        }
-    }
-    return plans;
 }
 
 function parseScheduleToRanges(scheduleText) {
@@ -290,8 +210,7 @@ export async function fetchStudentContext(userId) {
         .single();
 
     const targetSemId = activeSem ? parseInt(activeSem.semester_id) : 20252;
-    console.log("AI Advisor searching semester:", targetSemId);
-
+    
     // 2. Fetch completed courses WITH CREDITS
     const { data: history } = await supabase.from('enrollments')
         .select(`
