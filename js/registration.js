@@ -24,8 +24,9 @@ Object.defineProperty(window, 'availableSectionsData', {
 function parseSchedule(scheduleText) {
     if (!scheduleText || scheduleText === 'TBA') return null;
     
-    // Normalize string: "Mon/Wed 09:30-11:00" -> days: "mon/wed", time: "09:30-11:00"
-    const parts = scheduleText.toLowerCase().split(' ');
+    // FIX 1: Use regex split to handle potential double spaces between Day and Time
+    // "Sat 08:30" -> ["sat", "08:30"]
+    const parts = scheduleText.toLowerCase().trim().split(/\s+/); 
     if (parts.length < 2) return null;
 
     const dayPart = parts[0]; 
@@ -33,9 +34,16 @@ function parseSchedule(scheduleText) {
 
     // Identify Days
     let days = [];
-    if (dayPart.includes('mon') || dayPart.includes('wed')) days = ['mon', 'wed'];
-    if (dayPart.includes('sun') || dayPart.includes('tue')) days = ['sun', 'tue']; // Usually Sun/Tue/Thu
-    if (dayPart.includes('thu')) days.push('thu'); // Explicit Thursday check if needed
+    
+    // Standard Blocks
+    if (dayPart.includes('mon') || dayPart.includes('wed')) days.push('mon', 'wed');
+    if (dayPart.includes('sun') || dayPart.includes('tue')) days.push('sun', 'tue');
+    
+    // Individual Days
+    if (dayPart.includes('thu') && !days.includes('thu')) days.push('thu');
+    
+    // FIX 2: Add Saturday Support
+    if (dayPart.includes('sat')) days.push('sat'); 
 
     // Parse Times to Minutes
     const times = timePart.split('-');
@@ -46,7 +54,6 @@ function parseSchedule(scheduleText) {
 
     return { days, start: startMin, end: endMin, raw: scheduleText };
 }
-
 function timeToMinutes(timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     return h * 60 + m;
@@ -58,12 +65,9 @@ function checkTimeConflict(schedule1, schedule2) {
 
     if (!s1 || !s2) return false;
 
-    // 1. Check Day Overlap
     const commonDays = s1.days.filter(day => s2.days.includes(day));
     if (commonDays.length === 0) return false;
 
-    // 2. Check Time Overlap
-    // Two ranges overlap if (StartA < EndB) AND (EndA > StartB)
     return (s1.start < s2.end && s1.end > s2.start);
 }
 
@@ -238,7 +242,6 @@ export function renderRegistrationList(sections) {
 
     const filtered = sections.filter(sec => {
         const course = sec.courses;
-        // DEFINE code here so it can be used for searchText and isRegistered
         const code = (course.course_code || sec.course_code).toString();
         const nameEn = course.course_name_en.toLowerCase();
         
@@ -246,7 +249,6 @@ export function renderRegistrationList(sections) {
         if (filterYear !== 'all' && code.length >= 3 && code[2] !== filterYear) return false;
         if (filterCat !== 'all' && course.category !== filterCat) return false;
 
-        // Check enrollment by COURSE CODE to prevent multiple sections of same course
         const isRegistered = state.enrolledCourseCodes.includes(code);
         const isWaitlisted = state.currentWaitlist.includes(sec.section_id);
         const isPassed = state.passedCourses.includes(code);

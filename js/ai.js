@@ -55,7 +55,6 @@ async function handleAIGeneration() {
     const intensity = document.querySelector('input[name="intensity"]:checked')?.value || "Balanced";
     const timePref = document.getElementById('time-pref')?.value || "Any";
     
-    // Get raw user input
     let userTargetTotal = parseInt(document.getElementById('credits-pref').value) || 15;
 
     if (daysPref.length === 0) { alert("Please select preferred days."); return; }
@@ -68,26 +67,20 @@ async function handleAIGeneration() {
     try {
         const context = await fetchStudentContext(state.currentUser.id);
         
-        // --- 1. CALCULATE LIMITS ---
         const TOTAL_PLAN_HOURS = 132;
         const passedHours = context.totalPassedCredits || 0;
         const currentRegistered = context.totalRegisteredCredits || 0;
         
-        // Graduate if remaining hours <= 21
         const remainingToGraduate = TOTAL_PLAN_HOURS - passedHours;
         const isGraduate = remainingToGraduate <= 21;
         
-        // Determine Hard Limit (18 or 21)
         const hardLimit = isGraduate ? 21 : 18;
 
-        // --- 2. CAP USER TARGET ---
-        // If user asks for 21 but is not a graduate, cap at 18.
         if (userTargetTotal > hardLimit) {
             console.warn(`User target ${userTargetTotal} exceeds limit ${hardLimit}. Capping.`);
             userTargetTotal = hardLimit;
         }
 
-        // --- 3. CALCULATE CREDITS TO ADD ---
         const creditsNeeded = userTargetTotal - currentRegistered;
 
         if (creditsNeeded <= 0) {

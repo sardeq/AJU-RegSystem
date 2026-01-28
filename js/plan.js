@@ -234,36 +234,31 @@ function setInteracting(active) {
 }
 
 function initZoomPanLogic(wrapper, canvas) {
-    // 1. Wheel Zoom
     wrapper.onwheel = (e) => {
         e.preventDefault();
         setInteracting(true);
 
-        const zoomIntensity = 0.0008; // Lower sensitivity for smoothness
+        const zoomIntensity = 0.0008; 
         const delta = -e.deltaY * zoomIntensity;
         const oldScale = transformState.scale;
         
         let newScale = oldScale + delta;
-        newScale = Math.min(Math.max(0.1, newScale), 4); // Min 0.1x, Max 4x
+        newScale = Math.min(Math.max(0.1, newScale), 4);
 
         const rect = wrapper.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        // Zoom towards mouse pointer
         transformState.x = mouseX - (mouseX - transformState.x) * (newScale / oldScale);
         transformState.y = mouseY - (mouseY - transformState.y) * (newScale / oldScale);
         transformState.scale = newScale;
 
         needsUpdate = true;
         
-        // Turn off interaction mode shortly after wheel stops
         setInteracting(false);
     };
 
-    // 2. Drag Panning
     wrapper.onmousedown = (e) => {
-        // Ignore clicks on cards or interactive elements
         if(e.target.closest('.node-card') || e.target.closest('.elective-stack')) return;
         
         isDragging = true;
@@ -523,26 +518,21 @@ function renderElectives(canvas, startX, startY = 100) {
     canvas.appendChild(zone);
 }
 
-// --- RECURSIVE TRACE LOGIC ---
 function highlightTrace(nodeId) {
-    if(isInteracting) return; // Disable trace while dragging for performance
+    if(isInteracting) return; 
 
     const canvas = document.getElementById('plan-tree-canvas');
     if(!canvas) return;
     
-    // 1. Activate Canvas Mode (Dim everything else)
     canvas.classList.add('canvas-hovered');
 
-    // 2. Identify all connected nodes/edges
     const activeNodes = new Set();
     const activeEdges = new Set();
 
-    // Helper: Trace Up (Parents)
     function traceUp(currId) {
         if(activeNodes.has(currId)) return;
         activeNodes.add(currId);
         
-        // Find edges where target == currId
         globalEdges.forEach(edge => {
             if(String(edge.t) === String(currId)) {
                 activeEdges.add(`path-${edge.s}-${edge.t}`);

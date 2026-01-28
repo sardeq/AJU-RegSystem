@@ -28,12 +28,10 @@ export async function loadDashboardData(userId) {
             const sideName = document.getElementById('sidebar-user-name');
             if(sideName) sideName.textContent = profile.full_name || "Student";
 
-            // Update Stats
             document.getElementById('stat-gpa').textContent = profile.gpa ? profile.gpa.toFixed(2) : "--";
             document.getElementById('stat-rank').textContent = profile.rank ? `#${profile.rank}` : "--";
         }
 
-        // 2. Fetch Active Schedule
         const { data: schedule } = await supabase
             .from('enrollments')
             .select(`sections (schedule_text, room_number, section_number, courses (course_name_en, course_name_ar))`)
@@ -43,10 +41,8 @@ export async function loadDashboardData(userId) {
         const courseCount = schedule ? schedule.length : 0;
         document.getElementById('stat-registered-count').textContent = courseCount;
         
-        // Render Bento Schedule
         renderBentoSchedule(schedule);
 
-        // 3. Calc Completed Hours
         const { data: history } = await supabase
             .from('enrollments')
             .select('sections(courses(credit_hours))')
