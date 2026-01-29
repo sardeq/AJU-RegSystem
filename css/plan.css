@@ -6,8 +6,8 @@
     height: 85vh;
     overflow: hidden;
     
-    /* 1. Base Layer: Deep Void Green-Black -> Semi Transparent */
-    background-color: rgba(1, 5, 2, 0.65); 
+    /* 1. Base Layer: Lighter tint to make nodes pop */
+    background-color: rgba(30, 35, 32, 0.6); 
     backdrop-filter: blur(10px); /* Adds glass effect over the body background */
     
     background-size: 50px 50px;
