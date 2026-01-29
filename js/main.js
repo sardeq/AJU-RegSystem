@@ -468,63 +468,74 @@ async function handleExpiredRequest(req, type) {
     window.location.reload();
 }
 
-// Global functions for the Modal Buttons
-
 window.attemptFinalEnrollment = async () => {
     const reqId = document.getElementById('clm-req-id').value;
     const type = document.getElementById('clm-req-type').value;
+    const btn = document.querySelector('#credit-limit-modal .accept-btn');
 
-    // 1. Re-check Credits (Client side first, DB trigger secondary)
-    // We import registration logic or duplicate simplistic check
-    const { data: enrollments } = await supabase.from('enrollments').select('sections(courses(credit_hours))').eq('user_id', state.currentUser.id).eq('status', 'REGISTERED');
-    const currentCredits = enrollments.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0);
-    
-    // We assume the course is 3 credits for this check, or we need to fetch the specific request's course credits
-    // For safety, let's fetch the actual limits
-    const { max } = await import('./utils.js').then(m => m.getCreditLimits(window.userProfile));
-
-    // Simple optimistic check: if current is max, they haven't dropped enough
-    // (A robust check needs the target course credit hours)
-    if (currentCredits >= max) {
-        alert(`You are still at ${currentCredits} credits. Please drop a course first.`);
-        return;
-    }
+    btn.textContent = "Processing...";
+    btn.disabled = true;
 
     try {
-        // 2. Perform Enroll
-        // For Exception: We simply update status to APPROVED. Admin logic didn't enroll, so we need to enroll here.
-        // For Waitlist: Same.
+        // 1. Get current status to double-check credits
+        const { data: enrollments } = await supabase.from('enrollments')
+            .select('sections(courses(credit_hours))')
+            .eq('user_id', state.currentUser.id)
+            .eq('status', 'REGISTERED');
+            
+        const currentCredits = enrollments.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0);
         
-        // Note: For this to work, we need the section_id. 
-        // If it was an Exception, we assume the Admin selected the section (which we should have stored in the request or handled differently).
-        // A simpler way: Update request to 'APPROVED_CONFIRMED' and let a Database Trigger handle the insert.
-        // OR: Insert directly here.
-        
-        // Let's assume we update the status, and we rely on the backend/admin logic having already prepared the data
-        // OR simpler: Just mark it 'COMPLETED' and insert enrollment.
-        
-        // Getting section ID is tricky if not stored. 
-        // FIX: Admin logic in step 3 should store `section_id` in the request row if possible, OR user selects section now.
-        // Assuming user selects section or it's known:
-        
-        // Placeholder for Logic:
+        // 2. Fetch the waitlisted course credits
+        let targetCredits = 3; // Default fallback
+        if (type === 'WAITLIST') {
+            const { data: wl } = await supabase.from('waiting_list')
+                .select('sections(courses(credit_hours))')
+                .eq('waitlist_id', reqId)
+                .single();
+            if(wl) targetCredits = wl.sections.courses.credit_hours;
+        }
+
+        const { max } = await import('./utils.js').then(m => m.getCreditLimits());
+
+        if ((currentCredits + targetCredits) > max) {
+            alert(`⚠️ Still over limit!\n\nCurrent: ${currentCredits}\nNew Course: ${targetCredits}\nLimit: ${max}\n\nPlease drop a course first.`);
+            btn.textContent = "Enroll Now";
+            btn.disabled = false;
+            return;
+        }
+
+        // 3. Perform Final Enrollment
         const table = type === 'WAITLIST' ? 'waiting_list' : 'exception_requests';
         const idField = type === 'WAITLIST' ? 'waitlist_id' : 'request_id';
+        
+        // Get Section ID first
+        const { data: reqData } = await supabase.from(table).select('section_id').eq(idField, reqId).single();
+        
+        if (!reqData || !reqData.section_id) throw new Error("Target section not found.");
 
-        // Update status to COMPLETED
-        const { error } = await supabase.from(table).update({ status: 'COMPLETED' }).eq(idField, reqId);
-        if (error) throw error;
+        // Insert Enrollment
+        const { error: enrollError } = await supabase.from('enrollments').insert([{
+            user_id: state.currentUser.id,
+            section_id: reqData.section_id,
+            status: 'REGISTERED'
+        }]);
+
+        if (enrollError) throw enrollError;
+
+        // Update Request Status
+        await supabase.from(table).update({ status: 'COMPLETED' }).eq(idField, reqId);
         
-        // Add to Enrollments (Ideally we need section_id here)
-        // If we don't have section_id easily, we might redirect user to Registration page with a temporary "Unlock" permission.
-        // For this example, let's assume successful state transition.
-        
-        alert("Enrollment Successful!");
+        alert("✅ Successfully Enrolled!");
         document.getElementById('credit-limit-modal').classList.add('hidden');
-        window.location.reload();
+        
+        // Refresh
+        showSection('schedule');
 
     } catch (err) {
+        console.error(err);
         alert("Error: " + err.message);
+        btn.textContent = "Enroll Now";
+        btn.disabled = false;
     }
 };
 

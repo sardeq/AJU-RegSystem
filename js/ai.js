@@ -195,7 +195,6 @@ function checkOverlap(rangesA, rangesB) {
 
 
 export async function fetchStudentContext(userId) {
-    // 1. Get the dynamic active semester first
     const { data: activeSem } = await supabase
         .from('semesters')
         .select('semester_id')
@@ -204,7 +203,6 @@ export async function fetchStudentContext(userId) {
 
     const targetSemId = activeSem ? parseInt(activeSem.semester_id) : 20252;
     
-    // 2. Fetch completed courses WITH CREDITS
     const { data: history } = await supabase.from('enrollments')
         .select(`
             status, 
@@ -319,14 +317,12 @@ function renderPlans(plans, targetTotal, currentRegistered) {
     });
 }
 
-// Expose applySchedule for the onclick string in renderPlans
 window.applySchedule = async function(encodedCourses) {
     if (!state.currentUser) return;
     const courses = JSON.parse(decodeURIComponent(encodedCourses));
 
     if(!confirm(`Register for these ${courses.length} courses?`)) return;
     
-    // Simple loop to register (or batch if API supports it)
     try {
         const enrollments = courses.map(c => ({
             user_id: state.currentUser.id,
@@ -339,7 +335,6 @@ window.applySchedule = async function(encodedCourses) {
         
         alert("Successfully Registered!");
         document.getElementById('ai-modal').classList.add('hidden');
-        // Refresh Registration Data
         import('./registration.js').then(mod => mod.loadRegistrationData(state.currentUser.id));
         
     } catch(err) {

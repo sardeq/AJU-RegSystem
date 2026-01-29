@@ -134,7 +134,6 @@ async function handleRegister(sectionId) {
         return;
     }
 
-    // 4. Check: Credit Limits
     const newCredits = section.courses.credit_hours || 3;
     const currentTotal = state.currentTotalCredits || 0;    
     const { max, isGrad } = getCreditLimits();
@@ -186,7 +185,7 @@ export async function loadRegistrationData(userId) {
             supabase.from('users').select('*').eq('id', userId).single(),
             supabase.from('enrollments').select('section_id, status, sections(course_code, schedule_text, courses(credit_hours))').eq('user_id', userId).in('status', ['REGISTERED', 'ENROLLED']),
             supabase.from('waiting_list').select('section_id').eq('user_id', userId).eq('status', 'WAITING'),
-            supabase.from('enrollments').select('sections(course_code)').eq('user_id', userId).eq('status', 'COMPLETED')
+            supabase.from('enrollments').select('sections(course_code, courses(credit_hours))').eq('user_id', userId).eq('status', 'COMPLETED')
         ]);
 
         if (profileRes.data) window.userProfile = profileRes.data;
@@ -198,6 +197,9 @@ export async function loadRegistrationData(userId) {
         state.currentWaitlist = waitRes.data ? waitRes.data.map(w => w.section_id) : [];
         state.passedCourses = historyRes.data ? historyRes.data.map(h => h.sections?.course_code.toString()) : [];
         state.currentTotalCredits = enrollRes.data ? enrollRes.data.reduce((sum, e) => sum + (e.sections?.courses?.credit_hours || 0), 0) : 0;
+        
+
+        state.totalPassedCredits = historyRes.data ? historyRes.data.reduce((sum, h) => sum + (h.sections?.courses?.credit_hours || 0), 0) : 0;
         
         updateCreditUI(state.currentTotalCredits);
 

@@ -444,13 +444,22 @@ export function getCategoryClass(category) {
 }
 
 export function getCreditLimits() {
-    // FIX: Use state.currentUser instead of global currentUser
+    // Default fallback
     if (!state.currentUser) return { min: 12, max: 18, isGrad: false };
 
-    // You can also store profile in state if needed
-    const currentSemester = window.userProfile?.current_semester || 1; 
+    let passedHours = 0;
     
-    const isGrad = currentSemester >= 7;
+    if (state.passedCoursesData) {
+        passedHours = state.passedCoursesData.reduce((sum, item) => sum + (item.credit_hours || 0), 0);
+    } 
+    
+    passedHours = state.totalPassedCredits || 0; 
+
+    const totalRequired = 132;
+    const remaining = totalRequired - passedHours;
+    
+    const isGrad = remaining <= 21;
+
     return {
         min: 12,
         max: isGrad ? 21 : 18,

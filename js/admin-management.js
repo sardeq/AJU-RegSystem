@@ -101,7 +101,7 @@ window.saveUserChanges = async () => {
     } else {
         alert("User updated successfully");
         closeEditUserModal();
-        loadAdminUsers(); // Reload to refresh table
+        loadAdminUsers();
     }
 };
 
@@ -181,13 +181,11 @@ window.toggleSectionStatus = async (id, currentStatus) => {
     if (!error) loadAdminCourses();
 };
 
-// --- Edit/Create Section Logic ---
 
 window.openSectionModal = (id = null) => {
     const modal = document.getElementById('edit-section-modal');
     const title = document.getElementById('sec-modal-title');
     
-    // Clear fields
     document.getElementById('edit-sec-code').value = '';
     document.getElementById('edit-sec-num').value = '';
     document.getElementById('edit-sec-cap').value = '';
@@ -196,7 +194,6 @@ window.openSectionModal = (id = null) => {
     document.getElementById('edit-sec-instr').value = '';
 
     if (id) {
-        // Edit Mode
         const sec = allSections.find(s => s.section_id === id);
         title.textContent = "Edit Section";
         document.getElementById('edit-sec-id').value = sec.section_id;
@@ -209,7 +206,7 @@ window.openSectionModal = (id = null) => {
     } else {
         // Create Mode
         title.textContent = "Create New Section";
-        document.getElementById('edit-sec-id').value = ""; // Empty ID
+        document.getElementById('edit-sec-id').value = "";
     }
 
     modal.classList.remove('hidden');
@@ -252,10 +249,8 @@ window.saveSectionChanges = async () => {
 };
 
 export async function loadAdminHome() {
-    // Set date
     document.getElementById('admin-date-display').textContent = new Date().toLocaleDateString();
 
-    // Fetch stats in parallel for speed
     const [adm, exc, usrs, secs] = await Promise.all([
         supabase.from('admissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('exception_requests').select('request_id', { count: 'exact', head: true }).eq('status', 'PENDING'),
@@ -323,7 +318,6 @@ export async function loadAdminExceptions() {
 
 
 window.handleDecision = async function(requestId, decision, userId, courseCode, studentName) {
-    // 1. If REJECTED, process immediately as before
     if (decision === 'REJECTED') {
         const response = document.getElementById(`resp-${requestId}`)?.value || "Request rejected.";
         
@@ -341,19 +335,15 @@ window.handleDecision = async function(requestId, decision, userId, courseCode, 
         return;
     }
 
-    // 2. If APPROVED, Open the Enrollment Modal
     if (decision === 'APPROVED') {
         currentExceptionReqId = requestId;
         currentExceptionUserId = userId;
         const responseVal = document.getElementById(`resp-${requestId}`)?.value;
         if(responseVal) document.getElementById('adm-enroll-response').value = responseVal;
         
-        // Update UI Text
-        // SAFE CHECK HERE
         const nameEl = document.getElementById('adm-enroll-student-name');
         if(nameEl) nameEl.textContent = studentName || 'Student';
         
-        // Load Sections for this course
         openAdminEnrollModal(courseCode);
     }
 };

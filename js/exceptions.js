@@ -94,12 +94,10 @@ async function fetchAllCoursesForSearch() {
     }
 }
 
-// 2. Setup Listeners
 export function setupExceptionListeners() {
     setupCourseSearch('exc-target-search', 'exc-target-code-hidden', 'exc-target-suggestions');
     setupCourseSearch('exc-alt-search', 'exc-alt-code-hidden', 'exc-alt-suggestions');
     
-    // Lazy load courses when user clicks inputs
     ['exc-target-search', 'exc-alt-search'].forEach(id => {
         const el = document.getElementById(id);
         if(el) el.addEventListener('focus', fetchAllCoursesForSearch);
